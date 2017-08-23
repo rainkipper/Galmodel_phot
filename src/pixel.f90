@@ -26,7 +26,6 @@ contains
 	
 	function get_val_sq(pix, func) result(res)
 		class(square_pixel_type), intent(inout) :: pix
-! 		type(square_pixel_type) :: pix
 		interface 
 			function func(Xc, Yc) result(res)
 				import rk

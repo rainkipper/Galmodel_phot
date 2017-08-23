@@ -86,6 +86,9 @@ contains
 			all_comp%comp(i)%theta0     = all_comp%comp(input_comps(i)%theta0%ref)%theta0
 			par_list=>input_comps(i)%prof_pars
 			do while(par_list%filled)
+				if(trim(par_list%par_name)=="M" .and. i==1) then !siin on testosa
+					call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp)
+				end if
 				call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp) !votab v22rtuse ref jaoks
 				call all_comp%comp(i)%prof_den%set_val(trim(par_list%par_name), tmp) !paneb v22rtuse teise kohta paika
 				if(associated(par_list%next)) then

@@ -10,7 +10,7 @@ population = old_population
 a0 = 5.1, F, 0.1, 10.0, bulge
 N = 4.0, F, 0.5, 8.0, bulge
 q = 0.1, F, 0.4, 0.99, bulge
-M = 1.1, T, 0.01, 10.0, bulge
+M = 1.2, T, 0.01, 10.0, bulge
 
 
 [young_disc]

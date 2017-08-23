@@ -104,6 +104,7 @@ contains
 			implicit none
 			integer ::  n_dim, nPar, context
 			double precision Cube(n_dim), lnew
+			real(rk) :: tmp(4) !ajutisteks test
 			integer :: i
 			type(prof_par_list_type), pointer ::  par_list
 			integer mitmes_cube
@@ -144,13 +145,24 @@ contains
 					end if
 				end do
 			end do
-
+			
+			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-
 
 			!loglike reaalne arvutamine
 			lnew = calc_log_likelihood(all_comp, images)
-
+			
+			
+			!test
+! 			print*, "Comp param---------------"
+! 			do i=1,all_comp%N_comp
+! 				call all_comp%comp(i)%prof_den%get_val("M", tmp(1))
+! 				call all_comp%comp(i)%prof_den%get_val("a0", tmp(2))
+! 				call all_comp%comp(i)%prof_den%get_val("q", tmp(3))
+! 				call all_comp%comp(i)%prof_den%get_val("N", tmp(4))
+! 				print "(4(A,F10.4))", " M = ", tmp(1), " a0 = ", tmp(2), " q = ", tmp(3), " N = ", tmp(4)
+! 			end do
+! 			print*, "-------------------------"
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
