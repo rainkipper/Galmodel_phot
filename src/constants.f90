@@ -7,7 +7,6 @@ module constants_module
 	!yldised konstandid
 	real(rk), parameter :: pi = 4.0_rk*atan(1.0_rk)
 	!
-	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05 !kas adaptiivne pilt jaotab edasi... 
 	real(rk), parameter :: arcsec_to_rad = pi/180.0 / 60.0 / 60.0 !ehk sellega korrutades saab kaaresekundid radiaanidesse
 	
 	character(len=*), parameter :: model_filename_end = "_mdl.fits"

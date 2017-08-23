@@ -4,7 +4,7 @@ module pixel_module
 	real(rk), parameter :: sqrt2 = sqrt(2.0_rk)
 	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
 	real(rk), parameter :: edasi_jagamise_abs_t2psus = 0.000
-	integer, parameter  :: maxlevel = 5
+	integer, parameter  :: maxlevel = 3
 	type :: square_pixel_type
 		real(rk) :: val
 		real(rk), dimension(1:4) :: Xi_nurgad

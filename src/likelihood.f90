@@ -20,9 +20,9 @@ contains
 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
 		
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
-		kas_koik_pildid_samast_vaatlusest = .true.
-		via_comp_im = .false.
-		kas_los = .false.
+		kas_koik_pildid_samast_vaatlusest = .true. 
+		via_comp_im = .true.
+		kas_los = .true.
 		mida_arvutatakse = "Not in use"
 		
 		
@@ -59,7 +59,7 @@ contains
 						!
 						!TODO yhikute kordaja peaks solutma komponendi kaugusets, mis igal comp eraldi
 						!
-						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) -6.0 + 2.0*log10( all_comp%comp(1)%dist ) )
+						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) -14.0 + 2.0*log10( all_comp%comp(1)%dist ) )
 						weights(j) = weights(j)/yhikute_kordaja
 						exit
 					end if
@@ -104,6 +104,6 @@ contains
 
 		
 		
-		print*, "LL = ", res
+		print*, "LL = ", res, arcsec_to_rad
 	end function calc_log_likelihood
 end module likelihood_module
