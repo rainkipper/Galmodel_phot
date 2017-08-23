@@ -17,14 +17,29 @@ module pixel_module
 		real(rk), dimension(1:4) :: val_nurgad
 		real(rk) :: dXc2 !ehk kylje pikkuse ruut komponendi koordinaatides
 	contains
-		procedure :: get_val  => get_val_sq
+		procedure :: get_val  => get_val_sq_v2ga_j2me
 	end type square_pixel_type
 	
 
 contains
-
 	
-	function get_val_sq(pix, func) result(res)
+	function get_val_sq_v2ga_j2me(pix, func) result(res)
+		implicit none
+		class(square_pixel_type), intent(inout) :: pix
+		interface 
+			function func(Xc, Yc) result(res)
+				import rk
+				real(rk), intent(in) :: Xc, Yc
+				real(rk) :: res
+			end function func
+		end interface
+		real(rk) :: res
+		
+		res = sum(pix%val_nurgad)/size(pix%val_nurgad, 1) * pix%dXc2 !ehk keskmine korda pindala
+		pix%val = res
+	end function get_val_sq_v2ga_j2me
+	
+	function get_val_sq_kolmnurgad(pix, func) result(res)
 		class(square_pixel_type), intent(inout) :: pix
 ! 		type(square_pixel_type) :: pix
 		interface 
@@ -91,6 +106,6 @@ contains
 			real(rk), intent(out) :: res
 			res = (dx2*0.5) / 6.0*(fx+fy-f0)
 		end subroutine t2isnurkse_vordkylgse_kolmnurga_integraal
-	end function get_val_sq
+	end function get_val_sq_kolmnurgad
 	
 end module pixel_module
