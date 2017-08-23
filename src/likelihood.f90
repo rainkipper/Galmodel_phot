@@ -21,8 +21,8 @@ contains
 		
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 		kas_koik_pildid_samast_vaatlusest = .true. 
-		via_comp_im = .false.
-		kas_los = .false.
+		via_comp_im = .true.
+		kas_los = .true.
 		mida_arvutatakse = "Not in use"
 		
 		
@@ -59,7 +59,7 @@ contains
 						!
 						!TODO yhikute kordaja peaks solutma komponendi kaugusets, mis igal comp eraldi
 						!
-						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) +6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
+						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
 						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
 						exit
 					end if
@@ -68,7 +68,6 @@ contains
 			if(any(weights == -1.234)) then
 				print*, "Vale M/L sisend"; stop
 			end if
-! 			weights = 1.0/weights
 			!
 			! ========= mudelpiltide kokkupanek ===========
 			!
@@ -97,7 +96,7 @@ contains
 			! ======== loglike ise ========
 			!
 			
-			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + abs(images(i)%obs))), images(i)%mask) 
+			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + 0.001 + abs(images(i)%obs))), images(i)%mask) 
 			
 		end do
 		
@@ -105,6 +104,6 @@ contains
 
 		
 		
-		print*, "LL = ", res
+! 		print*, "LL = ", res
 	end function calc_log_likelihood
 end module likelihood_module

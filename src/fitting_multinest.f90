@@ -40,7 +40,7 @@ contains
 		
 		IS = .false.
 		mmodal = .false. 
-		nlive = 2 !testiks nii v2ike
+		nlive = 30 !testiks nii v2ike
 		ceff = .true.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
@@ -51,14 +51,14 @@ contains
 		updInt  = 1
 		Ztol = -1.d90
 		root = "Output/"
-		seed = 12345
+		seed = -1
 		allocate(pWrap(1:nPar)); pWrap = 0 !
 		feedback = .false.
 		resume = .false.
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 1 !ehk umbes minut
+		maxiter = 300 !ehk umbes minut
 		context = 0 !mittevajalik
 		
 		
@@ -171,9 +171,51 @@ contains
 			double precision, pointer :: posterior(:,:)
 			double precision, pointer :: physLive(:,:)
 			double precision, pointer :: paramConstr(:)
+			integer :: i
+			type(prof_par_list_type), pointer ::  par_list
+			integer mitmes_cube	
+			integer :: parim		
 ! 			double precision, dimension(1:nlive, 1:nPar+1) :: physLive
 ! 			double precision, dimension(1, 1:4*nPar) :: paramConstr
-			print*, "Ikka elus..."
+			parim = maxloc(physLive(:,nPar+1),1)
+			print*, "============== parim on ", maxloglike, size(physLive)
+			mitmes_cube = 0
+			do i=1,size(input_comps)
+				if(input_comps(i)%incl%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," Incl", UniformPrior(physLive(parim,mitmes_cube), input_comps(i)%incl%min,  input_comps(i)%incl%max)/arcsec_to_rad
+				end if
+				if(input_comps(i)%cnt_x%kas_fitib) then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," cnt_x", UniformPrior(physLive(parim,mitmes_cube), input_comps(i)%cnt_x%min,  input_comps(i)%cnt_x%max)/arcsec_to_rad
+				end if
+				if(input_comps(i)%cnt_y%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," cnt_y", UniformPrior(physLive(parim,mitmes_cube), input_comps(i)%cnt_y%min,  input_comps(i)%cnt_y%max)
+				end if
+				if(input_comps(i)%pos%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," pos", 180/pi*UniformPrior(physLive(parim,mitmes_cube), input_comps(i)%pos%min,  input_comps(i)%pos%max)
+				end if
+				if(input_comps(i)%theta0%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," theta0",	UniformPrior(physLive(parim,mitmes_cube), input_comps(i)%theta0%min,  input_comps(i)%theta0%max)
+
+				end if
+				par_list=>input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(par_list%par%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," ",trim(par_list%par_name), UniformPrior(physLive(parim,mitmes_cube), par_list%par%min,  par_list%par%max) 
+				end if
+					if(associated(par_list%next)) then
+						par_list => par_list%next
+					else
+						exit
+					end if
+				end do
+			end do
+			print*, "==============================================================="
 		end subroutine fun_dumper
 end subroutine jooksuta_fittimine
 	

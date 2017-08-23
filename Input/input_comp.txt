@@ -1,16 +1,16 @@
 [bulge]
 prof =Einasto 
 type = stellar
-incl = 60.0, F, 50.0, 90.0, young_disc
+incl = 60.0, T, 30.0, 80.0, young_disc
 dist = 2936000.0, F, 0.0, 1e8, bulge
-pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge
-cnt_x = 0.0, F, 0.0, 0.0, young_disc
-cnt_y = 0.0, F, 0.0, 0.0, bulge
+pos_wrt_phys_coord = 0.01, T, -90.0, 90.0, bulge
+cnt_x = 0.0, F, -1.0e-3, 1.0e-3, bulge
+cnt_y = 0.0, F, -1.0e-3, 1.0e-3, bulge
 population = old_population
 a0 = 5.1, F, 0.1, 10.0, bulge
-N = 4.0, F, 0.5, 8.0, bulge
-q = 0.1, F, 0.4, 0.99, bulge
-M = 1.2, T, 0.01, 10.0, bulge
+N = 0.8, F, 0.5, 3.0, bulge
+q = 0.8, F, 0.4, 0.99, bulge
+M = 0.181397199630737305E-01, T, 0.00, 0.2, bulge
 
 
 [young_disc]
@@ -22,10 +22,10 @@ pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge
 cnt_x = 0.0, F, 0.0, 0.0, bulge
 cnt_y = 0.0, F, 0.0, 0.0, bulge
 population = young_population
-a0 = 10.2, F, 3.1, 20.0, young_disc
-N = 1.0, F, 0.5, 8.0, young_disc
+a0 = 10.2, T, 3.1, 20.0, young_disc
+N = 1.0, T, 0.5, 8.0, young_disc
 q = 0.1, F, 0.4, 0.99, young_disc
-M = 1.1, T, 0.01, 10.0, young_disc
+M = 0.5, T, 0.01, 1.0, young_disc
 
 
 [old_disc]
@@ -37,8 +37,8 @@ pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge
 cnt_x = 0.0, F, 0.0, 0.0, bulge
 cnt_y = 0.0, F, 0.0, 0.0, bulge
 population = old_population
-a0 = 10.3, F, 3.1, 25.0, old_disc
+a0 = 10.3, T, 3.1, 25.0, old_disc
 N = 1.0, F, 0.5, 8.0, old_disc
 q = 0.1, F, 0.4, 0.99, old_disc
-M = 1.1, T, 0.01, 10.0, old_disc
+M = 0.06, T, 0.01, 0.2, old_disc
 

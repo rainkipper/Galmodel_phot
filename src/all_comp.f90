@@ -30,11 +30,12 @@ contains
 	subroutine convert_input_comp_to_all_comp(input_comps, all_comp)
 		implicit none
 		type(comp_input_type), intent(in), dimension(:), allocatable, target :: input_comps
-		type(all_comp_type), intent(out) :: all_comp
+		type(all_comp_type), intent(inout) :: all_comp
 		type(prof_par_list_type), pointer ::  par_list
 		integer :: i
 
 		all_comp%N_comp = size(input_comps, 1)
+		if(allocated(all_comp%comp)) deallocate(all_comp%comp)
 		allocate(all_comp%comp(1:all_comp%N_comp))
 		do i=1,all_comp%N_comp
 			all_comp%comp(i)%comp_prof_name = input_comps(i)%comp_prof_name

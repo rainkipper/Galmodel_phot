@@ -3,8 +3,8 @@ filter = HST_v
 #skaala, et saada pikslitest kaaresekundid
 scale_x = 0.03 
 scale_y = 0.03
-image_coord_cnt_x = 80.0
-image_coord_cnt_y = 80.0
+image_coord_cnt_x = 84.0
+image_coord_cnt_y = 82.0
 angle_wrt_phys_coord = 0.012
 obs_file = Input/v.fits
 mask_file = Input/v_mask.fits
@@ -20,8 +20,8 @@ filter = HST_z
 #skaala, et saada pikslitest kaaresekundid
 scale_x = 0.03
 scale_y = 0.03
-image_coord_cnt_x = 80.0
-image_coord_cnt_y = 80.0
+image_coord_cnt_x = 84.0
+image_coord_cnt_y = 82.0
 angle_wrt_phys_coord = 0.0
 obs_file = Input/z.fits
 mask_file = Input/z_mask.fits

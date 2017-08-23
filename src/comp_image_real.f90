@@ -6,13 +6,13 @@ module comp_image_real_module
 	integer, parameter :: im_list_maxsize = 101
 	integer, parameter :: puudub = -199
 	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
-	real(rk), parameter :: x0_default = -15.0_rk
-	real(rk), parameter :: y0_default = -15.0_rk
-	real(rk), parameter :: x1_default = 15.0_rk
-	real(rk), parameter :: y1_default = 15.0_rk
-	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 0.000001_rk !peab hiljem automaatselt t2itma
+	real(rk), parameter :: x0_default = -35.0_rk
+	real(rk), parameter :: y0_default = -35.0_rk
+	real(rk), parameter :: x1_default =  35.0_rk
+	real(rk), parameter :: y1_default =  35.0_rk
+	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: comp_im_maxlevel = 12
-	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05
+	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.04
 ! 	integer :: comp_im_kokku = 1
 	
 
