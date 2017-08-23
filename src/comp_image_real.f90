@@ -6,12 +6,13 @@ module comp_image_real_module
 	integer, parameter :: im_list_maxsize = 101
 	integer, parameter :: puudub = -199
 	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
-	real(rk), parameter :: x0_default = -5.0_rk
-	real(rk), parameter :: y0_default = -5.0_rk
-	real(rk), parameter :: x1_default = 5.0_rk
-	real(rk), parameter :: y1_default = 5.0_rk
-	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 0.0001_rk !peab hiljem automaatselt t2itma
+	real(rk), parameter :: x0_default = -15.0_rk
+	real(rk), parameter :: y0_default = -15.0_rk
+	real(rk), parameter :: x1_default = 15.0_rk
+	real(rk), parameter :: y1_default = 15.0_rk
+	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 0.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: comp_im_maxlevel = 12
+	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05
 ! 	integer :: comp_im_kokku = 1
 	
 
@@ -230,7 +231,7 @@ module comp_image_real_module
 				val0 = abs(max(  abs(0.5*(val(1)%point+val(3)%point)-val(5)%point),   abs(0.5*(val(2)%point+val(4)%point)-val(5)%point)  ))
 				res = val0 > (comp_im_edasijagamise_threshold * val(5)%point)
 				res = res .and. (abs(x(3)-x(1)) > 0.001) .and. (abs(y(3)-y(1)) > 0.001) !1 pc miinimum gridi tihedus
-				res = res .and. val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
+! 				res = res .and. val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
 			end function kas_jagada_edasi
 			subroutine kas_varem_arvutatud0(x,y,kas_varem, id_varem)	!(kohutavalt) aeglane ja lihtne testversioon
 				implicit none

@@ -1,8 +1,8 @@
 [v]
 filter = HST_v
 #skaala, et saada pikslitest kaaresekundid
-scale_x = 1.0 
-scale_y = 1.0 
+scale_x = 0.03 
+scale_y = 0.03
 image_coord_cnt_x = 80.0
 image_coord_cnt_y = 80.0
 angle_wrt_phys_coord = 0.012
@@ -18,8 +18,8 @@ rel_diff_file = Output/v_rel.fits
 [z]
 filter = HST_z
 #skaala, et saada pikslitest kaaresekundid
-scale_x = 1.0
-scale_y = 1.0
+scale_x = 0.03
+scale_y = 0.03
 image_coord_cnt_x = 80.0
 image_coord_cnt_y = 80.0
 angle_wrt_phys_coord = 0.0
