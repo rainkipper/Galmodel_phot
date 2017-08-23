@@ -45,7 +45,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	do j=1,size(mdl%mx, 2)
 	do i=1,size(mdl%mx, 1)
 		!component coodinates
-		call all_comp%comp(comp_nr)%XpYp_to_XcYc(mdl%pix(i,j)%Xp_nurgad,mdl%pix(i,j)%Yp_nurgad, mdl%pix(i,j)%Xc_nurgad, mdl%pix(i,j)%Yc_nurgad)
+		call all_comp%comp(comp_nr)%XpYp_to_XcYc(mdl%pix(i,j)%Xp_nurgad,mdl%pix(i,j)%Yp_nurgad, mdl%pix(i,j)%Xc_nurgad, mdl%pix(i,j)%Yc_nurgad) !koordinaatide teisendus
 		mdl%pix(i,j)%dXc2 = (mdl%pix(i,j)%Xc_nurgad(3) - mdl%pix(i,j)%Xc_nurgad(1))**2 + (mdl%pix(i,j)%Yc_nurgad(3) - mdl%pix(i,j)%Yc_nurgad(1))**2
 	end do
 	end do
