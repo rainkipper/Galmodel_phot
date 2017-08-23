@@ -40,7 +40,7 @@ contains
 		
 		IS = .false.
 		mmodal = .false. 
-		nlive = 20 !testiks nii v2ike
+		nlive = 2 !testiks nii v2ike
 		ceff = .true.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
@@ -48,7 +48,7 @@ contains
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
-		updInt  = 10
+		updInt  = 1
 		Ztol = -1.d90
 		root = "Output/"
 		seed = 12345
@@ -58,7 +58,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 120 !ehk umbes minut
+		maxiter = 1 !ehk umbes minut
 		context = 0 !mittevajalik
 		
 		
