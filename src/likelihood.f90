@@ -7,7 +7,7 @@ module likelihood_module
 contains
 	function calc_log_likelihood(all_comp, images) result(res)
 		implicit none
-		type(all_comp_type), intent(in) :: all_comp
+		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
 		type(model_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk) :: res
@@ -25,7 +25,7 @@ contains
 		kas_los = .false.
 		mida_arvutatakse = "Not in use"
 		
-		
+! 		print*, "calc log likelihood", all_comp%comp(:)%comp_image_number
 		!
 		! ========= komponentide mudelpiltide arvutamised ==============
 		!

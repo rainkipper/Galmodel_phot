@@ -35,8 +35,10 @@ contains
 		integer :: i
 
 		all_comp%N_comp = size(input_comps, 1)
-		if(allocated(all_comp%comp)) deallocate(all_comp%comp)
-		allocate(all_comp%comp(1:all_comp%N_comp))
+		
+		if(not(allocated(all_comp%comp))) then
+			allocate(all_comp%comp(1:all_comp%N_comp))
+		end if
 		do i=1,all_comp%N_comp
 			all_comp%comp(i)%comp_prof_name = input_comps(i)%comp_prof_name
 			all_comp%comp(i)%comp_name = input_comps(i)%comp_name
@@ -51,7 +53,7 @@ contains
 			!
 			!profiili allokeerimine ja parameetrite paika panemine... siia peab iga profiili korral tulema kontroll
 			!
-			if(trim(all_comp%comp(i)%comp_prof_name) == "Einasto") allocate(prof_Einasto_type::all_comp%comp(i)%prof_den)
+			if(trim(all_comp%comp(i)%comp_prof_name) == "Einasto" .and. not(allocated(all_comp%comp(i)%prof_den))) allocate(prof_Einasto_type::all_comp%comp(i)%prof_den)
 			!
 			!
 			!
