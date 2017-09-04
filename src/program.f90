@@ -18,7 +18,7 @@ program gm
 	integer :: i, N
 	real(rk) :: t1,t2 !aja mootmine
 	real(rk) :: ll
-	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .true.
+	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .false.
 	
 	call cpu_time(t1)
 	!
@@ -33,6 +33,7 @@ program gm
 		call convert_input_comp_to_all_comp(input_comp, all_comp)
 		call asenda_viited(input_comp, all_comp)
 		call create_model_image_from_obs(mdl, images(1))
+		call write_matrix_to_fits(mdl%mx, images(1)%output_mdl_file)
 	end if
 	
 

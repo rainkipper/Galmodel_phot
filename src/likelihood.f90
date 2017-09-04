@@ -54,15 +54,16 @@ contains
 			weights = -1.234 !ehk algselt koigile mingi tobe v22rtus, et hiljem saaks vigasust kontrollida
 			do j=1,size(weights, 1)
 				do k=1,size(images(i)%filter%population_names, 1)
-					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
+					weights(j) = images(i)%filter%calc_ML_ratio(all_comp%comp(1)%dist, all_comp%comp(j)%population_name)
+! 					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
 ! 						weights(j) = images(i)%filter%population_mass_to_light_ratios(k)
 						!
 						!TODO yhikute kordaja peaks solutma komponendi kaugusets, mis igal comp eraldi
 						!
-						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
-						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
-						exit
-					end if
+! 						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
+! 						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
+! 						exit
+! 					end if
 				end do
 			end do
 			if(any(weights == -1.234)) then
