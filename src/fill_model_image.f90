@@ -14,7 +14,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	logical, intent(in) :: kas_los !kas integreerib yle vaatejoone voi votab z=0 v22rtuse
 	logical, intent(in), optional :: via_comp_im
 	logical :: via_ci !ehk via_comp_im
-	type(all_comp_type), intent(in) :: all_comp
+	type(all_comp_type), intent(inout) :: all_comp !out osa ainult comp_im numbri jaoks
 	integer :: comp_nr !millist komponenti arvutatakse
 	type(model_image_real_type), intent(inout) :: mdl
 	character(len=default_character_length), intent(in), optional :: mida_arvutatakse !ei kasuta... praegu votab alati tiheduses
@@ -39,6 +39,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	integer :: image_number !comp image number
 	!muud vidinad
 	integer :: i, j
+! 	print*, "fill model image", all_comp%comp(:)%comp_image_number
 	!
 	! ================== kontrollib ja arvutab komponendi koordinaadid uuesti kui vaja =============
 	!
@@ -75,8 +76,8 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	
 	!  lisamehanismid kui on soov arvutada comp_image kaudu
 	if(via_ci) then
-		call fill_comp_image_real(f_ptr, image_number, .true.)
-		call get_pointer_to_comp_im_number_X(comp_im, image_number)
+		call fill_comp_image_real(f_ptr, all_comp%comp(comp_nr)%comp_image_number)
+		call get_pointer_to_comp_im_number_X(comp_im, all_comp%comp(comp_nr)%comp_image_number)
 		f_ptr => vota_comp_im_pilt
 	end if
 	
@@ -92,7 +93,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr)
 	end do
 	end do
-	
+! 	print*, "fill_model_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
 	
 contains
 	

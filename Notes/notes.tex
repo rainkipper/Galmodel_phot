@@ -26,6 +26,7 @@
 		\item kui voetakse teise komp oma, siis tuleb otse viidata, mitte kolmandate kaudu (ehk $1->2$ mitte $1->3$ $3->2$)
 		\item Kui maski v22rtus $>0.5$, siis kasutatakse fittimisel
 		\item esialgu on koik sisend uniform prior
+		\item kaugus on heleduskaugus, seega tuleb nurkkaugused ($a_0$ jm) jagada v2hemalt $(1+z)$
 	\end{enumerate}
 
 	% section kokkulepped (end)
@@ -37,7 +38,7 @@
 	N2idisgalaktika on TKRS 5661, mille punanihe 0.528501 lum dist 2936Mpc
 	
 	\begin{equation}
-		L\left[ 10^{10}L_\odot \right] = N\cdot10^{\left[ 0.4(\mathrm{ZP}-M_\odot) -14 + 2\log(d[\mathrm{kpc}]) \right]},
+		N = L\left[ 10^{10}L_\odot \right] \cdot 10^{\left[ 0.4(\mathrm{ZP}-M_\odot) +6 - 2\log(d[\mathrm{kpc}]) \right]},
 	\end{equation}
 	kus $d$ on heleduskaugus
 	% section varia (end)
@@ -50,6 +51,7 @@
 		\item PSF
 		\item loglike juurde eraldi masside fittimine, mis eraldab masside fittimise multinesti fittimisest.
 		\item yhikute kordaja igal komponendil erinev
+		\item Galaktiline neeldumine sisse toppida
 	\end{enumerate}
 	% section todo (end)
 \end{document}

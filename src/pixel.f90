@@ -3,7 +3,7 @@ module pixel_module
 
 	real(rk), parameter :: sqrt2 = sqrt(2.0_rk)
 	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
-	real(rk), parameter :: edasi_jagamise_abs_t2psus = 0.000
+	real(rk), parameter :: edasi_jagamise_abs_t2psus = 1.0e10
 	integer, parameter  :: maxlevel = 3
 	type :: square_pixel_type
 		real(rk) :: val
@@ -26,7 +26,6 @@ contains
 	
 	function get_val_sq(pix, func) result(res)
 		class(square_pixel_type), intent(inout) :: pix
-! 		type(square_pixel_type) :: pix
 		interface 
 			function func(Xc, Yc) result(res)
 				import rk

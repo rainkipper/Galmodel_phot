@@ -23,7 +23,7 @@ module images_module
 		real(rk)										:: pos !pildi enda nihe mudeli kasutatavate koordinaatide suhtes. 
 		real(rk) 										:: scale_x !... arcsec = scale * pix
 		real(rk) 										:: scale_y !... arcsec = scale * pix
-		
+		real(rk)										:: sky_noise
 
 		
 		

@@ -6,13 +6,13 @@ module comp_image_real_module
 	integer, parameter :: im_list_maxsize = 101
 	integer, parameter :: puudub = -199
 	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
-	real(rk), parameter :: x0_default = -15.0_rk
-	real(rk), parameter :: y0_default = -15.0_rk
-	real(rk), parameter :: x1_default = 15.0_rk
-	real(rk), parameter :: y1_default = 15.0_rk
-	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 0.000001_rk !peab hiljem automaatselt t2itma
+	real(rk), parameter :: x0_default = -35.0_rk
+	real(rk), parameter :: y0_default = -35.0_rk
+	real(rk), parameter :: x1_default =  35.0_rk
+	real(rk), parameter :: y1_default =  35.0_rk
+	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: comp_im_maxlevel = 12
-	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05
+	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.04
 ! 	integer :: comp_im_kokku = 1
 	
 
@@ -40,7 +40,7 @@ module comp_image_real_module
 	type :: comp_image_linked_list_type
 		integer :: mitmes_see_comp_im_on = 1
 		type(comp_image_type)							:: comp_im
-		real(rk), dimension(1:maxsize)		:: val_ladu
+		real(rk), dimension(1:maxsize)					:: val_ladu
 		real(rk), dimension(1:maxsize)					:: x_ladu, y_ladu
 		logical, dimension(1:maxsize) 					:: kas_arvutatud_ladu
 		integer, dimension(1:maxsize)					:: id_list
@@ -83,9 +83,9 @@ module comp_image_real_module
 			end if
 				
 		end function get_comp_im_val !kontrollitud
-		subroutine fill_comp_image_real(los_val_func, image_number, new) !default on see, et ei tehta uut, vaid voetakse image_number
+		subroutine fill_comp_image_real(los_val_func, image_number) !default on see, et ei tehta uut, vaid voetakse image_number
 			implicit none
-			logical, intent(in), optional :: new
+			logical :: new
 			integer, intent(inout) :: image_number
 			real(rk), dimension(:), pointer :: val_ladu
 			real(rk), dimension(:), pointer :: x_ladu
@@ -104,13 +104,21 @@ module comp_image_real_module
 				end function los_val_func
 			end interface
 			
+			if(image_number < 1) then
+				new = .true.
+			else
+				new = .false.
+			end if
+			
 			!
 			! ========= oige comp_im otsimine linked listist =========
 			!
 			suur_pilt=>comp_im_list
-			if(present(new) .and. .not.new) then !ehk kui pole vaja uut teha
+			if( .not.new) then !ehk kui pole vaja uut teha
 				do i=1,im_list_maxsize
 					if(suur_pilt%mitmes_see_comp_im_on == image_number) then
+						call remove_all_subimages(suur_pilt%comp_im) !nullib 2ra
+						suur_pilt%kas_arvutatud_ladu = .false.
 						exit !ehk see on oige pilt
 					end if
 					if(.not.associated(suur_pilt%next)) then
@@ -143,7 +151,7 @@ module comp_image_real_module
 			kas_arvutatud_ladu = .false.
 	
 ! 			======= reaalne arvutamine ======== 
-			
+
 			call fill_im(suur_pilt%comp_im, x0_default, y0_default, x1_default, y1_default, 0)
 
 
@@ -168,8 +176,6 @@ module comp_image_real_module
 				do i=1,5
 					vidin_counter = vidin_counter + 1
 					if(.not.associated(res%val(i)%point)) then
-! 						call kas_varem_arvutatud0(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas) !kohutavalt aegland, aga toimib
-! 						call kas_varem_arvutatud1(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas) !alati uuesti arvutada
 						call kas_varem_arvutatud(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas)
 						if(kas_juba_olemas) then
 							res%val(i)%point => val_ladu(id_juba_olemas)
@@ -208,16 +214,6 @@ module comp_image_real_module
 						call fill_im(res=res%sub2, x0=x0, y0=yc, x1=x1, y1=y1, mis_levelil=mis_levelil+1) !ylemine
 					end if
 				end if
-!
-! 				! ==================== summaarsete v22rtuste t2itmine ====================
-! !
-! 				if(res%last_level) then
-! 					pindala = (res%x(3)-res%x(1)) * (res%y(3) - res%y(1))
-! 					res%sum_val%rk = 0.5*res%val(5)%point + 0.125*(res%val(1)%point+res%val(2)%point+res%val(3)%point+res%val(4)%point) !keskmine v22rtus... piksli nurgad l2hevd 1/4 kaaluga arvesse
-! 					res%sum_val_korda_pind%rk = res%sum_val%rk * pindala
-! 				else
-! 					res%sum_val_korda_pind%rk = res%sub1%sum_val_korda_pind%rk + res%sub2%sum_val_korda_pind%rk
-! 				end if
 			end subroutine fill_im	
 			function kas_jagada_edasi(x,y,val) result(res)
 				!kontorllib, kas on piksel piisavalt sygavale arvutatud, et lineaarne interpoleerimine on sobilik.
@@ -385,5 +381,15 @@ module comp_image_real_module
 			end do
 			comp_im => cil%comp_im
 		end subroutine get_pointer_to_comp_im_number_X
-		
+		recursive subroutine remove_all_subimages(comp_im)
+			implicit none
+			type(comp_image_type), intent(inout) :: comp_im
+			if(.not.comp_im%last_level) then
+				call remove_all_subimages(comp_im%sub1)
+				call remove_all_subimages(comp_im%sub2)
+			end if
+			deallocate(comp_im%sub1)
+			deallocate(comp_im%sub2)
+			comp_im%last_level = .true.
+		end subroutine remove_all_subimages
 end module comp_image_real_module
