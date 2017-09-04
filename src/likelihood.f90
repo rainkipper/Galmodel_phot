@@ -26,7 +26,6 @@ contains
 		mida_arvutatakse = "Not in use"
 		
 		
-		
 		!
 		! ========= komponentide mudelpiltide arvutamised ==============
 		!
@@ -35,6 +34,7 @@ contains
 			do i=1,size(mudelid, 1)
 				call create_model_image_from_obs(mudelid(i), images(1)) !reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin
 				call fill_model_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
+! 				print*, all_comp%comp(1)%incl ,sum(mudelid(i)%mx)
 			end do
 		else
 			print*, "Not yet implemented in calc_log_likelihood"

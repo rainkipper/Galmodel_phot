@@ -14,21 +14,21 @@ mdl_file = Output/v_mdl.fits
 diff_file = Output/v_diff.fits
 rel_diff_file = Output/v_rel.fits
 
-
-[z]
-filter = HST_z
-#skaala, et saada pikslitest kaaresekundid
-scale_x = 0.03
-scale_y = 0.03
-image_coord_cnt_x = 84.0
-image_coord_cnt_y = 82.0
-angle_wrt_phys_coord = 0.0
-obs_file = Input/z.fits
-mask_file = Input/z_mask.fits
-sigma_file = Input/z_sigma.fits
-psf_file = Input/z_psf.fits
-mdl_file = Output/z_mdl.fits
-diff_file = Output/z_diff.fits
-rel_diff_file = Output/z_rel.fits
-
-
+#
+# [z]
+# filter = HST_z
+# #skaala, et saada pikslitest kaaresekundid
+# scale_x = 0.03
+# scale_y = 0.03
+# image_coord_cnt_x = 84.0
+# image_coord_cnt_y = 82.0
+# angle_wrt_phys_coord = 0.0
+# obs_file = Input/z.fits
+# mask_file = Input/z_mask.fits
+# sigma_file = Input/z_sigma.fits
+# psf_file = Input/z_psf.fits
+# mdl_file = Output/z_mdl.fits
+# diff_file = Output/z_diff.fits
+# rel_diff_file = Output/z_rel.fits
+#
+#

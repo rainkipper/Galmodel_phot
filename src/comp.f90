@@ -52,14 +52,15 @@ module comp_module
 	subroutine init_comp(comp)
 		implicit none
 		type(comp_type), intent(inout) :: comp
-			comp%sin_incl = sin(comp%incl)
-			comp%cos_incl = cos(comp%incl)
-			comp%tan_incl = tan(comp%incl)
-			comp%sec_incl = 1.0/comp%cos_incl
-			comp%sin_pos = sin(comp%pos)
-			comp%cos_pos = cos(comp%pos)
-			comp%tan_pos = tan(comp%pos)
-			comp%sec_pos = 1.0/comp%cos_pos
+! 			print*, "init comp juures"
+		comp%sin_incl = sin(comp%incl)
+		comp%cos_incl = cos(comp%incl)
+		comp%tan_incl = tan(comp%incl)
+		comp%sec_incl = 1.0/comp%cos_incl
+		comp%sin_pos = sin(comp%pos)
+		comp%cos_pos = cos(comp%pos)
+		comp%tan_pos = tan(comp%pos)
+		comp%sec_pos = 1.0/comp%cos_pos
 	end subroutine init_comp
 	elemental subroutine convert_XpYp_to_XcYc(comp, Xp, Yp, Xc, Yc)
 		implicit none

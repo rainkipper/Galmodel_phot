@@ -92,7 +92,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr)
 	end do
 	end do
-	
+! 	print*, "fill_model_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
 	
 contains
 	
