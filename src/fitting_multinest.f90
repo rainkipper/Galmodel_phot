@@ -40,7 +40,7 @@ contains
 		
 		IS = .false.
 		mmodal = .false. 
-		nlive = 100 !testiks nii v2ike
+		nlive = 30 !testiks nii v2ike
 		ceff = .false.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
@@ -157,7 +157,7 @@ contains
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
 			lnew =  calc_log_likelihood(all_comp, images)
-
+			print*, "LL = ", lnew
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
