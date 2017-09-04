@@ -176,8 +176,6 @@ module comp_image_real_module
 				do i=1,5
 					vidin_counter = vidin_counter + 1
 					if(.not.associated(res%val(i)%point)) then
-! 						call kas_varem_arvutatud0(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas) !kohutavalt aegland, aga toimib
-! 						call kas_varem_arvutatud1(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas) !alati uuesti arvutada
 						call kas_varem_arvutatud(res%x(i), res%y(i), kas_juba_olemas, id_juba_olemas)
 						if(kas_juba_olemas) then
 							res%val(i)%point => val_ladu(id_juba_olemas)
@@ -216,16 +214,6 @@ module comp_image_real_module
 						call fill_im(res=res%sub2, x0=x0, y0=yc, x1=x1, y1=y1, mis_levelil=mis_levelil+1) !ylemine
 					end if
 				end if
-!
-! 				! ==================== summaarsete v22rtuste t2itmine ====================
-! !
-! 				if(res%last_level) then
-! 					pindala = (res%x(3)-res%x(1)) * (res%y(3) - res%y(1))
-! 					res%sum_val%rk = 0.5*res%val(5)%point + 0.125*(res%val(1)%point+res%val(2)%point+res%val(3)%point+res%val(4)%point) !keskmine v22rtus... piksli nurgad l2hevd 1/4 kaaluga arvesse
-! 					res%sum_val_korda_pind%rk = res%sum_val%rk * pindala
-! 				else
-! 					res%sum_val_korda_pind%rk = res%sub1%sum_val_korda_pind%rk + res%sub2%sum_val_korda_pind%rk
-! 				end if
 			end subroutine fill_im	
 			function kas_jagada_edasi(x,y,val) result(res)
 				!kontorllib, kas on piksel piisavalt sygavale arvutatud, et lineaarne interpoleerimine on sobilik.

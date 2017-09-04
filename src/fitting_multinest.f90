@@ -58,7 +58,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 3000 !ehk umbes minut
+		maxiter = 30000 !ehk umbes minut
 		context = 0 !mittevajalik
 		
 		
@@ -163,7 +163,7 @@ contains
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
 ! 			print*, "fun loglike v2", all_comp%comp(:)%comp_image_number
 			lnew =  calc_log_likelihood(all_comp, images)
-			print*, "LL = ", lnew
+! 			print*, "LL = ", lnew
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none

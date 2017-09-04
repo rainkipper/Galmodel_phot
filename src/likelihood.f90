@@ -22,7 +22,7 @@ contains
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 		kas_koik_pildid_samast_vaatlusest = .true. 
 		via_comp_im = .true.
-		kas_los = .false.
+		kas_los = .true.
 		mida_arvutatakse = "Not in use"
 		
 ! 		print*, "calc log likelihood", all_comp%comp(:)%comp_image_number

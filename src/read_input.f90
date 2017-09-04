@@ -187,6 +187,7 @@ contains
 					stop  !kontroll, kas ikkagi leidis mingi filtri vaste
 				end if
 			case("scale_x"); read(subrida, fmt=*) images(mitmes_im)%scale_x
+			case("sky_noise"); read(subrida, fmt=*) images(mitmes_im)%sky_noise
 			case("scale_y"); read(subrida, fmt=*) images(mitmes_im)%scale_y
 			case("angle_wrt_phys_coord")
 				read(subrida, fmt=*) images(mitmes_im)%pos

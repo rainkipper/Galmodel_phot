@@ -6,6 +6,7 @@ scale_y = 0.03
 image_coord_cnt_x = 84.0
 image_coord_cnt_y = 82.0
 angle_wrt_phys_coord = 0.012
+sky_noise = 0.001
 obs_file = Input/v.fits
 mask_file = Input/v_mask.fits
 sigma_file = Input/v_sigma.fits
@@ -20,6 +21,7 @@ rel_diff_file = Output/v_rel.fits
 # #skaala, et saada pikslitest kaaresekundid
 # scale_x = 0.03
 # scale_y = 0.03
+# sky_noise = 0.001
 # image_coord_cnt_x = 84.0
 # image_coord_cnt_y = 82.0
 # angle_wrt_phys_coord = 0.0
