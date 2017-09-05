@@ -18,6 +18,7 @@ module comp_module
 		real(rk)								:: theta0  !komponendi k22ne taustsysteemi suhtes
 		logical									:: pos_pool !milline pool on meie pool... defineerime kui pa+90 deg on meie pool
 		!automaatselt m22ratavad
+		real(rk) 								:: mass_abs_tol !see kasulik mudelpildi arvutamiseks, et liiga t2pselt ei teeks seda
 		real(rk) 								:: sin_incl, cos_incl, tan_incl, sec_incl 
 		real(rk) 								:: sin_pos, cos_pos, tan_pos, sec_pos
 		integer 								:: comp_image_number !-1 on default negatiivne, et teeks uue pildi

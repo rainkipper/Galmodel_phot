@@ -12,7 +12,8 @@ module comp_image_real_module
 	real(rk), parameter :: y1_default =  35.0_rk
 	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: comp_im_maxlevel = 12
-	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.04
+	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05 !suhteline jagamine
+	real(rk), parameter :: min_spatial_resolution = 0.01 !praegu ei lahuta rohkem kui 10pc
 ! 	integer :: comp_im_kokku = 1
 	
 
@@ -28,6 +29,7 @@ module comp_image_real_module
 		real(rk), dimension(1:5) 				:: x,y !jrk on bottom-left, top-left, top-right, bottom-right, centre
 		type(rk_point_type), dimension(1:5)	:: val !v22rtus funktsioonile... voib olla suvaline asi
 		integer, dimension(1:5)					:: id
+		real(rk)								:: xy_kordaja, x_kordaja, y_kordaja, vabaliige !lihtsustavad edasisi arvutusi
 ! 		real(rk)					:: sum_val !summaarne heledus kasti sees
 ! 		real(rk)					:: sum_val_korda_pind !reaalne v22rtus, mis voetakse kui koik subpixslis
 		logical 								:: last_level = .true. !kas omadega pohjas
@@ -63,9 +65,15 @@ module comp_image_real_module
 			real(rk) :: res
 			real(rk) :: f_low, f_up
 			if(comp_im%last_level) then
-				f_low = (comp_im%val(4)%point - comp_im%val(1)%point)/(comp_im%x(4) - comp_im%x(1)) * (Xc-comp_im%x(1)) + comp_im%val(1)%point
-				f_up = (comp_im%val(3)%point - comp_im%val(2)%point)/(comp_im%x(3) - comp_im%x(2)) * (Xc-comp_im%x(2)) + comp_im%val(2)%point
-				res = (f_up-f_low)/(comp_im%y(2)-comp_im%y(1))*(Yc-comp_im%y(1)) + f_low
+				!kui pohjas, siis bilineaarne 
+! 				der_low = (comp_im%val(4)%point - comp_im%val(1)%point)/(comp_im%x(4) - comp_im%x(1))
+! 				der_up = (comp_im%val(3)%point - comp_im%val(2)%point)/(comp_im%x(3) - comp_im%x(2))
+! 				intercept_low = comp_im%val(1)%point - der_low * comp_im%x(1)
+! 				intercept_up = comp_im%val(2)%point - comp_im%x(2) * der_up
+! 				f_low = der_low * Xc + intercept_low
+! 				f_up = der_up * Xc + intercept_up
+! 				res = (f_up-f_low)/(comp_im%y(2)-comp_im%y(1))*(Yc-comp_im%y(1)) + f_low
+res = comp_im%xy_kordaja * Xc * Yc + comp_im%x_kordaja * Xc + comp_im%y_kordaja * Yc  + comp_im%vabaliige
 			else
 				if(comp_im%kas_paremvasak) then
 					if(Xc<comp_im%x(5)) then
@@ -83,10 +91,11 @@ module comp_image_real_module
 			end if
 				
 		end function get_comp_im_val !kontrollitud
-		subroutine fill_comp_image_real(los_val_func, image_number) !default on see, et ei tehta uut, vaid voetakse image_number
+		subroutine fill_comp_image_real(los_val_func, image_number, abs_tol) !default on see, et ei tehta uut, vaid voetakse image_number
 			implicit none
 			logical :: new
 			integer, intent(inout) :: image_number
+			real(rk), intent(in), optional :: abs_tol
 			real(rk), dimension(:), pointer :: val_ladu
 			real(rk), dimension(:), pointer :: x_ladu
 			real(rk), dimension(:), pointer :: y_ladu
@@ -103,6 +112,10 @@ module comp_image_real_module
 					real(rk), intent(in) :: Xc, Yc
 				end function los_val_func
 			end interface
+			
+			if(present(abs_tol)) then
+				comp_im_edasijagamise_maksimaalne_abs_t2psus = abs_tol
+			end if
 			
 			if(image_number < 1) then
 				new = .true.
@@ -167,6 +180,7 @@ module comp_image_real_module
 				integer :: id_juba_olemas
 				integer :: i
 				integer, save :: vidin_counter = 0
+				real(rk) :: tmp_pind, tmp_dx, tmp_dy
 				
 				! ==================== gridi raku t2itmine ==================== 
 				xc = 0.5*(x0+x1); yc = 0.5*(y0+y1)
@@ -213,6 +227,18 @@ module comp_image_real_module
 					 	allocate(res%sub2)
 						call fill_im(res=res%sub2, x0=x0, y0=yc, x1=x1, y1=y1, mis_levelil=mis_levelil+1) !ylemine
 					end if
+				else
+				!
+				! =========================== abimuutujad kiiremaks edasiseks arvutamiseks ===========================
+				!
+! 				xy_kordaja, x_kordaja, y_kordaja, vabaliige
+				tmp_dx = 1.0/(x0 - x1)
+				tmp_dy = 1.0/(y0 - y1)
+				tmp_pind = tmp_dx * tmp_dy
+				res%xy_kordaja = (res%val(1)%point - res%val(2)%point + res%val(3)%point - res%val(4)%point) * tmp_pind
+				res%x_kordaja = ((res%val(2)%point - res%val(3)%point)*y0 + (res%val(4)%point - res%val(1)%point)*y1 ) * tmp_pind
+				res%y_kordaja = ((res%val(4)%point - res%val(3)%point)*x0  + (res%val(2)%point - res%val(1)%point)*x1) * tmp_pind
+				res%vabaliige = res%val(1)%point + (res%val(4)%point - res%val(1)%point)*x0 * tmp_dx  + (res%val(2)%point - res%val(1)%point)*y0 * tmp_dy  + (res%val(1)%point-res%val(4)%point  + res%val(3)%point-res%val(2)%point )*x0*y0 * tmp_pind
 				end if
 			end subroutine fill_im	
 			function kas_jagada_edasi(x,y,val) result(res)
@@ -220,14 +246,15 @@ module comp_image_real_module
 				implicit none
 				real(rk), dimension(1:5), intent(in) :: x,y
 				type(rk_point_type), dimension(1:5), intent(in) :: val 
-				logical :: res
+				logical :: res, res_rel, res_abs, res_scale
 				real(rk) :: val0
 				
 				!diagonaale pidi interpoleerib keskkohta
 				val0 = abs(max(  abs(0.5*(val(1)%point+val(3)%point)-val(5)%point),   abs(0.5*(val(2)%point+val(4)%point)-val(5)%point)  ))
-				res = val0 > (comp_im_edasijagamise_threshold * val(5)%point)
-				res = res .and. (abs(x(3)-x(1)) > 0.001) .and. (abs(y(3)-y(1)) > 0.001) !1 pc miinimum gridi tihedus
-! 				res = res .and. val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
+				res_scale = (abs(x(3)-x(1)) > min_spatial_resolution) .and. (abs(y(3)-y(1)) > min_spatial_resolution) !1 pc miinimum gridi tihedus
+				res_rel = val0 > (comp_im_edasijagamise_threshold * val(5)%point)
+				res_abs =  val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
+				res = res_scale .and. (res_rel .or. res_abs)
 			end function kas_jagada_edasi
 			subroutine kas_varem_arvutatud0(x,y,kas_varem, id_varem)	!(kohutavalt) aeglane ja lihtne testversioon
 				implicit none

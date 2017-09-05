@@ -2,7 +2,7 @@ program gm
 	use fill_model_image_module
 	use	read_input_module
 	use fitting_multinest_module
-	!  	use fitsio
+	use only_output_image_module
 
 	type(all_comp_type) :: all_comp, all_comp_input
 	type(comp_input_type), dimension(:), allocatable :: input_comp
@@ -16,6 +16,7 @@ program gm
 	character(len=default_character_length), parameter :: input_image_file = "Input/input_images.txt"
 	logical :: kas_comp_im, kas_los
 	integer :: i, N
+	real(rk), dimension(:,:), allocatable :: pilt
 	real(rk) :: t1,t2 !aja mootmine
 	real(rk) :: ll
 	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .true.
@@ -31,8 +32,9 @@ program gm
 		call jooksuta_fittimine(images, input_comp, all_comp)
 	else
 		call convert_input_comp_to_all_comp(input_comp, all_comp)
-		call asenda_viited(input_comp, all_comp)
-		call create_model_image_from_obs(mdl, images(1))
+		call asenda_viited(input_comp, all_comp) !siin all on ka init comp
+		call create_output_image(all_comp, images(1), pilt)
+		call write_matrix_to_fits(pilt, images(1)%output_mdl_file)
 	end if
 	
 

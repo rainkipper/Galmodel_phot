@@ -25,7 +25,14 @@ contains
 		kas_los = .true.
 		mida_arvutatakse = "Not in use"
 		
-! 		print*, "calc log likelihood", all_comp%comp(:)%comp_image_number
+		!
+		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
+		!
+		do i=1,all_comp%N_comp
+			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images)
+! 			print*, "vajalik t2psus", all_comp%comp(i)%mass_abs_tol
+		end do
+		
 		!
 		! ========= komponentide mudelpiltide arvutamised ==============
 		!
@@ -53,17 +60,18 @@ contains
 			!
 			weights = -1.234 !ehk algselt koigile mingi tobe v22rtus, et hiljem saaks vigasust kontrollida
 			do j=1,size(weights, 1)
-				do k=1,size(images(i)%filter%population_names, 1)
-					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
+! 				do k=1,size(images(i)%filter%population_names, 1)
+					weights(j) = images(i)%filter%calc_counts_mass_ratio(all_comp%comp(1)%dist, all_comp%comp(j)%population_name)
+! 					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
 ! 						weights(j) = images(i)%filter%population_mass_to_light_ratios(k)
 						!
 						!TODO yhikute kordaja peaks solutma komponendi kaugusets, mis igal comp eraldi
 						!
-						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
-						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
-						exit
-					end if
-				end do
+! 						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
+! 						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
+! 						exit
+! 					end if
+! 				end do
 			end do
 			if(any(weights == -1.234)) then
 				print*, "Vale M/L sisend"; stop
@@ -104,6 +112,24 @@ contains
 
 		
 		
-! 		print*, "LL = ", res
+		print*, "LL = ", res
 	end function calc_log_likelihood
+	function leia_massi_abs_tol(comp, images) result(res)
+		!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
+		implicit none
+		type(comp_type), intent(in) :: comp
+		type(image_type), intent(in), dimension(:), allocatable :: images
+		real(rk) :: res
+		real(rk) :: tmp
+		integer :: i
+		res = 1.0e10 !suvaline suur suurus algseks
+		do i=1,size(images, 1)
+			tmp = 1.0/images(i)%filter%calc_counts_mass_ratio(comp%dist, comp%population_name) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
+			if(tmp<res) then
+				res = tmp
+			end if
+		end do
+		res = res * massi_abs_tol_kordaja
+		
+	end function leia_massi_abs_tol
 end module likelihood_module

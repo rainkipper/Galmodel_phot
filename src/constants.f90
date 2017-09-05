@@ -6,8 +6,12 @@ module constants_module
 	integer, parameter :: max_prof_par_size = 1000 !ehk kokku fittimise peale tohib olla niipalju parameetreid
 	!yldised konstandid
 	real(rk), parameter :: pi = 4.0_rk*atan(1.0_rk)
+	real(rk), parameter :: sqrt2 = sqrt(2.0_rk)
 	!
 	real(rk), parameter :: arcsec_to_rad = pi/180.0 / 60.0 / 60.0 !ehk sellega korrutades saab kaaresekundid radiaanidesse
+	
+	!muud parameetrid
+	real(rk), parameter :: massi_abs_tol_kordaja = 0.1 !ehk niipalju korda pildi sky_noise teisendatud massi myraks annab abs t2psuse
 	
 	character(len=*), parameter :: model_filename_end = "_mdl.fits"
 	character(len=*), parameter :: residual_filename_end = "_res.fits"

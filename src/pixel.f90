@@ -1,10 +1,7 @@
 module pixel_module
 	use constants_module
-
-	real(rk), parameter :: sqrt2 = sqrt(2.0_rk)
 	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
-	real(rk), parameter :: edasi_jagamise_abs_t2psus = 1.0e10
-	integer, parameter  :: maxlevel = 3
+	integer, parameter  :: maxlevel = 5
 	type :: square_pixel_type
 		real(rk) :: val
 		real(rk), dimension(1:4) :: Xi_nurgad
@@ -24,8 +21,9 @@ module pixel_module
 contains
 
 	
-	function get_val_sq(pix, func) result(res)
+	function get_val_sq(pix, func, abs_tol) result(res)
 		class(square_pixel_type), intent(inout) :: pix
+		real(rk), intent(in), optional :: abs_tol
 		interface 
 			function func(Xc, Yc) result(res)
 				import rk
@@ -34,7 +32,13 @@ contains
 			end function func
 		end interface
 		real(rk) :: res1, res2, res
+		real(rk) :: edasi_jagamise_abs_t2psus
 		real(rk), dimension(1:3) :: x,y,val
+		if(present(abs_tol)) then
+			edasi_jagamise_abs_t2psus = abs_tol
+		else
+			edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei arvesta
+		end if
 		x(1) = pix%Xc_nurgad(1); x(2) = pix%Xc_nurgad(2); x(3) = pix%Xc_nurgad(4);
 		y(1) = pix%Yc_nurgad(1); y(2) = pix%Yc_nurgad(2); y(3) = pix%Yc_nurgad(4);
 		val(1) = pix%val_nurgad(1); val(2) = pix%val_nurgad(2); val(3) = pix%val_nurgad(4);
@@ -74,7 +78,7 @@ contains
 			! =========== vaatab, kas peab edasi arvutama =========== 
 			!
 			tmp = abs(integraal1 + integraal2 - integraal) !t2psus
-			if(level<maxlevel .and. ( (tmp >  edasi_jagamise_abs_t2psus) .or. (abs(tmp/integraal) > edasi_jagamise_rel_t2psus))) then
+			if(level<maxlevel .and. ( (tmp >  edasi_jagamise_abs_t2psus) .and. (abs(tmp/integraal) > edasi_jagamise_rel_t2psus))) then
 				valnext(1) = val_t2isnurgas; valnext(3) = val(1);  !molemal juhul samad
 				valnext(2) = val(3); xnext(2) = x(3); ynext(2) = y(3)
 				call leia_kolmnurga_v22rtus(xnext, ynext, valnext, integraal2, level+1)
