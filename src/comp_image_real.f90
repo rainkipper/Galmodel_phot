@@ -29,6 +29,7 @@ module comp_image_real_module
 		real(rk), dimension(1:5) 				:: x,y !jrk on bottom-left, top-left, top-right, bottom-right, centre
 		type(rk_point_type), dimension(1:5)	:: val !v22rtus funktsioonile... voib olla suvaline asi
 		integer, dimension(1:5)					:: id
+		real(rk)								:: xy_kordaja, x_kordaja, y_kordaja, vabaliige !lihtsustavad edasisi arvutusi
 ! 		real(rk)					:: sum_val !summaarne heledus kasti sees
 ! 		real(rk)					:: sum_val_korda_pind !reaalne v22rtus, mis voetakse kui koik subpixslis
 		logical 								:: last_level = .true. !kas omadega pohjas
@@ -64,9 +65,15 @@ module comp_image_real_module
 			real(rk) :: res
 			real(rk) :: f_low, f_up
 			if(comp_im%last_level) then
-				f_low = (comp_im%val(4)%point - comp_im%val(1)%point)/(comp_im%x(4) - comp_im%x(1)) * (Xc-comp_im%x(1)) + comp_im%val(1)%point
-				f_up = (comp_im%val(3)%point - comp_im%val(2)%point)/(comp_im%x(3) - comp_im%x(2)) * (Xc-comp_im%x(2)) + comp_im%val(2)%point
-				res = (f_up-f_low)/(comp_im%y(2)-comp_im%y(1))*(Yc-comp_im%y(1)) + f_low
+				!kui pohjas, siis bilineaarne 
+! 				der_low = (comp_im%val(4)%point - comp_im%val(1)%point)/(comp_im%x(4) - comp_im%x(1))
+! 				der_up = (comp_im%val(3)%point - comp_im%val(2)%point)/(comp_im%x(3) - comp_im%x(2))
+! 				intercept_low = comp_im%val(1)%point - der_low * comp_im%x(1)
+! 				intercept_up = comp_im%val(2)%point - comp_im%x(2) * der_up
+! 				f_low = der_low * Xc + intercept_low
+! 				f_up = der_up * Xc + intercept_up
+! 				res = (f_up-f_low)/(comp_im%y(2)-comp_im%y(1))*(Yc-comp_im%y(1)) + f_low
+res = comp_im%xy_kordaja * Xc * Yc + comp_im%x_kordaja * Xc + comp_im%y_kordaja * Yc  + comp_im%vabaliige
 			else
 				if(comp_im%kas_paremvasak) then
 					if(Xc<comp_im%x(5)) then
@@ -173,6 +180,7 @@ module comp_image_real_module
 				integer :: id_juba_olemas
 				integer :: i
 				integer, save :: vidin_counter = 0
+				real(rk) :: tmp_pind, tmp_dx, tmp_dy
 				
 				! ==================== gridi raku t2itmine ==================== 
 				xc = 0.5*(x0+x1); yc = 0.5*(y0+y1)
@@ -219,6 +227,18 @@ module comp_image_real_module
 					 	allocate(res%sub2)
 						call fill_im(res=res%sub2, x0=x0, y0=yc, x1=x1, y1=y1, mis_levelil=mis_levelil+1) !ylemine
 					end if
+				else
+				!
+				! =========================== abimuutujad kiiremaks edasiseks arvutamiseks ===========================
+				!
+! 				xy_kordaja, x_kordaja, y_kordaja, vabaliige
+				tmp_dx = 1.0/(x0 - x1)
+				tmp_dy = 1.0/(y0 - y1)
+				tmp_pind = tmp_dx * tmp_dy
+				res%xy_kordaja = (res%val(1)%point - res%val(2)%point + res%val(3)%point - res%val(4)%point) * tmp_pind
+				res%x_kordaja = ((res%val(2)%point - res%val(3)%point)*y0 + (res%val(4)%point - res%val(1)%point)*y1 ) * tmp_pind
+				res%y_kordaja = ((res%val(4)%point - res%val(3)%point)*x0  + (res%val(2)%point - res%val(1)%point)*x1) * tmp_pind
+				res%vabaliige = res%val(1)%point + (res%val(4)%point - res%val(1)%point)*x0 * tmp_dx  + (res%val(2)%point - res%val(1)%point)*y0 * tmp_dy  + (res%val(1)%point-res%val(4)%point  + res%val(3)%point-res%val(2)%point )*x0*y0 * tmp_pind
 				end if
 			end subroutine fill_im	
 			function kas_jagada_edasi(x,y,val) result(res)

@@ -112,7 +112,7 @@ contains
 
 		
 		
-! 		print*, "LL = ", res
+		print*, "LL = ", res
 	end function calc_log_likelihood
 	function leia_massi_abs_tol(comp, images) result(res)
 		!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus

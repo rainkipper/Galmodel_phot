@@ -58,7 +58,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 30000 !ehk umbes minut
+		maxiter = 10
 		context = 0 !mittevajalik
 		
 		

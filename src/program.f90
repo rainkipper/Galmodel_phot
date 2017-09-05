@@ -19,7 +19,7 @@ program gm
 	real(rk), dimension(:,:), allocatable :: pilt
 	real(rk) :: t1,t2 !aja mootmine
 	real(rk) :: ll
-	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .false.
+	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .true.
 	
 	call cpu_time(t1)
 	!
