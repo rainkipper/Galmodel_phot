@@ -6,7 +6,7 @@ module all_comp_module
 		class(comp_type), allocatable, dimension(:) 			:: comp
 		integer, allocatable, dimension(:) 					:: comp_im_ref !komponentide pildid... 2D massiiv kuna pilte voib olla mitut tyypi
 		logical, allocatable, dimension(:)  				:: recalc_comp_images
-		integer 											:: N_comp !kogu komponentide arv
+		integer 											:: N_comp !kogu komponentide arv		
 		!accounting .. 											
 		integer 											:: N_dust=0
 		integer, dimension(:), allocatable 					:: dust_comp_id
@@ -30,12 +30,15 @@ contains
 	subroutine convert_input_comp_to_all_comp(input_comps, all_comp)
 		implicit none
 		type(comp_input_type), intent(in), dimension(:), allocatable, target :: input_comps
-		type(all_comp_type), intent(out) :: all_comp
+		type(all_comp_type), intent(inout) :: all_comp
 		type(prof_par_list_type), pointer ::  par_list
 		integer :: i
 
 		all_comp%N_comp = size(input_comps, 1)
-		allocate(all_comp%comp(1:all_comp%N_comp))
+		
+		if(not(allocated(all_comp%comp))) then
+			allocate(all_comp%comp(1:all_comp%N_comp))
+		end if
 		do i=1,all_comp%N_comp
 			all_comp%comp(i)%comp_prof_name = input_comps(i)%comp_prof_name
 			all_comp%comp(i)%comp_name = input_comps(i)%comp_name
@@ -50,7 +53,7 @@ contains
 			!
 			!profiili allokeerimine ja parameetrite paika panemine... siia peab iga profiili korral tulema kontroll
 			!
-			if(trim(all_comp%comp(i)%comp_prof_name) == "Einasto") allocate(prof_Einasto_type::all_comp%comp(i)%prof_den)
+			if(trim(all_comp%comp(i)%comp_prof_name) == "Einasto" .and. not(allocated(all_comp%comp(i)%prof_den))) allocate(prof_Einasto_type::all_comp%comp(i)%prof_den)
 			!
 			!
 			!
@@ -86,6 +89,9 @@ contains
 			all_comp%comp(i)%theta0     = all_comp%comp(input_comps(i)%theta0%ref)%theta0
 			par_list=>input_comps(i)%prof_pars
 			do while(par_list%filled)
+				if(trim(par_list%par_name)=="M" .and. i==1) then !siin on testosa
+					call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp)
+				end if
 				call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp) !votab v22rtuse ref jaoks
 				call all_comp%comp(i)%prof_den%set_val(trim(par_list%par_name), tmp) !paneb v22rtuse teise kohta paika
 				if(associated(par_list%next)) then

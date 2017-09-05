@@ -40,25 +40,25 @@ contains
 		
 		IS = .false.
 		mmodal = .false. 
-		nlive = 2 !testiks nii v2ike
-		ceff = .true.
+		nlive = 30 !testiks nii v2ike
+		ceff = .false.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
 		ndims = leia_Ndim()!hiljem
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
-		updInt  = 1
+		updInt  = 10
 		Ztol = -1.d90
 		root = "Output/"
-		seed = 12345
+		seed = -1
 		allocate(pWrap(1:nPar)); pWrap = 0 !
 		feedback = .false.
 		resume = .false.
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 1 !ehk umbes minut
+		maxiter = 10
 		context = 0 !mittevajalik
 		
 		
@@ -67,6 +67,8 @@ contains
 		!
 		call convert_input_comp_to_all_comp(input_comps, all_comp)
 		call asenda_viited(input_comps, all_comp)
+		all_comp%comp(:)%comp_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
+		print*, 		all_comp%comp(:)%comp_image_number
 		
 		!
 		! =============== fittimine ise ================
@@ -103,39 +105,48 @@ contains
 		subroutine fun_loglike(Cube,n_dim,nPar,lnew,context)
 			implicit none
 			integer ::  n_dim, nPar, context
-			double precision Cube(n_dim), lnew
+			double precision :: Cube(n_dim),lnew
+			real(rk) :: tmp(4) !ajutisteks test
 			integer :: i
 			type(prof_par_list_type), pointer ::  par_list
 			integer mitmes_cube
 			! all_comp uuendamine
+! 			print*, "algne", cube
 			! algselt uuendab input_comp v22rtused ning siis edasi all_comp
+! 			print*, "fun loglike", all_comp%comp(:)%comp_image_number
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%incl%val = UniformPrior(cube(mitmes_cube), input_comps(i)%incl%min,  input_comps(i)%incl%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%incl%min,  input_comps(i)%incl%max)
+					input_comps(i)%incl%val = cube(mitmes_cube)
 				end if	
 				if(input_comps(i)%cnt_x%kas_fitib) then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%cnt_x%val = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_x%min,  input_comps(i)%cnt_x%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_x%min,  input_comps(i)%cnt_x%max)
+					input_comps(i)%cnt_x%val = cube(mitmes_cube)					
 				end if	
 				if(input_comps(i)%cnt_y%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%cnt_y%val = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_y%min,  input_comps(i)%cnt_y%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_y%min,  input_comps(i)%cnt_y%max)
+					input_comps(i)%cnt_y%val = cube(mitmes_cube)
 				end if	
 				if(input_comps(i)%pos%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%pos%val = UniformPrior(cube(mitmes_cube), input_comps(i)%pos%min,  input_comps(i)%pos%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%pos%min,  input_comps(i)%pos%max)
+					input_comps(i)%pos%val = cube(mitmes_cube)
 				end if	
 				if(input_comps(i)%theta0%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%theta0%val = UniformPrior(cube(mitmes_cube), input_comps(i)%theta0%min,  input_comps(i)%theta0%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%theta0%min,  input_comps(i)%theta0%max)
+					input_comps(i)%theta0%val = cube(mitmes_cube)
 				end if	
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
 					if(par_list%par%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					par_list%par%val = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
+					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
+					par_list%par%val = cube(mitmes_cube)
 				end if	
 					if(associated(par_list%next)) then
 						par_list => par_list%next
@@ -145,12 +156,14 @@ contains
 				end do
 			end do
 
+! 			print*, "fun loglike v1.3", all_comp%comp(:)%comp_image_number
+			call convert_input_comp_to_all_comp(input_comps, all_comp)
+! 			print*, "fun loglike v1.6", all_comp%comp(:)%comp_image_number
+! 			stop
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-
-
-			!loglike reaalne arvutamine
-			lnew = calc_log_likelihood(all_comp, images)
-
+! 			print*, "fun loglike v2", all_comp%comp(:)%comp_image_number
+			lnew =  calc_log_likelihood(all_comp, images)
+! 			print*, "LL = ", lnew
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
@@ -159,9 +172,51 @@ contains
 			double precision, pointer :: posterior(:,:)
 			double precision, pointer :: physLive(:,:)
 			double precision, pointer :: paramConstr(:)
+			integer :: i
+			type(prof_par_list_type), pointer ::  par_list
+			integer mitmes_cube	
+			integer :: parim		
 ! 			double precision, dimension(1:nlive, 1:nPar+1) :: physLive
 ! 			double precision, dimension(1, 1:4*nPar) :: paramConstr
-			print*, "Ikka elus..."
+			parim = maxloc(physLive(:,nPar+1),1)
+			print*, "============== parim on ", maxloglike, size(physLive)
+			mitmes_cube = 0
+			do i=1,size(input_comps)
+				if(input_comps(i)%incl%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," Incl", physLive(parim,mitmes_cube)*180.0/pi
+				end if
+				if(input_comps(i)%cnt_x%kas_fitib) then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," cnt_x", physLive(parim,mitmes_cube)/arcsec_to_rad
+				end if
+				if(input_comps(i)%cnt_y%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," cnt_y", physLive(parim,mitmes_cube)
+				end if
+				if(input_comps(i)%pos%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," pos", physLive(parim,mitmes_cube)*180/pi
+				end if
+				if(input_comps(i)%theta0%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," theta0",	physLive(parim,mitmes_cube)
+
+				end if
+				par_list=>input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(par_list%par%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+					print*, trim(all_comp%comp(i)%comp_name)," ",trim(par_list%par_name), physLive(parim,mitmes_cube)
+				end if
+					if(associated(par_list%next)) then
+						par_list => par_list%next
+					else
+						exit
+					end if
+				end do
+			end do
+			print*, "==============================================================="
 		end subroutine fun_dumper
 end subroutine jooksuta_fittimine
 	

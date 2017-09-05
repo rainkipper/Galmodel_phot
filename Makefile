@@ -23,12 +23,13 @@ _OBJ = 	constants.o \
 		comp_image_real.o \
 		fill_model_image.o \
 		likelihood.o \
+		only_output_image.o \
 		fitting_multinest.o \
 		program.o
 
 FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack
-# FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -prof-use -profile-loops=all -profile-loops-report=2 -prof-dir Prof
-# FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -prof-gen -profile-loops-report=2 -prof-dir Prof
+# FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -prof-use -profile-loops=all -profile-loops-report=2 -prof-dir Prof
+# FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -prof-gen -profile-loops-report=2 -prof-dir Prof
 OBJ = $(patsubst %,$(OBJ_DIR)/%,$(_OBJ))
 $(PROG).o: $(OBJ)
 	$(COMPILER) $(OBJ) $(FLAGS) -o $(PROG_DIR)/$(PROG)
