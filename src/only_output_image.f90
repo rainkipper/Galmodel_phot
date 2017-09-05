@@ -1,6 +1,6 @@
 module only_output_image_module
 	use images_module
-	use fill_model_image_module
+	use fill_comp_image_module
 	use likelihood_module !vajalik massi t2psuse saamiseks
 	logical, parameter, private :: kas_los = .true.
 	logical, parameter, private :: kas_comp_im = .true.
@@ -9,7 +9,7 @@ contains
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), intent(in) :: image
 		type(image_type), dimension(:), allocatable :: im
-		type(model_image_real_type), dimension(:), allocatable :: mudelid
+		type(comp_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk), dimension(:), allocatable :: weights
 		real(rk), dimension(:,:), allocatable, intent(out) :: pilt
 		!vajaliku abs t2psuse leidmine... optional
@@ -22,10 +22,10 @@ contains
 		allocate(weights(1:all_comp%N_comp))
 		allocate(mudelid(1:all_comp%N_comp))
 		do i=1,size(mudelid, 1)
-			call create_model_image_from_obs(mudelid(i), image) 
-			call fill_model_image(all_comp, i, mudelid(i), kas_comp_im, kas_los)
+			call create_comp_image_from_obs(mudelid(i), image) 
+			call fill_comp_image(all_comp, i, mudelid(i), kas_comp_im, kas_los)
 			weights(i) = image%filter%calc_counts_mass_ratio(all_comp%comp(i)%dist, all_comp%comp(i)%population_name)
 		end do
-		pilt = combine_model_images_to_make_image(mudelid, weights)
+		pilt = combine_comp_images_to_make_image(mudelid, weights)
 	end subroutine create_output_image
 end module only_output_image_module

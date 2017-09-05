@@ -1,4 +1,4 @@
-module model_image_module	
+module comp_image_module	
 	use pixel_module
 	use images_module
 	use yldine_matemaatika_module
@@ -11,19 +11,19 @@ module model_image_module
 ! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [0.0, 0.0, 1.0, 1.0] !kui piksli v22rtus all vasakul nurgas voetud
 ! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [0.0, 1.0, 1.0, 0.0] !kui piksli v22rtus all vasakul nurgas voetud
 	
-	type :: model_image_real_type 
+	type :: comp_image_real_type 
 		type(square_pixel_type), dimension(:,:), allocatable :: pix
 		real(rk), dimension(:,:), allocatable :: mx !reaalne maatriks tuleb siia
 		!
 		logical :: recalc_XcYc_coords !kas vaja arvutada fyysikalistest koordinaatidest uuesti komponenti koordinaadid
 		logical :: recalc_image
 		integer :: corresponding_adaptive_im	!kui kasutab adaptive_im abi, et pilti joonistada
-	end type model_image_real_type
+	end type comp_image_real_type
 contains
-	subroutine create_model_image_from_obs(mdl, im)
+	subroutine create_comp_image_from_obs(mdl, im)
 		!teeb raamistiku vaatluspildi pohjal ning lisab koordinaadid ja algsed teisendused
 		implicit none
-		type(model_image_real_type), intent(out) :: mdl
+		type(comp_image_real_type), intent(out) :: mdl
 		type(image_type), intent(in) :: im
 		integer :: Nx, Ny, i,j
 
@@ -42,7 +42,7 @@ contains
 			call im%XiYi_to_XpYp(mdl%pix(i,j)%Xi_nurgad, mdl%pix(i,j)%Yi_nurgad, mdl%pix(i,j)%Xp_nurgad, mdl%pix(i,j)%Yp_nurgad)
 		end do
 		end do
-	end subroutine create_model_image_from_obs
+	end subroutine create_comp_image_from_obs
 	
 	
 
@@ -56,7 +56,7 @@ contains
 				real(rk) :: res
 			end function func
 		end interface
-		type(model_image_real_type), intent(inout) :: mdl
+		type(comp_image_real_type), intent(inout) :: mdl
 		integer :: i,j
 		integer :: Nx, Ny
 		real(rk) :: v22rtus
@@ -110,7 +110,7 @@ contains
 				real(rk) :: res
 			end function func
 		end interface
-		type(model_image_real_type), intent(inout) :: mdl
+		type(comp_image_real_type), intent(inout) :: mdl
 		integer :: i,j
 		
 		do i = 1,size(mdl%pix,1)
@@ -124,9 +124,9 @@ contains
 		
 	end subroutine fill_corners_exact
 	
-	function combine_model_images_to_make_image(mdl, weights) result(res)
+	function combine_comp_images_to_make_image(mdl, weights) result(res)
 		implicit none
-		type(model_image_real_type), intent(in), dimension(:), allocatable :: mdl
+		type(comp_image_real_type), intent(in), dimension(:), allocatable :: mdl
 		real(rk), dimension(:,:), allocatable :: res
 		real(rk), dimension(:), allocatable, intent(in) :: weights !praktikas on need mass-heledus suhted
 		integer :: i
@@ -148,8 +148,8 @@ contains
 				stop
 			end if
 		end do
-	end function combine_model_images_to_make_image
+	end function combine_comp_images_to_make_image
 	
-end module model_image_module
+end module comp_image_module
 	
 	

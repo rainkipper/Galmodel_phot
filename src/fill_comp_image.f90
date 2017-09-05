@@ -1,6 +1,6 @@
-module fill_model_image_module
+module fill_comp_image_module
 	!use images
-	use model_image_module
+	use comp_image_module
 	use all_comp_module
 	use adaptive_image_real_module
 	use los_real_integration_module
@@ -9,14 +9,14 @@ module fill_model_image_module
 contains
 
 
-subroutine fill_model_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mida_arvutatakse)
+subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mida_arvutatakse)
 	implicit none
 	logical, intent(in) :: kas_los !kas integreerib yle vaatejoone voi votab z=0 v22rtuse
 	logical, intent(in), optional :: via_adaptive_im
 	logical :: via_ci !ehk via_adaptive_im
 	type(all_comp_type), intent(inout) :: all_comp !out osa ainult adaptive_im numbri jaoks
 	integer :: comp_nr !millist komponenti arvutatakse
-	type(model_image_real_type), intent(inout) :: mdl
+	type(comp_image_real_type), intent(inout) :: mdl
 	character(len=default_character_length), intent(in), optional :: mida_arvutatakse !ei kasuta... praegu votab alati tiheduses
 	real(rk) :: test1, test2
 	interface
@@ -93,7 +93,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mi
 		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
 	end do
 	end do
-! 	print*, "fill_model_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
+! 	print*, "fill_comp_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
 	
 contains
 	
@@ -132,9 +132,9 @@ contains
 	end function tihedus
 
 	
-end subroutine fill_model_image
+end subroutine fill_comp_image
 
 
 	
 
-end module fill_model_image_module
+end module fill_comp_image_module
