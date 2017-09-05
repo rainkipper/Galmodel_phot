@@ -12,7 +12,8 @@ module comp_image_real_module
 	real(rk), parameter :: y1_default =  35.0_rk
 	real(rk), private :: comp_im_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: comp_im_maxlevel = 12
-	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.04
+	real(rk), parameter :: comp_im_edasijagamise_threshold = 0.05 !suhteline jagamine
+	real(rk), parameter :: min_spatial_resolution = 0.01 !praegu ei lahuta rohkem kui 10pc
 ! 	integer :: comp_im_kokku = 1
 	
 
@@ -83,10 +84,11 @@ module comp_image_real_module
 			end if
 				
 		end function get_comp_im_val !kontrollitud
-		subroutine fill_comp_image_real(los_val_func, image_number) !default on see, et ei tehta uut, vaid voetakse image_number
+		subroutine fill_comp_image_real(los_val_func, image_number, abs_tol) !default on see, et ei tehta uut, vaid voetakse image_number
 			implicit none
 			logical :: new
 			integer, intent(inout) :: image_number
+			real(rk), intent(in), optional :: abs_tol
 			real(rk), dimension(:), pointer :: val_ladu
 			real(rk), dimension(:), pointer :: x_ladu
 			real(rk), dimension(:), pointer :: y_ladu
@@ -103,6 +105,10 @@ module comp_image_real_module
 					real(rk), intent(in) :: Xc, Yc
 				end function los_val_func
 			end interface
+			
+			if(present(abs_tol)) then
+				comp_im_edasijagamise_maksimaalne_abs_t2psus = abs_tol
+			end if
 			
 			if(image_number < 1) then
 				new = .true.
@@ -220,14 +226,15 @@ module comp_image_real_module
 				implicit none
 				real(rk), dimension(1:5), intent(in) :: x,y
 				type(rk_point_type), dimension(1:5), intent(in) :: val 
-				logical :: res
+				logical :: res, res_rel, res_abs, res_scale
 				real(rk) :: val0
 				
 				!diagonaale pidi interpoleerib keskkohta
 				val0 = abs(max(  abs(0.5*(val(1)%point+val(3)%point)-val(5)%point),   abs(0.5*(val(2)%point+val(4)%point)-val(5)%point)  ))
-				res = val0 > (comp_im_edasijagamise_threshold * val(5)%point)
-				res = res .and. (abs(x(3)-x(1)) > 0.001) .and. (abs(y(3)-y(1)) > 0.001) !1 pc miinimum gridi tihedus
-! 				res = res .and. val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
+				res_scale = (abs(x(3)-x(1)) > min_spatial_resolution) .and. (abs(y(3)-y(1)) > min_spatial_resolution) !1 pc miinimum gridi tihedus
+				res_rel = val0 > (comp_im_edasijagamise_threshold * val(5)%point)
+				res_abs =  val0 > comp_im_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
+				res = res_scale .and. (res_rel .or. res_abs)
 			end function kas_jagada_edasi
 			subroutine kas_varem_arvutatud0(x,y,kas_varem, id_varem)	!(kohutavalt) aeglane ja lihtne testversioon
 				implicit none

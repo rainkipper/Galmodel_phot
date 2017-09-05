@@ -23,6 +23,7 @@ _OBJ = 	constants.o \
 		comp_image_real.o \
 		fill_model_image.o \
 		likelihood.o \
+		only_output_image.o \
 		fitting_multinest.o \
 		program.o
 

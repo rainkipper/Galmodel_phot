@@ -21,27 +21,29 @@ module model_image_module
 	end type model_image_real_type
 contains
 	subroutine create_model_image_from_obs(mdl, im)
+		!teeb raamistiku vaatluspildi pohjal ning lisab koordinaadid ja algsed teisendused
 		implicit none
 		type(model_image_real_type), intent(out) :: mdl
 		type(image_type), intent(in) :: im
 		integer :: Nx, Ny, i,j
-		
+
 		Nx = size(im%obs, 1); Ny = size(im%obs, 2)
 		allocate(mdl%pix(1:Nx, 1:Ny))
 		allocate(mdl%mx(1:Nx, 1:Ny))
 		mdl%recalc_image = .true. !ehk see koige algsem ning midagi pole veel arvutatud
-		mdl%recalc_XcYc_coords = .true. 
+		mdl%recalc_XcYc_coords = .true.
 		mdl%corresponding_comp_image = -1 !ehk pole
-		
+
 		!vaja teha ainult sisselugemise aeg, seega kiirus pole oluline
 		do i=1,Nx
 		do j=1,Ny
-			mdl%pix(i,j)%Xi_nurgad = pix_nihe_x+real(i, kind=rk) 
-			mdl%pix(i,j)%Yi_nurgad = pix_nihe_y+real(j, kind=rk) 
+			mdl%pix(i,j)%Xi_nurgad = pix_nihe_x+real(i, kind=rk)
+			mdl%pix(i,j)%Yi_nurgad = pix_nihe_y+real(j, kind=rk)
 			call im%XiYi_to_XpYp(mdl%pix(i,j)%Xi_nurgad, mdl%pix(i,j)%Yi_nurgad, mdl%pix(i,j)%Xp_nurgad, mdl%pix(i,j)%Yp_nurgad)
 		end do
 		end do
 	end subroutine create_model_image_from_obs
+	
 	
 
 	subroutine fill_corners(mdl, func) !t2itab func v22rtusega

@@ -76,7 +76,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	
 	!  lisamehanismid kui on soov arvutada comp_image kaudu
 	if(via_ci) then
-		call fill_comp_image_real(f_ptr, all_comp%comp(comp_nr)%comp_image_number)
+		call fill_comp_image_real(f_ptr, all_comp%comp(comp_nr)%comp_image_number, all_comp%comp(comp_nr)%mass_abs_tol)
 		call get_pointer_to_comp_im_number_X(comp_im, all_comp%comp(comp_nr)%comp_image_number)
 		f_ptr => vota_comp_im_pilt
 	end if
@@ -90,7 +90,7 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	!
 	do j=1,size(mdl%mx, 2)
 	do i=1,size(mdl%mx, 1)
-		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr)
+		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
 	end do
 	end do
 ! 	print*, "fill_model_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)

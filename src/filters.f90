@@ -7,10 +7,11 @@ module filters_module
 		real(rk) 															:: Mag_sun !abs mag
 		real(rk)															:: ZP 	
 		contains
-			procedure :: calc_ML_ratio
+			procedure :: calc_counts_mass_ratio
 	end type filter_type
 contains
-	function calc_ML_ratio(filter, dist, population_name) result(res)
+	function calc_counts_mass_ratio(filter, dist, population_name) result(res)
+		!tulemusega korrutades saab massist countsid
 		implicit none
 		class(filter_type), intent(in) :: filter
 		character(len=default_character_length), intent(in) :: population_name
@@ -18,6 +19,8 @@ contains
 		real(rk) :: res
 		real(rk) :: pop_ML
 		integer :: i
+
+		!M/L osa, mis tuleneb otse populatsioonist
 		pop_ML = -1234.5
 		do i=1,size(filter%population_names, 1)
 			if(trim(population_name) == trim(filter%population_names(i))) then
@@ -28,8 +31,9 @@ contains
 			print*, "Not possible to match population in filter section"
 			stop
 		end if
+		!pildi enda yhikute arvestamine (counts eeldusel)
 		res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
-	end function  calc_ML_ratio
+	end function  calc_counts_mass_ratio
 	subroutine create_test_filters(filters)
 		implicit none
 		type(filter_type), dimension(:), allocatable :: filters
