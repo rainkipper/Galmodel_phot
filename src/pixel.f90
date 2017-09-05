@@ -2,7 +2,8 @@ module pixel_module
 	use constants_module
 
 	real(rk), parameter :: edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei kasuta
-
+	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
+	
 	integer, parameter  :: maxlevel = 5
 	type :: square_pixel_type
 		real(rk) :: val
@@ -39,7 +40,7 @@ contains
 		pix%val = res
 	end function get_val_sq_v2ga_j2me
 	
-	function get_val_sq_kolmnurgad(pix, func) result(res)
+	function get_val_sq_kolmnurgad(pix, func, abs_tol) result(res)
 		class(square_pixel_type), intent(inout) :: pix
 		real(rk), intent(in), optional :: abs_tol
 		interface 
