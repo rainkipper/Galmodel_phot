@@ -17,7 +17,7 @@ module model_image_module
 		!
 		logical :: recalc_XcYc_coords !kas vaja arvutada fyysikalistest koordinaatidest uuesti komponenti koordinaadid
 		logical :: recalc_image
-		integer :: corresponding_comp_image	!kui kasutab comp_image abi, et pilti joonistada
+		integer :: corresponding_adaptive_im	!kui kasutab adaptive_im abi, et pilti joonistada
 	end type model_image_real_type
 contains
 	subroutine create_model_image_from_obs(mdl, im)
@@ -32,7 +32,7 @@ contains
 		allocate(mdl%mx(1:Nx, 1:Ny))
 		mdl%recalc_image = .true. !ehk see koige algsem ning midagi pole veel arvutatud
 		mdl%recalc_XcYc_coords = .true.
-		mdl%corresponding_comp_image = -1 !ehk pole
+		mdl%corresponding_adaptive_im = -1 !ehk pole
 
 		!vaja teha ainult sisselugemise aeg, seega kiirus pole oluline
 		do i=1,Nx

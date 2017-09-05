@@ -21,7 +21,7 @@ module comp_module
 		real(rk) 								:: mass_abs_tol !see kasulik mudelpildi arvutamiseks, et liiga t2pselt ei teeks seda
 		real(rk) 								:: sin_incl, cos_incl, tan_incl, sec_incl 
 		real(rk) 								:: sin_pos, cos_pos, tan_pos, sec_pos
-		integer 								:: comp_image_number !-1 on default negatiivne, et teeks uue pildi
+		integer 								:: adaptive_image_number !-1 on default negatiivne, et teeks uue pildi
 	contains
 		procedure, pass :: XpYp_to_XcYc => convert_XpYp_to_XcYc
 	end type comp_type

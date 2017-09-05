@@ -67,8 +67,8 @@ contains
 		!
 		call convert_input_comp_to_all_comp(input_comps, all_comp)
 		call asenda_viited(input_comps, all_comp)
-		all_comp%comp(:)%comp_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
-		print*, 		all_comp%comp(:)%comp_image_number
+		all_comp%comp(:)%adaptive_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
+		print*, 		all_comp%comp(:)%adaptive_image_number
 		
 		!
 		! =============== fittimine ise ================
@@ -113,7 +113,7 @@ contains
 			! all_comp uuendamine
 ! 			print*, "algne", cube
 			! algselt uuendab input_comp v22rtused ning siis edasi all_comp
-! 			print*, "fun loglike", all_comp%comp(:)%comp_image_number
+! 			print*, "fun loglike", all_comp%comp(:)%adaptive_image_number
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
@@ -156,12 +156,12 @@ contains
 				end do
 			end do
 
-! 			print*, "fun loglike v1.3", all_comp%comp(:)%comp_image_number
+! 			print*, "fun loglike v1.3", all_comp%comp(:)%adaptive_image_number
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
-! 			print*, "fun loglike v1.6", all_comp%comp(:)%comp_image_number
+! 			print*, "fun loglike v1.6", all_comp%comp(:)%adaptive_image_number
 ! 			stop
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-! 			print*, "fun loglike v2", all_comp%comp(:)%comp_image_number
+! 			print*, "fun loglike v2", all_comp%comp(:)%adaptive_image_number
 			lnew =  calc_log_likelihood(all_comp, images)
 ! 			print*, "LL = ", lnew
 		end subroutine fun_loglike

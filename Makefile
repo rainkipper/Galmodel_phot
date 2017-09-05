@@ -20,7 +20,7 @@ _OBJ = 	constants.o \
 		los_real_integration.o \
 		pixel.o \
 		model_image.o \
-		comp_image_real.o \
+		adaptive_image_real.o \
 		fill_model_image.o \
 		likelihood.o \
 		only_output_image.o \
