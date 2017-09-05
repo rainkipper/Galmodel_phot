@@ -21,8 +21,8 @@ contains
 		
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 		kas_koik_pildid_samast_vaatlusest = .true. 
-		via_comp_im = .true.
-		kas_los = .true.
+		via_comp_im = .false.
+		kas_los = .false.
 		mida_arvutatakse = "Not in use"
 		
 		!

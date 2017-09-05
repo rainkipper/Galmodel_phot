@@ -1,6 +1,8 @@
 module pixel_module
 	use constants_module
-	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
+
+	real(rk), parameter :: edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei kasuta
+
 	integer, parameter  :: maxlevel = 5
 	type :: square_pixel_type
 		real(rk) :: val
@@ -14,14 +16,30 @@ module pixel_module
 		real(rk), dimension(1:4) :: val_nurgad
 		real(rk) :: dXc2 !ehk kylje pikkuse ruut komponendi koordinaatides
 	contains
-		procedure :: get_val  => get_val_sq
+! 		procedure :: get_val  => get_val_sq_v2ga_j2me
+		procedure :: get_val  => get_val_sq_kolmnurgad
 	end type square_pixel_type
 	
 
 contains
-
 	
-	function get_val_sq(pix, func, abs_tol) result(res)
+
+	function get_val_sq_v2ga_j2me(pix, func) result(res)
+		implicit none
+		class(square_pixel_type), intent(inout) :: pix
+		interface 
+			function func(Xc, Yc) result(res)
+				import rk
+				real(rk), intent(in) :: Xc, Yc
+				real(rk) :: res
+			end function func
+		end interface
+		real(rk) :: res
+		res = sum(pix%val_nurgad)/size(pix%val_nurgad, 1) * pix%dXc2 !ehk keskmine korda pindala
+		pix%val = res
+	end function get_val_sq_v2ga_j2me
+	
+	function get_val_sq_kolmnurgad(pix, func) result(res)
 		class(square_pixel_type), intent(inout) :: pix
 		real(rk), intent(in), optional :: abs_tol
 		interface 
@@ -42,9 +60,9 @@ contains
 		x(1) = pix%Xc_nurgad(1); x(2) = pix%Xc_nurgad(2); x(3) = pix%Xc_nurgad(4);
 		y(1) = pix%Yc_nurgad(1); y(2) = pix%Yc_nurgad(2); y(3) = pix%Yc_nurgad(4);
 		val(1) = pix%val_nurgad(1); val(2) = pix%val_nurgad(2); val(3) = pix%val_nurgad(4);
-		call t2isnurkse_vordkylgse_kolmnurga_integraal(pix%dXc2, val(1), val(2), val(3), res1)
-		call leia_kolmnurga_v22rtus(x,y,val, res1, 1)
-		x(1) = pix%Xc_nurgad(3); y(1) = pix%Yc_nurgad(3); val(1) = pix%val_nurgad(3); !2 ylej22nud nurka j22vad samaks
+		call t2isnurkse_vordkylgse_kolmnurga_integraal(pix%dXc2, val(1), val(2), val(3), res1) !algse l2hendi leidmine
+		call leia_kolmnurga_v22rtus(x,y,val, res1, 1) !l2hendi t2psustamine
+		x(1) = pix%Xc_nurgad(3); y(1) = pix%Yc_nurgad(3); val(1) = pix%val_nurgad(3); !kaks ylej22nud nurka j22vad samaks
 		call t2isnurkse_vordkylgse_kolmnurga_integraal(pix%dXc2, val(1), val(2), val(3), res2)
 		call leia_kolmnurga_v22rtus(x,y,val, res2, 1)
 
@@ -67,7 +85,7 @@ contains
 			!
 			dx2 = (x(2)-x(1))**2 + (y(2)-y(1))**2
 			xnext(1) = (x(2)+x(3))*0.5; ynext(1) = (y(2)+y(3))*0.5
-			val_t2isnurgas = func(xnext(1), ynext(1)) !tuleb pealmisest subroutine-st
+			val_t2isnurgas = func(xnext(1), ynext(1)) !func tuleb pealmisest subroutine-st
 			xnext(3) = x(1); ynext(3) = y(1)
 			
 			xnext(2) = x(2); ynext(2) = y(2)
@@ -92,8 +110,8 @@ contains
 			real(rk), intent(in) :: f0, fx, fy
 			real(rk), intent(in) :: dx2
 			real(rk), intent(out) :: res
-			res = (dx2*0.5) / 6.0*(fx+fy-f0)
+			res = (dx2) / 6.0*(fx+fy+f0)
 		end subroutine t2isnurkse_vordkylgse_kolmnurga_integraal
-	end function get_val_sq
+	end function get_val_sq_kolmnurgad
 	
 end module pixel_module
