@@ -58,7 +58,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 10
+		maxiter = 1000
 		context = 0 !mittevajalik
 		
 		
