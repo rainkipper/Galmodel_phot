@@ -24,7 +24,7 @@ contains
 		do i=1,size(mudelid, 1)
 			call create_comp_image_from_obs(mudelid(i), image) 
 			call fill_comp_image(all_comp, i, mudelid(i), kas_comp_im, kas_los)
-			weights(i) = image%filter%calc_counts_mass_ratio(all_comp%comp(i)%dist, all_comp%comp(i)%population_name)
+			weights(i) = image%filter%mass_to_obs_unit(all_comp%comp(i)%dist, all_comp%comp(i)%population_name)
 		end do
 		pilt = combine_comp_images_to_make_image(mudelid, weights)
 	end subroutine create_output_image

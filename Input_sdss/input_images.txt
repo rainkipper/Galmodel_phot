@@ -1,0 +1,85 @@
+[u]
+filter = SDSS_u
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 0.3960316
+scale_y = 0.3960316
+image_coord_cnt_x = 189.0
+image_coord_cnt_y = 172.0
+angle_wrt_phys_coord = 0.012
+sky_noise = 0.58
+obs_file = Input_sdss/u_sdss.fits
+mask_file = Input_sdss/mask.fits
+sigma_file = Input_sdss/sigma.fits
+# psf_file = Input/psf.fits
+mdl_file = Output/u_sdss_mdl.fits
+# diff_file = Output/diff.fits
+# rel_diff_file = Output/rel.fits
+
+[g]
+filter = SDSS_g
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 0.3960316
+scale_y = 0.3960316
+image_coord_cnt_x = 189.0
+image_coord_cnt_y = 172.0
+angle_wrt_phys_coord = 0.012
+sky_noise = 0.14
+obs_file = Input_sdss/g_sdss.fits
+mask_file = Input_sdss/mask.fits
+sigma_file = Input_sdss/sigma.fits
+# psf_file = Input/psf.fits
+mdl_file = Output/g_sdss_mdl.fits
+# diff_file = Output/diff.fits
+# rel_diff_file = Output/rel.fits
+
+[r]
+filter = SDSS_r
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 0.3960316
+scale_y = 0.3960316
+image_coord_cnt_x = 189.0
+image_coord_cnt_y = 172.0
+angle_wrt_phys_coord = 0.012
+sky_noise = 0.20
+obs_file = Input_sdss/r_sdss.fits
+mask_file = Input_sdss/mask.fits
+sigma_file = Input_sdss/sigma.fits
+# psf_file = Input/psf.fits
+mdl_file = Output/r_sdss_mdl.fits
+# diff_file = Output/diff.fits
+# rel_diff_file = Output/rel.fits
+
+[i]
+filter = SDSS_i
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 0.3960316
+scale_y = 0.3960316
+image_coord_cnt_x = 189.0
+image_coord_cnt_y = 172.0
+angle_wrt_phys_coord = 0.012
+sky_noise = 0.33
+obs_file = Input_sdss/i_sdss.fits
+mask_file = Input_sdss/mask.fits
+sigma_file = Input_sdss/sigma.fits
+# psf_file = Input/psf.fits
+mdl_file = Output/i_sdss_mdl.fits
+# diff_file = Output/diff.fits
+# rel_diff_file = Output/rel.fits
+
+[z]
+filter = SDSS_z
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 0.3960316
+scale_y = 0.3960316
+image_coord_cnt_x = 189.0
+image_coord_cnt_y = 172.0
+angle_wrt_phys_coord = 0.012
+sky_noise = 1.16
+obs_file = Input_sdss/z_sdss.fits
+mask_file = Input_sdss/mask.fits
+sigma_file = Input_sdss/sigma.fits
+# psf_file = Input/psf.fits
+mdl_file = Output/z_sdss_mdl.fits
+# diff_file = Output/diff.fits
+# rel_diff_file = Output/rel.fits
+

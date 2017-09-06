@@ -30,8 +30,6 @@ module adaptive_image_real_module
 		type(rk_point_type), dimension(1:5)	:: val !v22rtus funktsioonile... voib olla suvaline asi
 		integer, dimension(1:5)					:: id
 		real(rk)								:: xy_kordaja, x_kordaja, y_kordaja, vabaliige !lihtsustavad edasisi arvutusi
-! 		real(rk)					:: sum_val !summaarne heledus kasti sees
-! 		real(rk)					:: sum_val_korda_pind !reaalne v22rtus, mis voetakse kui koik subpixslis
 		logical 								:: last_level = .true. !kas omadega pohjas
 		logical 								:: kas_paremvasak !kas subkomponent on paremal-vasak poolitatud voi yles/alla
 		type(adaptive_image_type), pointer 			:: sub1, sub2 !viited alamstruktuurile
@@ -66,14 +64,7 @@ module adaptive_image_real_module
 			real(rk) :: f_low, f_up
 			if(adaptive_im%last_level) then
 				!kui pohjas, siis bilineaarne 
-! 				der_low = (adaptive_im%val(4)%point - adaptive_im%val(1)%point)/(adaptive_im%x(4) - adaptive_im%x(1))
-! 				der_up = (adaptive_im%val(3)%point - adaptive_im%val(2)%point)/(adaptive_im%x(3) - adaptive_im%x(2))
-! 				intercept_low = adaptive_im%val(1)%point - der_low * adaptive_im%x(1)
-! 				intercept_up = adaptive_im%val(2)%point - adaptive_im%x(2) * der_up
-! 				f_low = der_low * Xc + intercept_low
-! 				f_up = der_up * Xc + intercept_up
-! 				res = (f_up-f_low)/(adaptive_im%y(2)-adaptive_im%y(1))*(Yc-adaptive_im%y(1)) + f_low
-res = adaptive_im%xy_kordaja * Xc * Yc + adaptive_im%x_kordaja * Xc + adaptive_im%y_kordaja * Yc  + adaptive_im%vabaliige
+				res = adaptive_im%xy_kordaja * Xc * Yc + adaptive_im%x_kordaja * Xc + adaptive_im%y_kordaja * Yc  + adaptive_im%vabaliige
 			else
 				if(adaptive_im%kas_paremvasak) then
 					if(Xc<adaptive_im%x(5)) then

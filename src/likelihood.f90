@@ -61,7 +61,7 @@ contains
 			weights = -1.234 !ehk algselt koigile mingi tobe v22rtus, et hiljem saaks vigasust kontrollida
 			do j=1,size(weights, 1)
 ! 				do k=1,size(images(i)%filter%population_names, 1)
-					weights(j) = images(i)%filter%calc_counts_mass_ratio(all_comp%comp(1)%dist, all_comp%comp(j)%population_name)
+					weights(j) = images(i)%filter%mass_to_obs_unit(all_comp%comp(1)%dist, all_comp%comp(j)%population_name)
 ! 					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
 ! 						weights(j) = images(i)%filter%population_mass_to_light_ratios(k)
 						!
@@ -124,7 +124,7 @@ contains
 		integer :: i
 		res = 1.0e10 !suvaline suur suurus algseks
 		do i=1,size(images, 1)
-			tmp = 1.0/images(i)%filter%calc_counts_mass_ratio(comp%dist, comp%population_name) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
+			tmp = 1.0/images(i)%filter%mass_to_obs_unit(comp%dist, comp%population_name) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
 			if(tmp<res) then
 				res = tmp
 			end if
