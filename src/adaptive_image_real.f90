@@ -12,7 +12,7 @@ module adaptive_image_real_module
 	real(rk), parameter :: y1_default =  35.0_rk
 	real(rk), private :: adaptive_image_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: adaptive_image_maxlevel = 12
-	real(rk), parameter :: adaptive_image_edasijagamise_threshold = 0.05 !suhteline jagamine
+	real(rk), parameter :: adaptive_image_edasijagamise_threshold = 0.02 !suhteline jagamine
 	real(rk), parameter :: min_spatial_resolution = 0.01 !praegu ei lahuta rohkem kui 10pc
 ! 	integer :: adaptive_image_kokku = 1
 	
