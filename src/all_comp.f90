@@ -5,7 +5,7 @@ module all_comp_module
 	type all_comp_type
 		class(comp_type), allocatable, dimension(:) 			:: comp
 		integer, allocatable, dimension(:) 					:: comp_im_ref !komponentide pildid... 2D massiiv kuna pilte voib olla mitut tyypi
-		logical, allocatable, dimension(:)  				:: recalc_comp_images
+		logical, allocatable, dimension(:)  				:: recalc_adaptive_ims
 		integer 											:: N_comp !kogu komponentide arv		
 		!accounting .. 											
 		integer 											:: N_dust=0

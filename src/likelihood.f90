@@ -1,6 +1,6 @@
 module likelihood_module
 	use images_module
-	use fill_model_image_module
+	use fill_comp_image_module
 	use file_operations_module !vaja ainult ajutiselt testimisel
 	use konvolutsioon_module
 	
@@ -9,7 +9,7 @@ contains
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		type(model_image_real_type), dimension(:), allocatable :: mudelid
+		type(comp_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk) :: res
 		real(rk), dimension(:,:), allocatable :: pilt, pilt_psf
 		integer :: i, j, k
@@ -39,8 +39,8 @@ contains
 		if(kas_koik_pildid_samast_vaatlusest) then
 			allocate(mudelid(1:all_comp%N_comp))
 			do i=1,size(mudelid, 1)
-				call create_model_image_from_obs(mudelid(i), images(1)) !reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin
-				call fill_model_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
+				call create_comp_image_from_obs(mudelid(i), images(1)) !reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin
+				call fill_comp_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
 ! 				print*, all_comp%comp(1)%incl ,sum(mudelid(i)%mx)
 			end do
 		else
@@ -81,7 +81,7 @@ contains
 			!
 			if(allocated(pilt)) deallocate(pilt)
 			if(kas_koik_pildid_samast_vaatlusest) then
-				pilt = combine_model_images_to_make_image(mudelid, weights)
+				pilt = combine_comp_images_to_make_image(mudelid, weights)
 			else
 				print*, "Not yet implemented"
 				stop

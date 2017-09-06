@@ -1,12 +1,12 @@
 program gm
-	use fill_model_image_module
+	use fill_comp_image_module
 	use	read_input_module
 	use fitting_multinest_module
 	use only_output_image_module
 
 	type(all_comp_type) :: all_comp, all_comp_input
 	type(comp_input_type), dimension(:), allocatable :: input_comp
-	type(model_image_real_type) :: mdl1, mdl2, mdl
+	type(comp_image_real_type) :: mdl1, mdl2, mdl
 	type(image_type), dimension(:), allocatable :: images
 	type(filter_type), dimension(:), allocatable :: filters
 	integer, parameter :: N_comp = 1
@@ -19,7 +19,7 @@ program gm
 	real(rk), dimension(:,:), allocatable :: pilt
 	real(rk) :: t1,t2 !aja mootmine
 	real(rk) :: ll
-	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .true.
+	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .not..false.
 	
 	call cpu_time(t1)
 	!

@@ -1,22 +1,22 @@
-module fill_model_image_module
+module fill_comp_image_module
 	!use images
-	use model_image_module
+	use comp_image_module
 	use all_comp_module
-	use comp_image_real_module
+	use adaptive_image_real_module
 	use los_real_integration_module
 
 
 contains
 
 
-subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_arvutatakse)
+subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mida_arvutatakse)
 	implicit none
 	logical, intent(in) :: kas_los !kas integreerib yle vaatejoone voi votab z=0 v22rtuse
-	logical, intent(in), optional :: via_comp_im
-	logical :: via_ci !ehk via_comp_im
-	type(all_comp_type), intent(inout) :: all_comp !out osa ainult comp_im numbri jaoks
+	logical, intent(in), optional :: via_adaptive_im
+	logical :: via_ci !ehk via_adaptive_im
+	type(all_comp_type), intent(inout) :: all_comp !out osa ainult adaptive_im numbri jaoks
 	integer :: comp_nr !millist komponenti arvutatakse
-	type(model_image_real_type), intent(inout) :: mdl
+	type(comp_image_real_type), intent(inout) :: mdl
 	character(len=default_character_length), intent(in), optional :: mida_arvutatakse !ei kasuta... praegu votab alati tiheduses
 	real(rk) :: test1, test2
 	interface
@@ -35,11 +35,11 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	procedure(pind), pointer :: f_ptr
 	procedure(ruum), pointer :: ruum_ptr
 	!comp im asjad
-	type(comp_image_type), pointer :: comp_im	
+	type(adaptive_image_type), pointer :: adaptive_im	
 	integer :: image_number !comp image number
 	!muud vidinad
 	integer :: i, j
-! 	print*, "fill model image", all_comp%comp(:)%comp_image_number
+! 	print*, "fill model image", all_comp%comp(:)%adaptive_image_number
 	!
 	! ================== kontrollib ja arvutab komponendi koordinaadid uuesti kui vaja =============
 	!
@@ -52,13 +52,13 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 	end do
 
 	!
-	! ============= valib, kas kasutab kiirendamiseks comp_im arvutust ====================
+	! ============= valib, kas kasutab kiirendamiseks adaptive_im arvutust ====================
 	!
-	if(.not.present(via_comp_im)) then
+	if(.not.present(via_adaptive_im)) then
 		via_ci = .false.
 	else
-		via_ci = via_comp_im
-		!TODO kui comp_im juba olemas, siis siit peaks saama ka millise numbri votab ning kas arvutab ymber
+		via_ci = via_adaptive_im
+		!TODO kui adaptive_im juba olemas, siis siit peaks saama ka millise numbri votab ning kas arvutab ymber
 	end if
 	
 	!valitakse, milline funktsioon arvutamiseks
@@ -74,11 +74,11 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 		f_ptr => surface
 	end if
 	
-	!  lisamehanismid kui on soov arvutada comp_image kaudu
+	!  lisamehanismid kui on soov arvutada adaptive_im kaudu
 	if(via_ci) then
-		call fill_comp_image_real(f_ptr, all_comp%comp(comp_nr)%comp_image_number, all_comp%comp(comp_nr)%mass_abs_tol)
-		call get_pointer_to_comp_im_number_X(comp_im, all_comp%comp(comp_nr)%comp_image_number)
-		f_ptr => vota_comp_im_pilt
+		call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_image_number, all_comp%comp(comp_nr)%mass_abs_tol)
+		call get_pointer_to_adaptive_image_number_X(adaptive_im, all_comp%comp(comp_nr)%adaptive_image_number)
+		f_ptr => vota_adaptive_im_pilt
 	end if
 	
 	call fill_corners_exact(mdl, f_ptr)
@@ -93,16 +93,16 @@ subroutine fill_model_image(all_comp, comp_nr, mdl, via_comp_im, kas_los, mida_a
 		mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
 	end do
 	end do
-! 	print*, "fill_model_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
+! 	print*, "fill_comp_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
 	
 contains
 	
-	function vota_comp_im_pilt(Xc, Yc) result(res)
+	function vota_adaptive_im_pilt(Xc, Yc) result(res)
 		implicit none
 		real(rk), intent(in) :: Xc, Yc
 		real(rk) :: res
-		res = comp_im%get_val(Xc, Yc)
-	end function vota_comp_im_pilt
+		res = adaptive_im%get_val(Xc, Yc)
+	end function vota_adaptive_im_pilt
 	
 	function surface(Xc, Yc) result(res)
 		implicit none
@@ -132,9 +132,9 @@ contains
 	end function tihedus
 
 	
-end subroutine fill_model_image
+end subroutine fill_comp_image
 
 
 	
 
-end module fill_model_image_module
+end module fill_comp_image_module
