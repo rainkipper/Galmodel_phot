@@ -22,8 +22,12 @@ module filters_module
 	end interface
 	interface create_test_filters
 ! 		module procedure :: create_hst_filters
-		module procedure :: create_sdss_filters
-	end interface create_test_filters
+		module procedure create_sdss_filters
+! 			subroutine create_sdss_filters(filters)
+! 				import filter_type
+! 				class(filter_type), dimension(:), allocatable, intent(out) :: filters
+! 			end subroutine create_sdss_filters
+	end interface
 
 contains
 	function calc_counts_mass_ratio(filter, dist, population_name) result(res)
@@ -50,6 +54,7 @@ contains
 		!pildi enda yhikute arvestamine (counts eeldusel)
 		res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
 	end function  calc_counts_mass_ratio
+	
 	subroutine create_hst_filters(filters)
 		implicit none
 		type(filter_type), dimension(:), allocatable :: filters
@@ -75,6 +80,9 @@ contains
 	
 		
 	subroutine create_sdss_filters(filters)
+		!Mass heledus suhted on arvutatud mingi SSP pohjal Bruzual-Charlot 
+		!http://www.bruzual.org/bc03/Updated_version_2016/
+		!R script ML_arvutamine.R t2psete numbrite saamiseks
 ! 		    filter	Vega	AB	  Apparent_AB mag_Vega
 ! 		26	SDSS u'	5.46	6.45	-26.12	0.995
 ! 		27	SDSS g'	5.22	5.14	-26.36	-0.087
@@ -87,12 +95,41 @@ contains
 		N = 5
 		allocate(filters(1:N))
 		
-		filters(1)%name = "sdss_u"
-		filters(1)%population_names = ["young_population", "old_population"]
-		filters(1)%population_mass_to_light_ratios = [1.0, 0.1]
+		filters(1)%name = "SDSS_u"
+		filters(1)%population_names = ["pop_logt6", "pop_logt9", "pop_logt10"]
+		filters(1)%population_mass_to_light_ratios = [0.1591402, 1.5185881, 3.498968]
 		filters(1)%Mag_sun = 6.45_rk
 		filters(1)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
 		filters(1)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		
+		filters(2)%name = "SDSS_g"
+		filters(2)%population_names = ["pop_logt6", "pop_logt9", "pop_logt10"]
+		filters(2)%population_mass_to_light_ratios = [0.2861805, 1.4190575, 3.546990]
+		filters(2)%Mag_sun = 5.14_rk
+		filters(2)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(2)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(3)%name = "SDSS_r"
+		filters(3)%population_names = ["pop_logt6", "pop_logt9", "pop_logt10"]
+		filters(3)%population_mass_to_light_ratios = [0.4305861, 1.3543783, 3.312836]
+		filters(3)%Mag_sun = 4.65_rk
+		filters(3)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(3)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(4)%name = "SDSS_i"
+		filters(4)%population_names = ["pop_logt6", "pop_logt9", "pop_logt10"]
+		filters(4)%population_mass_to_light_ratios = [0.5156797, 1.2004387, 2.941034]
+		filters(4)%Mag_sun = 4.54_rk
+		filters(4)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(4)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(5)%name = "SDSS_z"
+		filters(5)%population_names = ["pop_logt6", "pop_logt9", "pop_logt10"]
+		filters(5)%population_mass_to_light_ratios = [0.5834451, 0.9559606, 2.369627]
+		filters(5)%Mag_sun = 4.52_rk
+		filters(5)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
 		
 		
 		

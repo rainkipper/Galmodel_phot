@@ -12,8 +12,8 @@ program gm
 	integer, parameter :: N_comp = 1
 	integer :: test_image_number
 	character(len=*), parameter :: fname="comp_im.txt"
-	character(len=default_character_length), parameter :: input_comp_file = "Input/input_comp.txt"
-	character(len=default_character_length), parameter :: input_image_file = "Input/input_images.txt"
+	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
+	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
 	logical :: kas_comp_im, kas_los
 	integer :: i, N
 	real(rk), dimension(:,:), allocatable :: pilt

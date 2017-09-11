@@ -99,6 +99,7 @@ contains
 				allocate(pilt_psf(1:size(pilt,1), 1:size(pilt,2)))
 				pilt_psf = pilt
 			end if
+! 			print*, size(pilt_psf, 1), size(pilt_psf, 2)
 			call write_matrix_to_fits(pilt_psf, images(i)%output_mdl_file)
 			!
 			! ======== loglike ise ========
