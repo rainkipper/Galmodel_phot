@@ -1,16 +1,16 @@
 [bulge_old]
 prof =Einasto 
 type = stellar
-incl = 50.9190425535244, T, 30.0, 70.0, bulge_old
+incl = 39.7322897712719, T, 20.0, 45.0, bulge_old
 dist = 57880.0, F, 0.0, 1e8, bulge_old
-pos_wrt_phys_coord = 53.5250150258185, T, -90.0, 90.0, bulge_old
-cnt_x = -6.936356515925672E-004, T, -1.0e-3, 1.0e-3, bulge_old
-cnt_y = -2.630837102876519E-009, T, -1.0e-3, 1.0e-3, bulge_old
+pos_wrt_phys_coord = -26.5250150258185, F, -30.0, -20.0, bulge_old
+cnt_x = 0.219498669489108,       F, -1.0e-0, 1.0e-0, bulge_old
+cnt_y = 4.810519235468368E-006,  F, -1.0e-0, 1.0e-0, bulge_old
 population = pop_logt10
-a0 = 7.54725957112709, T, 0.1, 10.0, bulge_old
-N = 0.626383085742347, T, 0.5, 3.0, bulge_old
-q = 0.691737494740727 , T, 0.4, 0.99, bulge_old
-M = 0.426805926186652 , T, 0.00, 0.5, bulge_old
+a0 = 2.62554432717000,  T, 2.1, 7.0, bulge_old
+N = 1.41177646291078 ,  T, 0.8, 2.0, bulge_old
+q = 0.671987022535085   , T, 0.55, 0.99, bulge_old
+M =  2.78543072901564  , F, 0.00, 3.0, bulge_old
 
 [bulge_intermediate]
 prof =Einasto 
@@ -21,10 +21,10 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt9
-a0 = 7.54725957112709, T, 0.1, 10.0, bulge_intermediate
-N = 0.626383085742347, F, 0.5, 3.0, bulge_old
-q = 0.691737494740727 , T, 0.4, 0.99, bulge_intermediate
-M = 0.426805926186652 , T, 0.00, 0.5, bulge_intermediate
+a0 = 3.71818401041344 ,  T, 3.1, 7.0, bulge_intermediate
+N = 1.626383085742347,  T, 0.5, 1.5, bulge_intermediate
+q = 0.964976751751812   , T, 0.65, 0.99, bulge_intermediate
+M = 0.13283809085519 , F, 0.0, 4.2, bulge_intermediate
 
 [disc_old]
 prof =Einasto 
@@ -35,10 +35,10 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt10
-a0 = 7.54725957112709, T, 0.1, 10.0, disc_old
-N = 0.626383085742347, T, 0.5, 3.0, disc_old
-q = 0.691737494740727 , T, 0.4, 0.99, disc_old
-M = 0.426805926186652 , T, 0.00, 0.5, disc_old
+a0 = 12.0492141670526,  T, 0.1, 20.0, disc_old
+N = 1.91439544500993,  T, 0.5, 3.0, disc_old
+q = 3.661041534226540E-002 ,  T, 0.02, 0.2, disc_old
+M = 1.57016583514286 , F, 0.00, 3.5, disc_old
 
 
 
@@ -51,10 +51,10 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt9
-a0 = 7.54725957112709, T, 0.1, 10.0, disc_intermediate
-N = 0.626383085742347, F, 0.5, 3.0, disc_old
-q = 0.691737494740727 , T, 0.4, 0.99, disc_intermediate
-M = 0.426805926186652 , T, 0.00, 0.5, disc_intermediate
+a0 = 8.34762033744784,  T, 0.1, 20.0, disc_intermediate
+N = 1.0,  T, 0.5, 3.0, disc_intermediate
+q = 8.503741298788808E-002 ,  T, 0.02, 0.2, disc_intermediate
+M = 0.362975235101532 , F, 0.00, 2.0, disc_intermediate
 
 
 
@@ -68,7 +68,7 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt6
-a0 = 7.54725957112709, T, 0.1, 10.0, disc_young
-N = 0.626383085742347, T, 0.5, 3.0, disc_old
-q = 0.691737494740727 , T, 0.4, 0.99, disc_young
-M = 0.426805926186652 , T, 0.00, 0.5, disc_young
+a0 = 8.25262762249790,  T, 0.1, 20.0, disc_young
+N = 0.626383085742347,  T, 0.5, 3.0, disc_young
+q = 9.464944720852864E-002 ,  T, 0.02, 0.2, disc_young
+M = 1.466002272916236E-004 , F, 0.00, 0.01, disc_young

@@ -3,7 +3,16 @@ module likelihood_module
 	use fill_comp_image_module
 	use file_operations_module !vaja ainult ajutiselt testimisel
 	use konvolutsioon_module
-	
+	logical, parameter :: kas_fitib_massid_eraldi = .true.
+	type masside_arvutamise_tyyp
+		!iga vaatluspildi kohta...
+		!kasutatakse masside fittimise eristamises muust fittimisest
+		real(rk), dimension(:), allocatable :: w !ehk massi komponentide yhikutest ja  ML tulevad kaalud... niipalju kui massi pilte on ka w pikkus
+		real(rk), dimension(:,:), allocatable :: I
+		real(rk), dimension(:,:), allocatable :: inv_sigma4
+		logical, dimension(:,:), allocatable :: mask
+		real(rk), dimension(:,:,:), allocatable :: M !sama pikkusega, mis on w... esimen on mis pildi kohta k2ib, ylej22nud on pildi koordinaadid
+	end type masside_arvutamise_tyyp
 contains
 	function calc_log_likelihood(all_comp, images) result(res)
 		implicit none
@@ -18,11 +27,12 @@ contains
 		character(len=default_character_length) :: mida_arvutatakse
 		real(rk), dimension(:), allocatable :: weights !ehk M/L suhted fotomeetria korral
 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
-		
+		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
+		real(rk), dimension(:), allocatable :: lisakaalud_massile
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 		kas_koik_pildid_samast_vaatlusest = .true. 
-		via_comp_im = .false.
-		kas_los = .false.
+		via_comp_im = .true.
+		kas_los = .true.
 		mida_arvutatakse = "Not in use"
 		
 		!
@@ -30,8 +40,24 @@ contains
 		!
 		do i=1,all_comp%N_comp
 			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images)
-! 			print*, "vajalik t2psus", all_comp%comp(i)%mass_abs_tol
 		end do
+		
+		!
+		! =========== eraldi massifittimise korral asjade initsialiseerimine
+		!
+		if(kas_fitib_massid_eraldi) then
+			allocate(to_massfit(1:size(images,1)))
+			do i=1,size(images)
+				allocate(to_massfit(i)%w(1:all_comp%N_comp))
+				allocate(to_massfit(i)%I(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				allocate(to_massfit(i)%mask(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				allocate(to_massfit(i)%M(1:all_comp%N_comp, 1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				allocate(to_massfit(i)%inv_sigma4(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				to_massfit(i)%I = images(i)%obs
+				to_massfit(i)%mask = images(i)%mask
+				to_massfit(i)%inv_sigma4 = 1.0/(images(i)%sigma**2  + images(i)%sky_noise**2 + abs(images(i)%obs))**2 !
+			end do
+		end if
 		
 		!
 		! ========= komponentide mudelpiltide arvutamised ==============
@@ -39,9 +65,15 @@ contains
 		if(kas_koik_pildid_samast_vaatlusest) then
 			allocate(mudelid(1:all_comp%N_comp))
 			do i=1,size(mudelid, 1)
-				call create_comp_image_from_obs(mudelid(i), images(1)) !reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin
+	    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
+				call create_comp_image_from_obs(mudelid(i), images(1))
 				call fill_comp_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
-! 				print*, all_comp%comp(1)%incl ,sum(mudelid(i)%mx)
+				!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
+				if(kas_fitib_massid_eraldi) then
+					do j=1,size(images)
+						to_massfit(j)%M(i,:,:) = mudelid(i)%mx
+					end do
+				end if
 			end do
 		else
 			print*, "Not yet implemented in calc_log_likelihood"
@@ -54,36 +86,38 @@ contains
 		!
 		res = 0.0
 		allocate(weights(1:all_comp%N_comp))
-		do i=1,size(images)
+		do i=1,size(images)			
 			!
 			! ================== kaalude arvutamised ========= 
 			!
 			weights = -1.234 !ehk algselt koigile mingi tobe v22rtus, et hiljem saaks vigasust kontrollida
 			do j=1,size(weights, 1)
-! 				do k=1,size(images(i)%filter%population_names, 1)
 					weights(j) = images(i)%filter%mass_to_obs_unit(all_comp%comp(1)%dist, all_comp%comp(j)%population_name)
-! 					if(trim(images(i)%filter%population_names(k)) == trim(all_comp%comp(j)%population_name)) then
-! 						weights(j) = images(i)%filter%population_mass_to_light_ratios(k)
-						!
-						!TODO yhikute kordaja peaks solutma komponendi kaugusets, mis igal comp eraldi
-						!
-! 						yhikute_kordaja = 10**(0.4*(images(i)%filter%ZP-images(i)%filter%Mag_sun) + 6.0 - 2.0*log10( all_comp%comp(1)%dist ) )
-! 						weights(j) = yhikute_kordaja / images(i)%filter%population_mass_to_light_ratios(k) !eesm2rk saada pildi yhikutesse korrutades
-! 						exit
-! 					end if
-! 				end do
 			end do
 			if(any(weights == -1.234)) then
 				print*, "Vale M/L sisend"; stop
 			end if
-			!
-			! ========= mudelpiltide kokkupanek ===========
-			!
+			if(kas_fitib_massid_eraldi) to_massfit(i)%w(:) = weights(:) !hilisemaks kasutamiseks kui otsustab eraldi fittida
+		end do
+			
+		
+		!
+		! ========= mudelpiltide kokkupanek ===========
+		!		
+		if(kas_fitib_massid_eraldi) then
+			!lisab kaaludele veel massi kordaja sisemisest fittimisest
+			lisakaalud_massile = fiti_massi_kordajad(to_massfit)
+			do i=1,size(weights)
+				weights(i) = weights(i) * lisakaalud_massile(i)
+			end do
+		end if
+		
+		do i=1,size(images)	
 			if(allocated(pilt)) deallocate(pilt)
 			if(kas_koik_pildid_samast_vaatlusest) then
 				pilt = combine_comp_images_to_make_image(mudelid, weights)
 			else
-				print*, "Not yet implemented"
+				print*, "Not yet implemented in likelihood"
 				stop
 			end if
 			
@@ -101,17 +135,12 @@ contains
 			end if
 ! 			print*, size(pilt_psf, 1), size(pilt_psf, 2)
 			call write_matrix_to_fits(pilt_psf, images(i)%output_mdl_file)
+			
 			!
 			! ======== loglike ise ========
 			!
-			
-			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + 0.001 + abs(images(i)%obs))), images(i)%mask) 
-			
+			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
 		end do
-		
-		
-
-		
 		
 		print*, "LL = ", res
 	end function calc_log_likelihood
@@ -133,4 +162,80 @@ contains
 		res = res * massi_abs_tol_kordaja
 		
 	end function leia_massi_abs_tol
+	function fiti_massi_kordajad(to_massfit) result(res)
+		implicit none
+		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
+		integer :: i,j,k
+		integer :: N_k
+		real(rk), dimension(:), allocatable :: res
+		real(rk), dimension(:,:), allocatable :: A, inv_A
+		real(rk), dimension(:), allocatable :: B
+		N_k = size(to_massfit(1)%w, 1)
+		allocate(B(1:N_k))
+		allocate(A(1:N_k, 1:N_k)); allocate(inv_A(1:N_k, 1:N_k))
+		do k=1,N_k
+			!B leidmine
+			B(k) = 0
+			do i=1,size(to_massfit)
+				B(k) = B(k) + sum(  (to_massfit(i)%I*to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:))*to_massfit(i)%inv_sigma4 , to_massfit(i)%mask )
+			end do
+			!A leidmine
+			do j = 1,N_k
+! 			A(k,j)  = 0.0
+			A(j,k)  = 0.0
+				do i=1,size(to_massfit)
+! 					A(k,j)  = A(k,j) + &
+					A(j,k)  = A(j,k) + &
+					sum( to_massfit(i)%w(k) * to_massfit(i)%M(k,:,:) * to_massfit(i)%w(j) * to_massfit(i)%M(j,:,:) * to_massfit(i)%inv_sigma4, to_massfit(i)%mask )
+				end do
+			end do
+		end do
+		!poordmaatriksi leidmine ja massile kaalude saamine
+		allocate(res(1:N_k))
+		inv_A = inv(A)
+		do k=1,N_k
+			res(k) = sum( inv_A(k,:) * B(:) )
+		end do
+		
+		print "(5F)", res
+		res = abs(res)
+		
+	contains
+		!poordmaatriksi leidmine voetud http://fortranwiki.org/fortran/show/Matrix+inversion
+		! Returns the inverse of a matrix calculated by finding the LU
+		! decomposition.  Depends on LAPACK.
+		function inv(A) result(Ainv)
+			integer, parameter :: dp=kind(1.0d0)
+		  real(rk), dimension(:,:), intent(in) :: A
+		  real(rk), dimension(size(A,1),size(A,2)) :: Ainv
+
+		  real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
+		  integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+		  integer :: n, info
+
+		  ! External procedures defined in LAPACK
+		  external DGETRF
+		  external DGETRI
+
+		  ! Store A in Ainv to prevent it from being overwritten by LAPACK
+		  Ainv = A
+		  n = size(A,1)
+
+		  ! DGETRF computes an LU factorization of a general M-by-N matrix A
+		  ! using partial pivoting with row interchanges.
+		  call DGETRF(n, n, Ainv, n, ipiv, info)
+
+		  if (info /= 0) then
+		     stop 'Matrix is numerically singular!'
+		  end if
+
+		  ! DGETRI computes the inverse of a matrix using the LU factorization
+		  ! computed by DGETRF.
+		  call DGETRI(n, Ainv, n, ipiv, work, n, info)
+
+		  if (info /= 0) then
+		     stop 'Matrix inversion failed!'
+		  end if
+		end function inv
+	end function fiti_massi_kordajad
 end module likelihood_module

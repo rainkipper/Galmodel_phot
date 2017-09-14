@@ -38,17 +38,17 @@ contains
 		integer ::  context
 		double precision :: logZero
 		
-		IS = .false.
+		IS = .true.
 		mmodal = .false. 
 		nlive = 30 !testiks nii v2ike
-		ceff = .false.
+		ceff = .true.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
 		ndims = leia_Ndim()!hiljem
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
-		updInt  = 10
+		updInt  = 3
 		Ztol = -1.d90
 		root = "Output/"
 		seed = -1
@@ -58,7 +58,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 1000
+		maxiter = 10000
 		context = 0 !mittevajalik
 		
 		
