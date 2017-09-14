@@ -162,7 +162,7 @@ contains
 		res = res * massi_abs_tol_kordaja
 		
 	end function leia_massi_abs_tol
-	function fiti_massi_kordajad(to_massfit) result(res)
+	function fiti_massi_kordajad_lin_regressioon(to_massfit) result(res)
 		implicit none
 		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
 		integer :: i,j,k
@@ -192,50 +192,51 @@ contains
 		end do
 		!poordmaatriksi leidmine ja massile kaalude saamine
 		allocate(res(1:N_k))
-		inv_A = inv(A)
+		inv_A = fun_inv_mx(A)
 		do k=1,N_k
 			res(k) = sum( inv_A(k,:) * B(:) )
 		end do
 		
 		print "(5F)", res
 		res = abs(res)
+	end function fiti_massi_kordajad_lin_regressioon
+	function fiti_massi_kordajad(to_massfit) result(res)
+		implicit none
+		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
+		integer :: i,j,k
+		integer :: N_k
+		real(rk), dimension(:), allocatable :: res
+		real(rk), dimension(:,:), allocatable :: A, C, inv_A, inv_C
+		real(rk), dimension(:), allocatable :: B
+		N_k = size(to_massfit(1)%w, 1)
+		allocate(B(1:N_k))
+		allocate(A(1:N_k, 1:N_k)); allocate(inv_A(1:N_k, 1:N_k))
+		do k=1,N_k
+			!B leidmine
+			B(k) = 0
+			do i=1,size(to_massfit)
+				B(k) = B(k) + sum(  (to_massfit(i)%I*to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:))*to_massfit(i)%inv_sigma4 , to_massfit(i)%mask )
+			end do
+			!A leidmine
+			do j = 1,N_k
+! 			A(k,j)  = 0.0
+			A(j,k)  = 0.0
+				do i=1,size(to_massfit)
+! 					A(k,j)  = A(k,j) + &
+					A(j,k)  = A(j,k) + &
+					sum( to_massfit(i)%w(k) * to_massfit(i)%M(k,:,:) * to_massfit(i)%w(j) * to_massfit(i)%M(j,:,:) * to_massfit(i)%inv_sigma4, to_massfit(i)%mask )
+				end do
+			end do
+		end do
+		!poordmaatriksi leidmine ja massile kaalude saamine
+		allocate(res(1:N_k))
+		inv_A = fun_inv_mx(A)
+		do k=1,N_k
+			res(k) = sum( B(:) * inv_A(k,:)  )
+		end do
 		
-	contains
-		!poordmaatriksi leidmine voetud http://fortranwiki.org/fortran/show/Matrix+inversion
-		! Returns the inverse of a matrix calculated by finding the LU
-		! decomposition.  Depends on LAPACK.
-		function inv(A) result(Ainv)
-			integer, parameter :: dp=kind(1.0d0)
-		  real(rk), dimension(:,:), intent(in) :: A
-		  real(rk), dimension(size(A,1),size(A,2)) :: Ainv
-
-		  real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
-		  integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-		  integer :: n, info
-
-		  ! External procedures defined in LAPACK
-		  external DGETRF
-		  external DGETRI
-
-		  ! Store A in Ainv to prevent it from being overwritten by LAPACK
-		  Ainv = A
-		  n = size(A,1)
-
-		  ! DGETRF computes an LU factorization of a general M-by-N matrix A
-		  ! using partial pivoting with row interchanges.
-		  call DGETRF(n, n, Ainv, n, ipiv, info)
-
-		  if (info /= 0) then
-		     stop 'Matrix is numerically singular!'
-		  end if
-
-		  ! DGETRI computes the inverse of a matrix using the LU factorization
-		  ! computed by DGETRF.
-		  call DGETRI(n, Ainv, n, ipiv, work, n, info)
-
-		  if (info /= 0) then
-		     stop 'Matrix inversion failed!'
-		  end if
-		end function inv
+		print "(5F)", res
+		res = abs(res)
 	end function fiti_massi_kordajad
+	
 end module likelihood_module
