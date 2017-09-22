@@ -3,7 +3,6 @@ module likelihood_module
 	use fill_comp_image_module
 	use file_operations_module !vaja ainult ajutiselt testimisel
 	use konvolutsioon_module
-	logical, parameter :: kas_fitib_massid_eraldi = .true.
 	type masside_arvutamise_tyyp
 		!iga vaatluspildi kohta...
 		!kasutatakse masside fittimise eristamises muust fittimisest
@@ -29,7 +28,9 @@ contains
 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
 		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
 		real(rk), dimension(:), allocatable :: lisakaalud_massile
+		logical :: kas_fitib_massid_eraldi
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
+		kas_fitib_massid_eraldi = .true.
 		kas_koik_pildid_samast_vaatlusest = .true. 
 		via_comp_im = .true.
 		kas_los = .true.
@@ -213,7 +214,8 @@ contains
 		logical :: kas_barrier
 		real(rk), dimension(:,:), allocatable :: tmp_pilt
 		real(rk) :: lambda, gamma
-		real(rk) :: t1,t2
+real(rk) :: t1,t2, tt1, tt2, dt_grad, dt_hess, dt_nihe
+integer :: vidin
 		kas_barrier = .true.
 		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
 		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
@@ -231,7 +233,10 @@ contains
 		end if
 		allocate(nihe(1:N_k))
 		allocate(res(1:N_k)); res = 1.0 !algne masside kordajad on 1.0... seal hakkab edasi roomama
-		call  cpu_time(t1)
+! call  cpu_time(t1); dt_grad=0.0; dt_hess = 0.0
+! do vidin = 1,100
+! do i=1,N_k; call random_number(res(i)) ;end do; res = res+0.1
+! print "(A,5F10.5)", "Enne",res
 		do iter = 1, N_iter
 			!iteratsiooni ettevalmistus
 			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
@@ -244,6 +249,7 @@ contains
 				!
 				! ================= gradiendi arvutamine ================= 
 				!
+! call  cpu_time(tt1)
 				do i=1,N_i
 					if(allocated(tmp_pilt)) deallocate(tmp_pilt)
 					allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
@@ -256,10 +262,12 @@ contains
 				end do
 				L_k(k) = L0_k(k)
 				if(kas_barrier) L_k(k) = L_k(k) - lambda / res(k) !kui piirab masse seestpoolt
+! call  cpu_time(tt2)
+! dt_grad = dt_grad + tt2-tt1
 				!
 				! ================= Hessiani komopnendid ================= 
 				!
-				do m=k,N_k !symmeetriline maatriks... siit saaks aega kokku hoida... TODO
+				do m=k,N_k
 					do i=1,N_i
 						L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
 					end do
@@ -267,10 +275,14 @@ contains
 					L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
 				end do
 				if(kas_barrier) L_km(k,k) = L_km(k,k) + lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
+! call  cpu_time(tt1)
+! dt_hess = dt_hess - tt2+tt1
 			end do
+
 			!
 			! ================= edasi liikumine miinimumi poole =================
 			!
+! call  cpu_time(tt1)
 			inv_L_km = fun_inv_mx(L_km) !poordmaatriksi leidmine, et edasi liikuda
 			nihe = 0.0
 			do k = 1,N_k
@@ -285,10 +297,15 @@ contains
 			else
 				res = res - nihe
 			end if
-			print "(5F10.5)", res
+! print "(5F10.5)", res
+! call  cpu_time(tt2)
+! dt_nihe = tt2-tt1
 		end do
-		call  cpu_time(t2)
-		print*, "fitting done:D", t2-t1
+! print "(5F10.5)", res
+! end do
+! call  cpu_time(t2)
+! print*, "fitting done:D", t2-t1
+! print "(A,3F10.5)", "fitting done:D", dt_grad, dt_hess, dt_nihe
 	end function fiti_massi_kordajad
 	
 end module likelihood_module
