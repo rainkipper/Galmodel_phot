@@ -9,7 +9,7 @@ module likelihood_module
 		!kasutatakse masside fittimise eristamises muust fittimisest
 		real(rk), dimension(:), allocatable :: w !ehk massi komponentide yhikutest ja  ML tulevad kaalud... niipalju kui massi pilte on ka w pikkus
 		real(rk), dimension(:,:), allocatable :: I
-		real(rk), dimension(:,:), allocatable :: inv_sigma4
+		real(rk), dimension(:,:), allocatable :: inv_sigma2
 		logical, dimension(:,:), allocatable :: mask
 		real(rk), dimension(:,:,:), allocatable :: M !sama pikkusega, mis on w... esimen on mis pildi kohta k2ib, ylej22nud on pildi koordinaadid
 	end type masside_arvutamise_tyyp
@@ -52,10 +52,10 @@ contains
 				allocate(to_massfit(i)%I(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				allocate(to_massfit(i)%mask(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				allocate(to_massfit(i)%M(1:all_comp%N_comp, 1:size(images(i)%obs,1), size(images(i)%obs,2)))
-				allocate(to_massfit(i)%inv_sigma4(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				allocate(to_massfit(i)%inv_sigma2(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				to_massfit(i)%I = images(i)%obs
 				to_massfit(i)%mask = images(i)%mask
-				to_massfit(i)%inv_sigma4 = 1.0/(images(i)%sigma**2  + images(i)%sky_noise**2 + abs(images(i)%obs))**2 !
+				to_massfit(i)%inv_sigma2 = 1.0/(images(i)%sigma**2  + images(i)%sky_noise**2 + abs(images(i)%obs))
 			end do
 		end if
 		
@@ -163,6 +163,7 @@ contains
 		
 	end function leia_massi_abs_tol
 	function fiti_massi_kordajad_lin_regressioon(to_massfit) result(res)
+		!tekitab negatiivseid massi kordajaid, ehk kasutada ainult väga mittekõdunud profiilide korral
 		implicit none
 		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
 		integer :: i,j,k
@@ -170,6 +171,7 @@ contains
 		real(rk), dimension(:), allocatable :: res
 		real(rk), dimension(:,:), allocatable :: A, inv_A
 		real(rk), dimension(:), allocatable :: B
+		stop "Liiga kontrollimata, et toimiks"
 		N_k = size(to_massfit(1)%w, 1)
 		allocate(B(1:N_k))
 		allocate(A(1:N_k, 1:N_k)); allocate(inv_A(1:N_k, 1:N_k))
@@ -177,7 +179,7 @@ contains
 			!B leidmine
 			B(k) = 0
 			do i=1,size(to_massfit)
-				B(k) = B(k) + sum(  (to_massfit(i)%I*to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:))*to_massfit(i)%inv_sigma4 , to_massfit(i)%mask )
+				B(k) = B(k) + sum(  (to_massfit(i)%I*to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:))*to_massfit(i)%inv_sigma2 , to_massfit(i)%mask )
 			end do
 			!A leidmine
 			do j = 1,N_k
@@ -186,7 +188,7 @@ contains
 				do i=1,size(to_massfit)
 ! 					A(k,j)  = A(k,j) + &
 					A(j,k)  = A(j,k) + &
-					sum( to_massfit(i)%w(k) * to_massfit(i)%M(k,:,:) * to_massfit(i)%w(j) * to_massfit(i)%M(j,:,:) * to_massfit(i)%inv_sigma4, to_massfit(i)%mask )
+					sum( to_massfit(i)%w(k) * to_massfit(i)%M(k,:,:) * to_massfit(i)%w(j) * to_massfit(i)%M(j,:,:) * to_massfit(i)%inv_sigma2, to_massfit(i)%mask )
 				end do
 			end do
 		end do
@@ -198,45 +200,91 @@ contains
 		end do
 		
 		print "(5F)", res
-		res = abs(res)
+		res = (res)
 	end function fiti_massi_kordajad_lin_regressioon
 	function fiti_massi_kordajad(to_massfit) result(res)
 		implicit none
 		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
-		integer :: i,j,k
-		integer :: N_k
+		integer :: i,j,k,m, iter
+		integer :: N_k, N_i, N_iter
 		real(rk), dimension(:), allocatable :: res
-		real(rk), dimension(:,:), allocatable :: A, C, inv_A, inv_C
-		real(rk), dimension(:), allocatable :: B
-		N_k = size(to_massfit(1)%w, 1)
-		allocate(B(1:N_k))
-		allocate(A(1:N_k, 1:N_k)); allocate(inv_A(1:N_k, 1:N_k))
-		do k=1,N_k
-			!B leidmine
-			B(k) = 0
-			do i=1,size(to_massfit)
-				B(k) = B(k) + sum(  (to_massfit(i)%I*to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:))*to_massfit(i)%inv_sigma4 , to_massfit(i)%mask )
-			end do
-			!A leidmine
-			do j = 1,N_k
-! 			A(k,j)  = 0.0
-			A(j,k)  = 0.0
-				do i=1,size(to_massfit)
-! 					A(k,j)  = A(k,j) + &
-					A(j,k)  = A(j,k) + &
-					sum( to_massfit(i)%w(k) * to_massfit(i)%M(k,:,:) * to_massfit(i)%w(j) * to_massfit(i)%M(j,:,:) * to_massfit(i)%inv_sigma4, to_massfit(i)%mask )
+		real(rk), dimension(:,:), allocatable :: L_km, L0_km, B_km, inv_L_km !kogu chisq, piltidest chisq, barrier osa chisq-st, poordmaatriks
+		real(rk), dimension(:), allocatable :: L_k, L0_k, B_k, nihe
+		logical :: kas_barrier
+		real(rk), dimension(:,:), allocatable :: tmp_pilt
+		real(rk) :: lambda, gamma
+		kas_barrier = .true.
+		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
+		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
+		N_iter = 15
+		!initsialiseerimised
+		N_k = size(to_massfit(1)%w, 1) !komponentide arv
+		N_i = size(to_massfit, 1) !piltide arv
+		allocate(L0_k(1:N_k)) 
+		allocate(L_k(1:N_k)) 
+		allocate(L0_km(1:N_k, 1:N_k)); 
+		allocate(L_km(1:N_k, 1:N_k))
+		if(kas_barrier) then
+			allocate(B_km(1:N_k, 1:N_k)); 
+			allocate(B_k(1:N_k))
+		end if
+		allocate(nihe(1:N_k))
+		allocate(res(1:N_k)); res = 1.0 !algne masside kordajad on 1.0... seal hakkab edasi roomama
+
+		do iter = 1, N_iter
+			!iteratsiooni ettevalmistus
+			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
+			if(kas_barrier) then
+				B_km = 0.0;  B_k = 0.0
+			end if
+			nihe = 0.0
+			!Hessiani ja gradiendi arvuamised
+			do k = 1,N_k
+				!
+				! ================= gradiendi arvutamine ================= 
+				!
+				do i=1,N_i
+					if(allocated(tmp_pilt)) deallocate(tmp_pilt)
+					allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
+					!selle iteratsiooni heleduse pilt
+					do j=1,N_k
+						tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(j,:,:)
+					end do
+					!likelihoodi gradienti lisamine 
+					L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
 				end do
+				L_k(k) = L0_k(k)
+				if(kas_barrier) L_k(k) = L_k(k) - lambda / res(k) !kui piirab masse seestpoolt
+				!
+				! ================= Hessiani komopnendid ================= 
+				!
+				do m=1,N_k !symmeetriline maatriks... siit saaks aega kokku hoida... TODO
+					do i=1,N_i
+						L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
+					end do
+					L_km(k,m) = L0_km(k,m)
+				end do
+				if(kas_barrier) L_km(k,k) = L_km(k,k) + lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
 			end do
+			!
+			! ================= edasi liikumine miinimumi poole =================
+			!
+			inv_L_km = fun_inv_mx(L_km) !poordmaatriksi leidmine, et edasi liikuda
+			nihe = 0.0
+			do k = 1,N_k
+				do m=1,N_k
+					nihe(k) = nihe(k) + L_k(m) * inv_L_km(k,m) !maatriks korrutamine sisuliselt
+				end do
+				nihe(k) = nihe(k) * gamma
+			end do
+			if(any(res - nihe < 0)) then
+				!kui ekstrapoolib liiga kaugele
+				res = res - nihe * minval(abs(0.9*res/nihe)) !minval, et l2hima nullile parameetri j2rgi voetaks
+			else
+				res = res - nihe
+			end if
+			print "(5F10.5)", res
 		end do
-		!poordmaatriksi leidmine ja massile kaalude saamine
-		allocate(res(1:N_k))
-		inv_A = fun_inv_mx(A)
-		do k=1,N_k
-			res(k) = sum( B(:) * inv_A(k,:)  )
-		end do
-		
-		print "(5F)", res
-		res = abs(res)
 	end function fiti_massi_kordajad
 	
 end module likelihood_module
