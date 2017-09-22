@@ -213,6 +213,7 @@ contains
 		logical :: kas_barrier
 		real(rk), dimension(:,:), allocatable :: tmp_pilt
 		real(rk) :: lambda, gamma
+		real(rk) :: t1,t2
 		kas_barrier = .true.
 		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
 		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
@@ -230,7 +231,7 @@ contains
 		end if
 		allocate(nihe(1:N_k))
 		allocate(res(1:N_k)); res = 1.0 !algne masside kordajad on 1.0... seal hakkab edasi roomama
-
+		call  cpu_time(t1)
 		do iter = 1, N_iter
 			!iteratsiooni ettevalmistus
 			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
@@ -258,11 +259,12 @@ contains
 				!
 				! ================= Hessiani komopnendid ================= 
 				!
-				do m=1,N_k !symmeetriline maatriks... siit saaks aega kokku hoida... TODO
+				do m=k,N_k !symmeetriline maatriks... siit saaks aega kokku hoida... TODO
 					do i=1,N_i
 						L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
 					end do
 					L_km(k,m) = L0_km(k,m)
+					L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
 				end do
 				if(kas_barrier) L_km(k,k) = L_km(k,k) + lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
 			end do
@@ -285,6 +287,8 @@ contains
 			end if
 			print "(5F10.5)", res
 		end do
+		call  cpu_time(t2)
+		print*, "fitting done:D", t2-t1
 	end function fiti_massi_kordajad
 	
 end module likelihood_module
