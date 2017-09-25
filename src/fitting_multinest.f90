@@ -112,6 +112,7 @@ contains
 			integer :: i
 			type(prof_par_list_type), pointer ::  par_list
 			integer mitmes_cube
+			real(rk), dimension(:), allocatable :: lisakaalud_massile
 			
 			mitmes_cube = 0
 			do i=1,size(input_comps)
@@ -122,25 +123,21 @@ contains
 				end if	
 				if(input_comps(i)%cnt_x%kas_fitib) then
 					mitmes_cube=mitmes_cube+1
-! 					recalc_comp(i) = .true. !ehk muudetakse, siis arvutatakse ymber
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_x%min,  input_comps(i)%cnt_x%max)
 					input_comps(i)%cnt_x%val = cube(mitmes_cube)	
 				end if	
 				if(input_comps(i)%cnt_y%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-! 					recalc_comp(i) = .true. !ehk muudetakse, siis arvutatakse ymber
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_y%min,  input_comps(i)%cnt_y%max)
 					input_comps(i)%cnt_y%val = cube(mitmes_cube)
 				end if	
 				if(input_comps(i)%pos%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-! 					recalc_comp(i) = .true. !ehk muudetakse, siis arvutatakse ymber
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%pos%min,  input_comps(i)%pos%max)
 					input_comps(i)%pos%val = cube(mitmes_cube)
 				end if	
 				if(input_comps(i)%theta0%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-! 					recalc_comp(i) = .true. !ehk muudetakse, siis arvutatakse ymber
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%theta0%min,  input_comps(i)%theta0%max)
 					input_comps(i)%theta0%val = cube(mitmes_cube)
 				end if	
@@ -148,7 +145,6 @@ contains
 				do while(par_list%filled)
 					if(par_list%par%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-! 					recalc_comp(i) = .true. !ehk muudetakse, siis arvutatakse ymber
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
 					par_list%par%val = cube(mitmes_cube)
 					
@@ -164,7 +160,19 @@ contains
 
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-			lnew =  calc_log_likelihood(all_comp, images)
+			lnew =  calc_log_likelihood(all_comp, images, lisakaalud_massile)
+			
+			!kui lisamassidele juurde asju arvutatud, siis paneb uued massid vastavalt eelmistele... input_comps juurde
+			do i=1,all_comp%N_comp
+				par_list => input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(trim(par_list%par_name)=="M") then
+						par_list%par%val = par_list%par%val * lisakaalud_massile(i)
+						exit
+					end if
+					par_list => par_list%next
+				end do
+			end do
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
@@ -215,6 +223,18 @@ contains
 					else
 						exit
 					end if
+				end do
+			end do
+			print*, "-------"
+			print*, "Massid:"
+			do i=1,size(input_comps)
+				par_list=>input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(trim(par_list%par_name)=="M") then
+						print*, " ", trim(input_comps(i)%comp_name), par_list%par%val
+						exit
+					end if
+					par_list=>par_list%next
 				end do
 			end do
 			print*, "==============================================================="

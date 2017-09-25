@@ -50,7 +50,7 @@ contains
 		end if
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
-	function calc_log_likelihood(all_comp, images, recalc_comp) result(res)
+	function calc_log_likelihood(all_comp, images, lisakaalud_massile, recalc_comp) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
@@ -63,7 +63,7 @@ contains
 		real(rk), dimension(:,:), allocatable :: weights !ehk M/L suhted fotomeetria korral ... esimene indeks pilt, teine komponent
 		real(rk), dimension(:), allocatable :: weights_for_single_im
 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
-		real(rk), dimension(:), allocatable :: lisakaalud_massile
+		real(rk), dimension(:), allocatable, intent(out) :: lisakaalud_massile !optional output
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
 		mida_arvutatakse = "Not in use"
@@ -122,6 +122,10 @@ contains
 			do j=1,all_comp%N_comp
 				weights(:,j) = weights(:,j) * lisakaalud_massile(j) !lisab kaaludesse, et peaks v2hem arvutama
 			end do
+		else
+			if(allocated(lisakaalud_massile)) deallocate(lisakaalud_massile)
+			allocate(lisakaalud_massile(1:all_comp%N_comp))
+			lisakaalud_massile = 1.0 !ehk v2ljund identsusteisendus
 		end if
 		!
 		! ========= mudelpiltide kokkupanek ===========
@@ -187,10 +191,11 @@ contains
 		real(rk), dimension(:,:), allocatable :: tmp_pilt
 		real(rk) :: lambda, gamma
 		real(rk) :: test1
+		integer :: testi
 
 		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
 		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
-		max_iter = 25
+		max_iter = 50
 		!initsialiseerimised
 		N_k = size(to_massfit(1)%w, 1) !komponentide arv
 		N_i = size(to_massfit, 1) !piltide arv
@@ -210,6 +215,10 @@ contains
 			res = massi_kordajad_eelmine !ehk votab algl2hendi eelimise fittimise tulemusest
 		end if
 
+
+! do testi = 1,10
+! do iter=1,5; call random_number(res(iter)); res = res; end do
+	
 		do iter = 1, max_iter
 			!iteratsiooni ettevalmistus
 			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
@@ -265,12 +274,15 @@ contains
 			else
 				res = res - nihe
 			end if
-			if(minval(abs(res-massi_kordajad_eelmine)/res)<massif_fiti_rel_t2psus) then
+			if(maxval(abs(res-massi_kordajad_eelmine)/res)<massif_fiti_rel_t2psus) then
 ! 				print*, "t2psus, iter:", minval(abs(res-massi_kordajad_eelmine)/res), iter
 				exit
 			end if
 		end do
-		
+
+! print"(5F,I)", res, iter
+! end do
+! stop
 ! 		!test
 ! 		test1 = 0.0
 ! 		do i=1,size(to_massfit, 1)
