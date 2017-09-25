@@ -23,7 +23,7 @@ cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt9
 a0 = 3.71818401041344 ,  T, 3.1, 7.0, bulge_intermediate
 N = 1.626383085742347,  T, 0.5, 1.5, bulge_intermediate
-q = 0.964976751751812   , T, 0.65, 0.99, bulge_intermediate
+q = 0.964976751751812   , F, 0.65, 0.99, bulge_old
 M = 1.0 , F, 0.0, 4.2, bulge_intermediate
 
 [disc_old]
@@ -51,8 +51,8 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt9
-a0 = 8.34762033744784,  T, 0.1, 20.0, disc_intermediate
-N = 1.0,  T, 0.5, 3.0, disc_intermediate
+a0 = 8.34762033744784,  F, 0.1, 20.0, disc_old
+N = 1.0,  F, 0.5, 3.0, disc_old
 q = 8.503741298788808E-002 ,  T, 0.02, 0.2, disc_intermediate
 M = 1.0 , F, 0.00, 2.0, disc_intermediate
 
@@ -68,7 +68,7 @@ pos_wrt_phys_coord = 53.5250150258185, F, -90.0, 90.0, bulge_old
 cnt_x = -6.936356515925672E-004, F, -1.0e-3, 1.0e-3, bulge_old
 cnt_y = -2.630837102876519E-009, F, -1.0e-3, 1.0e-3, bulge_old
 population = pop_logt6
-a0 = 8.25262762249790,  T, 0.1, 20.0, disc_young
-N = 0.626383085742347,  T, 0.5, 3.0, disc_young
+a0 = 8.25262762249790,  F, 0.1, 20.0, disc_old
+N = 0.626383085742347,  F, 0.5, 3.0, disc_old
 q = 9.464944720852864E-002 ,  T, 0.02, 0.2, disc_young
 M = 1.0 , F, 0.00, 0.01, disc_young

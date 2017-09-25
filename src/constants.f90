@@ -21,6 +21,7 @@ module constants_module
 	type :: par_type !tyyp, mille eesm2rk on fititavaid parameetreid m2lus hoida. 
 		integer  :: ref !millise komponendi v22rtust kasutab
 		logical  :: kas_fitib !kas fititav parameeter
+! 		logical  :: kas_par_muutus
 		character(len=default_character_length), allocatable :: prior_type !priori tyyp
 	end type par_type
 	type, extends(par_type) :: par_type_real

@@ -6,13 +6,14 @@ module adaptive_image_real_module
 	integer, parameter :: im_list_maxsize = 101
 	integer, parameter :: puudub = -199
 	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
-	real(rk), parameter :: x0_default = -35.0_rk
-	real(rk), parameter :: y0_default = -35.0_rk
+	real(rk), parameter :: x0_default = 0.0!-35.0_rk
+	real(rk), parameter :: y0_default = 0.0!-35.0_rk
 	real(rk), parameter :: x1_default =  35.0_rk
 	real(rk), parameter :: y1_default =  35.0_rk
 	real(rk), private :: adaptive_image_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
 	integer, private :: adaptive_image_maxlevel = 12
-	real(rk), parameter :: adaptive_image_edasijagamise_threshold = 0.02 !suhteline jagamine
+	integer, private :: adaptive_image_minlevel = 3
+	real(rk), parameter :: adaptive_image_edasijagamise_threshold = 0.005 !suhteline jagamine
 	real(rk), parameter :: min_spatial_resolution = 0.01 !praegu ei lahuta rohkem kui 10pc
 ! 	integer :: adaptive_image_kokku = 1
 	
@@ -197,7 +198,7 @@ module adaptive_image_real_module
 ! 				! ==================== alamstruktuuri vajadus ====================
 !
 				res%last_level = .not.kas_jagada_edasi(res%x, res%y, res%val)  !tavaline kriteerium
-				res%last_level = res%last_level .or. (mis_levelil>adaptive_image_maxlevel)  !teatud sygavustesse ei tohi minna
+				res%last_level = res%last_level .or. (mis_levelil>adaptive_image_maxlevel) .or. (mis_levelil < adaptive_image_minlevel)  !teatud sygavustesse ei tohi minna
 				res%last_level = res%last_level .and. .not.(mis_levelil < 2) !v2hemalt 2 levelit peab olema
 !
 ! 				! ==================== alamstruktuuri t2itmine ====================
