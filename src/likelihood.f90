@@ -12,6 +12,7 @@ module likelihood_module
 		logical, dimension(:,:), allocatable :: mask
 		real(rk), dimension(:,:,:), allocatable :: M !sama pikkusega, mis on w... esimen on mis pildi kohta k2ib, ylej22nud on pildi koordinaadid
 	end type masside_arvutamise_tyyp
+	
 contains
 	function calc_log_likelihood(all_comp, images) result(res)
 		implicit none
@@ -233,10 +234,7 @@ integer :: vidin
 		end if
 		allocate(nihe(1:N_k))
 		allocate(res(1:N_k)); res = 1.0 !algne masside kordajad on 1.0... seal hakkab edasi roomama
-! call  cpu_time(t1); dt_grad=0.0; dt_hess = 0.0
-! do vidin = 1,100
-! do i=1,N_k; call random_number(res(i)) ;end do; res = res+0.1
-! print "(A,5F10.5)", "Enne",res
+
 		do iter = 1, N_iter
 			!iteratsiooni ettevalmistus
 			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
@@ -249,7 +247,6 @@ integer :: vidin
 				!
 				! ================= gradiendi arvutamine ================= 
 				!
-! call  cpu_time(tt1)
 				do i=1,N_i
 					if(allocated(tmp_pilt)) deallocate(tmp_pilt)
 					allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
@@ -262,8 +259,6 @@ integer :: vidin
 				end do
 				L_k(k) = L0_k(k)
 				if(kas_barrier) L_k(k) = L_k(k) - lambda / res(k) !kui piirab masse seestpoolt
-! call  cpu_time(tt2)
-! dt_grad = dt_grad + tt2-tt1
 				!
 				! ================= Hessiani komopnendid ================= 
 				!
@@ -275,14 +270,11 @@ integer :: vidin
 					L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
 				end do
 				if(kas_barrier) L_km(k,k) = L_km(k,k) + lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
-! call  cpu_time(tt1)
-! dt_hess = dt_hess - tt2+tt1
 			end do
 
 			!
 			! ================= edasi liikumine miinimumi poole =================
 			!
-! call  cpu_time(tt1)
 			inv_L_km = fun_inv_mx(L_km) !poordmaatriksi leidmine, et edasi liikuda
 			nihe = 0.0
 			do k = 1,N_k
@@ -297,15 +289,7 @@ integer :: vidin
 			else
 				res = res - nihe
 			end if
-! print "(5F10.5)", res
-! call  cpu_time(tt2)
-! dt_nihe = tt2-tt1
 		end do
-! print "(5F10.5)", res
-! end do
-! call  cpu_time(t2)
-! print*, "fitting done:D", t2-t1
-! print "(A,3F10.5)", "fitting done:D", dt_grad, dt_hess, dt_nihe
 	end function fiti_massi_kordajad
 	
 end module likelihood_module
