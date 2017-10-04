@@ -37,10 +37,11 @@ contains
 		integer  :: maxiter
 		integer ::  context
 		double precision :: logZero
+		logical, dimension(:), allocatable :: recalc_comp
 		
 		IS = .true.
 		mmodal = .false. 
-		nlive = 30 !testiks nii v2ike
+		nlive = 12 !testiks nii v2ike
 		ceff = .true.
 		tol = 0.5 !ei tea, mis siia peaks k2ima
 		efr = 0.8
@@ -65,15 +66,16 @@ contains
 		!
 		! ========== asjade initsialiseerimine... sh all_comp jm ===============
 		!
+		allocate(recalc_comp(1:all_comp%N_comp)); recalc_comp = .true. !ehk koik peab esimene kord uuesti arvutama... likelihoodi jaoks on see globaalne parameeter, mida pidevalt muudetakse
 		call convert_input_comp_to_all_comp(input_comps, all_comp)
 		call asenda_viited(input_comps, all_comp)
 		all_comp%comp(:)%adaptive_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
-		print*, 		all_comp%comp(:)%adaptive_image_number
+		call init_calc_log_likelihood(all_comp, images) !s2ttib likelihoodi mooduli muutujad, et v2hendada arvutamisis
 		
 		!
 		! =============== fittimine ise ================
 		!
-
+		
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
 			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
 		
@@ -110,10 +112,8 @@ contains
 			integer :: i
 			type(prof_par_list_type), pointer ::  par_list
 			integer mitmes_cube
-			! all_comp uuendamine
-! 			print*, "algne", cube
-			! algselt uuendab input_comp v22rtused ning siis edasi all_comp
-! 			print*, "fun loglike", all_comp%comp(:)%adaptive_image_number
+			real(rk), dimension(:), allocatable :: lisakaalud_massile
+			
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
@@ -124,7 +124,7 @@ contains
 				if(input_comps(i)%cnt_x%kas_fitib) then
 					mitmes_cube=mitmes_cube+1
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), input_comps(i)%cnt_x%min,  input_comps(i)%cnt_x%max)
-					input_comps(i)%cnt_x%val = cube(mitmes_cube)					
+					input_comps(i)%cnt_x%val = cube(mitmes_cube)	
 				end if	
 				if(input_comps(i)%cnt_y%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
@@ -147,6 +147,7 @@ contains
 					mitmes_cube=mitmes_cube+1
 					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
 					par_list%par%val = cube(mitmes_cube)
+					
 				end if	
 					if(associated(par_list%next)) then
 						par_list => par_list%next
@@ -155,15 +156,23 @@ contains
 					end if
 				end do
 			end do
+			
 
-! 			print*, "fun loglike v1.3", all_comp%comp(:)%adaptive_image_number
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
-! 			print*, "fun loglike v1.6", all_comp%comp(:)%adaptive_image_number
-! 			stop
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-! 			print*, "fun loglike v2", all_comp%comp(:)%adaptive_image_number
-			lnew =  calc_log_likelihood(all_comp, images)
-! 			print*, "LL = ", lnew
+			lnew =  calc_log_likelihood(all_comp, images, lisakaalud_massile)
+			
+			!kui lisamassidele juurde asju arvutatud, siis paneb uued massid vastavalt eelmistele... input_comps juurde
+			do i=1,all_comp%N_comp
+				par_list => input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(trim(par_list%par_name)=="M") then
+						par_list%par%val = par_list%par%val * lisakaalud_massile(i)
+						exit
+					end if
+					par_list => par_list%next
+				end do
+			end do
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
@@ -214,6 +223,18 @@ contains
 					else
 						exit
 					end if
+				end do
+			end do
+			print*, "-------"
+			print*, "Massid:"
+			do i=1,size(input_comps)
+				par_list=>input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(trim(par_list%par_name)=="M") then
+						print*, " ", trim(input_comps(i)%comp_name), par_list%par%val
+						exit
+					end if
+					par_list=>par_list%next
 				end do
 			end do
 			print*, "==============================================================="

@@ -71,29 +71,65 @@ contains
 		end do
 	end subroutine convert_input_comp_to_all_comp
 	
-	subroutine asenda_viited(input_comps, all_comp)
+	subroutine asenda_viited(input_comps, all_comp, recalc_comp)
 		implicit none
 		type(comp_input_type), intent(in), dimension(:), allocatable, target :: input_comps
 		type(all_comp_type), intent(inout) :: all_comp
+		logical, intent(inout), dimension(:), allocatable, optional :: recalc_comp !siit lisatakse viidete kaudu ymberarvutuse vajadus
 		type(prof_par_list_type), pointer ::  par_list
-		integer :: i
-		real(rk) :: tmp
-
+		integer :: i,j
+		integer :: viide
+		real(rk) :: tmp, tmp2
+		logical :: kas_recalc !ehk kas on vaja t2ita ymber arvutuste asju
+		kas_recalc = present(recalc_comp)
 		all_comp%N_comp = size(input_comps, 1)
 		do i=1,all_comp%N_comp
-			all_comp%comp(i)%incl     = all_comp%comp(input_comps(i)%incl%ref)%incl
-			all_comp%comp(i)%dist      = all_comp%comp(input_comps(i)%dist%ref)%dist   
-			all_comp%comp(i)%cnt_x     = all_comp%comp(input_comps(i)%cnt_x%ref)%cnt_x  
-			all_comp%comp(i)%cnt_y     = all_comp%comp(input_comps(i)%cnt_y%ref)%cnt_y  
-			all_comp%comp(i)%pos       = all_comp%comp(input_comps(i)%pos%ref)%pos    
-			all_comp%comp(i)%theta0     = all_comp%comp(input_comps(i)%theta0%ref)%theta0
+			
+			viide = input_comps(i)%incl%ref
+			all_comp%comp(i)%incl     = all_comp%comp(viide)%incl
+! 			if(kas_recalc .and. input_comps(viide)%incl%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+
+			viide = input_comps(i)%incl%ref
+			all_comp%comp(i)%dist      = all_comp%comp(viide)%dist
+! 			if(kas_recalc .and. input_comps(viide)%dist%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+			   
+			viide = input_comps(i)%cnt_x%ref
+			all_comp%comp(i)%cnt_x     = all_comp%comp(viide)%cnt_x  
+! 			if(kas_recalc .and. input_comps(viide)%cnt_x%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+
+			viide = input_comps(i)%cnt_y%ref
+			all_comp%comp(i)%cnt_y     = all_comp%comp(viide)%cnt_y  
+! 			if(kas_recalc .and. input_comps(viide)%cnt_y%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+
+			viide = input_comps(i)%pos%ref
+			all_comp%comp(i)%pos       = all_comp%comp(viide)%pos    
+! 			if(kas_recalc .and. input_comps(viide)%pos%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+			
+			viide = input_comps(i)%theta0%ref
+			all_comp%comp(i)%theta0     = all_comp%comp(viide)%theta0
+! 			if(kas_recalc .and. input_comps(viide)%theta0%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
+
 			par_list=>input_comps(i)%prof_pars
 			do while(par_list%filled)
-				if(trim(par_list%par_name)=="M" .and. i==1) then !siin on testosa
-					call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp)
-				end if
 				call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp) !votab v22rtuse ref jaoks
 				call all_comp%comp(i)%prof_den%set_val(trim(par_list%par_name), tmp) !paneb v22rtuse teise kohta paika
+				!ymber arvutuse kontrolli asjad
+! 				viide = par_list%par%ref
+! 				par_list2 => input_comps(viide)%prof_pars
+! 				if(kas_recalc .and. recalc_comp(viide) ) then
+! 					!vastava parameetri v2lja otsimine
+! 					!seda konstruktsiooni vaja eristamaks  mittefititavat parameetrit fititavast
+! 					do j=1,1000
+! 						if( trim(par_list%par_name) == trim(par_list2%par_name) ) then
+! 							exit
+! 						else
+! 							par_list2 => par_list2%next
+! 						end if
+! 					end do
+! ! 					if(par_list2%par%kas_fitib) recalc_comp(i) = .true.
+!
+! 				end if
+				!
 				if(associated(par_list%next)) then
 					par_list => par_list%next
 				else

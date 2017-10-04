@@ -20,7 +20,7 @@ program gm
 	real(rk) :: t1,t2 !aja mootmine
 	real(rk) :: ll
 	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .not..false.
-	
+	call random_seed()
 	call cpu_time(t1)
 	!
 	! ================== mingi testgalaktika tekitamine =================

@@ -101,7 +101,7 @@ contains
 		implicit none
 		real(rk), intent(in) :: Xc, Yc
 		real(rk) :: res
-		res = adaptive_im%get_val(Xc, Yc)
+		res = adaptive_im%get_val(abs(Xc), abs(Yc))
 	end function vota_adaptive_im_pilt
 	
 	function surface(Xc, Yc) result(res)
