@@ -1,6 +1,7 @@
 module fitting_multinest_module
 	use nested
 	use likelihood_module
+
 contains
 	subroutine jooksuta_fittimine(images, input_comps, all_comp)
 		implicit none
@@ -10,7 +11,7 @@ contains
 		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
 		type(all_comp_type), intent(out) :: all_comp !ehk v2ljundiks
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		
+			real(rk) :: alguse_aeg
 		!
 		! ======= multinesti muutujad =======
 		!
@@ -41,15 +42,15 @@ contains
 		
 		IS = .true.
 		mmodal = .false. 
-		nlive = 12 !testiks nii v2ike
+		nlive = 15 !testiks nii v2ike
 		ceff = .true.
-		tol = 0.5 !ei tea, mis siia peaks k2ima
-		efr = 0.8
+		tol = 0.5
+		efr = 0.99
 		ndims = leia_Ndim()!hiljem
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
-		updInt  = 3
+		updInt  = 1
 		Ztol = -1.d90
 		root = "Output/"
 		seed = -1
@@ -76,6 +77,7 @@ contains
 		! =============== fittimine ise ================
 		!
 		
+		call cpu_time(alguse_aeg)
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
 			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
 		
@@ -174,21 +176,25 @@ contains
 				end do
 			end do
 		end subroutine fun_loglike
-		subroutine fun_dumper(nSamples,nlive,nPar,physLive,posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
+		subroutine fun_dumper(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
 			integer :: nlive, nSamples, nPar, context
 			double precision :: maxloglike, logZ, INSlogZ,logZerr
 			double precision, pointer :: posterior(:,:)
 			double precision, pointer :: physLive(:,:)
 			double precision, pointer :: paramConstr(:)
+			double precision :: keskmine, sd_h2lve
 			integer :: i
 			type(prof_par_list_type), pointer ::  par_list
 			integer mitmes_cube	
-			integer :: parim		
-! 			double precision, dimension(1:nlive, 1:nPar+1) :: physLive
-! 			double precision, dimension(1, 1:4*nPar) :: paramConstr
+			integer :: parim	
+			real(rk) :: dt	
 			parim = maxloc(physLive(:,nPar+1),1)
+			keskmine = sum(posterior(:,nPar+1))/size(posterior, 1)
+			sd_h2lve = sqrt(sum( (posterior(:,nPar+1)-keskmine)**2 )/size(posterior, 1))
+			print*, size(posterior, 1), size(posterior, 2)
 			print*, "============== parim on ", maxloglike, size(physLive)
+			print "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
@@ -237,7 +243,8 @@ contains
 					par_list=>par_list%next
 				end do
 			end do
-			print*, "==============================================================="
+			call cpu_time(dt)
+			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
 		end subroutine fun_dumper
 end subroutine jooksuta_fittimine
 	

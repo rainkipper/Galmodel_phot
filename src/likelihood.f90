@@ -22,6 +22,7 @@ module likelihood_module
 	logical, parameter, private :: kas_barrier = .true.
 	real(rk), parameter,private :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk), dimension(:), allocatable :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
+	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
 contains
 	subroutine init_calc_log_likelihood(all_comp, images)
 		!eesm2rk on teha m2llu ja initsialiseerida piltide arvuamise asjad
@@ -67,6 +68,7 @@ contains
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
 		mida_arvutatakse = "Not in use"
+		LL_counter = LL_counter + 1
 		
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
@@ -159,7 +161,7 @@ contains
 			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
 		end do
 		
-		print*, "LL = ", res
+		print*, LL_counter, "LL = ", res
 ! 		print*, ""
 	end function calc_log_likelihood
 	function leia_massi_abs_tol(comp, images) result(res)
