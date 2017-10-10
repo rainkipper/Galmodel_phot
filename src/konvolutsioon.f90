@@ -34,11 +34,11 @@ contains
     subroutine convolve(pix_img, pix_kern, convolved)
         implicit none
         real(rk), dimension(:,:), allocatable, intent(in) :: pix_img, pix_kern
-        real(rk), intent(out), dimension(:,:), allocatable :: convolved ! convolved 2d array
+        real(rk), intent(inout), dimension(:,:), allocatable :: convolved ! convolved 2d array
         real(rk), dimension(:,:), allocatable :: img_padded, kern_padded
         integer :: n1, n2, dn
         integer :: i, m, pow
-        real(rk), allocatable :: pix_sum(:), out_sum(:)
+!         real(rk), allocatable :: pix_sum(:), out_sum(:)
 
         ! assume len xdim = len ydim
         n1 = int(sqrt(float(size(pix_img))))
@@ -63,6 +63,10 @@ contains
         !pad with zeroes up to next power of two
         call makepadded(pix_img, n1, pow, img_padded)  
         call makepadded(pix_kern, n2, pow, kern_padded)  
+! 		print*, "CP1"
+! 		print*, size(img_padded)
+! 		print*, size(kern_padded)
+! 		print*, "CP2"
         
         ! add complex counterparts to real pixel values
         ! sequence: i (odd) - real
@@ -131,8 +135,8 @@ contains
         real(rk), dimension(:,:), intent(in) :: pix
         integer, intent(in) :: original_size, padded_size
         real(rk), dimension(:,:), intent(out) :: pix_padded
-        real(rk) :: temp
-        integer :: i, j, c, ks2, padx
+!         real(rk) :: temp
+        integer :: i, j, padx!, c, ks2
 
         padx = (padded_size-original_size)/2
         
@@ -179,7 +183,7 @@ contains
         integer, intent(in) :: n
         real(rk), intent(inout), dimension(:,:), allocatable :: arr
         real(rk), dimension(:,:), allocatable :: temp_arr
-        integer :: i,j,c, k 
+        integer :: i,j, k !,c
 
         allocate(temp_arr(1:n,1:2*n))
 
@@ -209,7 +213,7 @@ contains
         real(rk), dimension(:,:), allocatable :: temp_arr
         integer :: i,j,c 
 		integer :: ALLOC_ERR
-		character(len=:), allocatable :: err
+! 		character(len=:), allocatable :: err
         allocate(temp_arr(n,n))
 		print*, "CP1", size(arr, 1), size(arr,2)
         do i=1, n
@@ -223,7 +227,9 @@ contains
 ! 		deallocate(arr, 		 ERRMSG=err)
 ! 		print*, err
 		deallocate(arr, STAT = ALLOC_ERR)
-		print*, "CP3", ALLOC_ERR, err
+! 		deallocate(arr)
+		print*, "CP3", ALLOC_ERR
+		stop "koik"
         allocate(arr(1:n,1:n))
         do i=1,n
             do j=1,n
@@ -264,7 +270,7 @@ contains
         real(rk), dimension(:), intent(inout) :: dat
         integer, intent(in) :: nn, isign
         integer :: n, mmax, m, j, istep, i
-        real(rk) :: wtemp, wr, wpr, wpi, wi, theta, tempr, tempi, z
+        real(rk) :: wtemp, wr, wpr, wpi, wi, theta, tempr, tempi!, z
         
         n = ishft(nn, 1)
         j=1
@@ -359,7 +365,7 @@ contains
         real(rk), dimension(:), intent(inout) :: arr
         integer :: i,n,k
         complex, dimension(:), allocatable :: temp, arr_c
-        real(rk) :: cosarg, sinarg
+!         real(rk) :: cosarg, sinarg
 
         allocate(arr_c(1:m))
         k = 1
@@ -397,7 +403,7 @@ contains
         implicit none
         integer, intent(in) :: N, dir
         real(rk), intent(inout), dimension(:) :: arr   
-        integer :: i,m,k,nn
+        integer :: i,k,nn!,m
         complex, dimension(:), allocatable :: Xk, arrToComplex
         
         nn = 2*N
@@ -431,7 +437,7 @@ contains
     ! radix-2 dit cooley-turkey algorithm
     recursive function radix2fft(arr, N, s, dir) result (Xk)
         implicit none
-        integer :: N, nn, s, dir, i,m,k
+        integer :: N, nn, s, dir, i,k !,m
         complex, dimension(:), allocatable :: arr, Xk, t1, t2
         real(rk) :: arg
 

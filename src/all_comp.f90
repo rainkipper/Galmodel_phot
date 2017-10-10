@@ -77,9 +77,9 @@ contains
 		type(all_comp_type), intent(inout) :: all_comp
 		logical, intent(inout), dimension(:), allocatable, optional :: recalc_comp !siit lisatakse viidete kaudu ymberarvutuse vajadus
 		type(prof_par_list_type), pointer ::  par_list
-		integer :: i,j
+		integer :: i!,j
 		integer :: viide
-		real(rk) :: tmp, tmp2
+		real(rk) :: tmp!, tmp2
 		logical :: kas_recalc !ehk kas on vaja t2ita ymber arvutuste asju
 		kas_recalc = present(recalc_comp)
 		all_comp%N_comp = size(input_comps, 1)

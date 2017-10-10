@@ -24,6 +24,8 @@ contains
 		real(rk), intent(in), optional :: theta
 		real(rk) :: res
 		res = 0.0/0.0
+		stop "Err: default does not suit for any profile"
+		print*, len(prof%den_prof_name), R,z,theta
 	end function fun_default
 	subroutine set_val_default(prof, par, val)
 		implicit none
@@ -31,6 +33,7 @@ contains
 		character(len=*), intent(in) 	:: par
 		real(rk), intent(in) 			:: val
 		stop "Err: default does not suit for any profile"
+		print*, val, len(prof%den_prof_name), par
 	end subroutine set_val_default
 	subroutine get_val_default(prof, par, val)
 		implicit none
@@ -39,6 +42,7 @@ contains
 		real(rk), intent(out) 			:: val
 		val = 0.0_rk
 		stop "Err: default does not suit for any profile"
+		print*, len(prof%den_prof_name), par
 	end subroutine get_val_default
 	elemental function fun_den_default(prof, R,z,theta) result(res)
 		implicit none
@@ -46,12 +50,15 @@ contains
 		real(rk), intent(in) 						:: R,z
 		real(rk), intent(in), optional				:: theta
 		real(rk)  									:: res
-		res = 0/0
+		
+		res = 0/0 + R+z+theta + len(prof%den_prof_name)
+		
 	end function fun_den_default
 	subroutine init_prof_default(prof)
 		implicit none
 		class(prof_den_base_type), intent(inout) :: prof
 		stop "Err: default does not suit for any profile"
+		print*, len(prof%den_prof_name)
 	end subroutine init_prof_default
 	subroutine sanity_check_default(prof)
 		implicit none
@@ -59,6 +66,7 @@ contains
 		logical :: kas_ok
 		kas_ok = .false.
 		if(kas_ok) stop("Sanity check not passed by default den profile")
+		print*, len(prof%den_prof_name)
 	end subroutine sanity_check_default
 	
 	

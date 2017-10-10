@@ -2,7 +2,7 @@ module likelihood_module
 	use images_module
 	use fill_comp_image_module
 	use file_operations_module !vaja ainult ajutiselt testimisel
-	use konvolutsioon_module
+	use psf_rakendamine_module
 	type masside_arvutamise_tyyp
 		!iga vaatluspildi kohta...
 		!kasutatakse masside fittimise eristamises muust fittimisest
@@ -20,6 +20,7 @@ module likelihood_module
 	logical, parameter, private :: via_comp_im = .true.
 	logical, parameter, private :: kas_los = .true.
 	logical, parameter, private :: kas_barrier = .true.
+	logical, parameter, private :: kas_rakendab_psf = .true.
 	real(rk), parameter,private :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk), dimension(:), allocatable :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
@@ -59,17 +60,16 @@ contains
 ! 		type(comp_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk) :: res
 		real(rk), dimension(:,:), allocatable :: pilt, pilt_psf
-		integer :: i, j, k
+		integer :: i, j !, k
 		character(len=default_character_length) :: mida_arvutatakse
 		real(rk), dimension(:,:), allocatable :: weights !ehk M/L suhted fotomeetria korral ... esimene indeks pilt, teine komponent
 		real(rk), dimension(:), allocatable :: weights_for_single_im
-		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
+! 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
 		real(rk), dimension(:), allocatable, intent(out) :: lisakaalud_massile !optional output
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
 		mida_arvutatakse = "Not in use"
 		LL_counter = LL_counter + 1
-		
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
 		!
@@ -88,7 +88,15 @@ contains
 					call fill_comp_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
-						do j=1,size(images); to_massfit(j)%M(i,:,:) = mudelid(i)%mx; end do
+						do j=1,size(images); 
+							if(kas_rakendab_psf) then
+								call rakenda_psf(mudelid(i)%mx, images(j)%psf, pilt_psf)
+								to_massfit(j)%M(i,:,:) = pilt_psf
+							else
+								to_massfit(j)%M(i,:,:) = mudelid(i)%mx; 
+							end if
+							
+						end do
 					end if
 				end if
 			end do
@@ -117,6 +125,7 @@ contains
 		if(any(weights == -1.234)) then
 			print*, "Vale M/L sisend"; stop
 		end if
+
 		!t2psustus vastavalt sellele, kas fitib massid eraldi	
 		if(kas_fitib_massid_eraldi) then
 			!lisab kaaludele veel massi kordaja sisemisest fittimisest
@@ -129,6 +138,7 @@ contains
 			allocate(lisakaalud_massile(1:all_comp%N_comp))
 			lisakaalud_massile = 1.0 !ehk v2ljund identsusteisendus
 		end if
+
 		!
 		! ========= mudelpiltide kokkupanek ===========
 		!	
@@ -141,9 +151,9 @@ contains
 				print*, "Not yet implemented in likelihood"
 				stop
 			end if
-			!
-			! ========== psf rakendamine =========
-			!
+
+
+			
 			if(.false.) then
 				if(allocated(pilt_psf)) deallocate(pilt_psf)
 				call convolve(pilt, images(i)%psf, pilt_psf)
@@ -153,14 +163,25 @@ contains
 				allocate(pilt_psf(1:size(pilt,1), 1:size(pilt,2)))
 				pilt_psf = pilt
 			end if
-			call write_matrix_to_fits(pilt_psf, images(i)%output_mdl_file)
+			
+			!output horedamalt
+			if(mod(LL_counter,10)==0)then
+				call write_matrix_to_fits(pilt_psf, images(i)%output_mdl_file)
+				pilt = (images(i)%obs-pilt_psf)
+				where (.not.images(i)%mask) pilt = 0.0
+				call write_matrix_to_fits(pilt, images(i)%output_diff_file)
+				pilt = abs((images(i)%obs-pilt_psf)/images(i)%sigma) !muutuja yle kasutamine
+				where (.not.images(i)%mask) pilt = 0.0
+				call write_matrix_to_fits(pilt, images(i)%output_rel_diff_file)
+			end if
+
 			
 			!
 			! ======== loglike ise ========
 			!
+			
 			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
 		end do
-		
 		print*, LL_counter, "LL = ", res
 ! 		print*, ""
 	end function calc_log_likelihood
@@ -192,8 +213,8 @@ contains
 		real(rk), dimension(:), allocatable :: L_k, L0_k, B_k, nihe
 		real(rk), dimension(:,:), allocatable :: tmp_pilt
 		real(rk) :: lambda, gamma
-		real(rk) :: test1
-		integer :: testi
+! 		real(rk) :: test1
+! 		integer :: testi
 
 		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
 		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel

@@ -560,7 +560,7 @@ contains
         real(rk),intent(in)                :: a,b
         integer,intent(in):: midp
         real(rk),intent(out):: res
-		integer:: i
+! 		integer:: i
         ! define the interface for integration function
         interface
             function func(x) result(res)
@@ -598,7 +598,7 @@ contains
         real(rk),intent(in)                :: a,b
         integer,intent(in):: midp
         real(rk),intent(out):: res
-		integer:: i
+! 		integer:: i
         interface
             function func(x) result(res)
 				import:: rk
@@ -630,7 +630,7 @@ contains
         type(function_value_storage_type),intent(inout):: fval ! function value, location and weight arrays
         real(rk),intent(in):: a,b
         real(rk),intent(out):: res
-		integer:: i
+! 		integer:: i
         interface
             function func(x) result(res)
 				import:: rk
@@ -658,7 +658,7 @@ contains
         type(function_value_storage_type),intent(inout):: fval ! function value, location and weight arrays
         real(rk),intent(in):: a,b
         real(rk),intent(out):: res
-		integer:: i
+! 		integer:: i
         interface
             function func(x) result(res)
 				import:: rk
@@ -684,7 +684,7 @@ contains
         class(function_value_storage_type),intent(inout):: this
 		integer,intent(in):: npluss ! kui palju on juurde vaja
         type(function_value_storage_type):: fdum
-		integer:: i
+! 		integer:: i
 		! kontrollime suurust ning suurendame kui vaja
         if (this%n+npluss>size(this%p)) then
             allocate(fdum%p(1:size(this%p)))
@@ -704,7 +704,7 @@ contains
     subroutine initialize_storage(this)
         implicit none
         class(function_value_storage_type),intent(inout):: this
-		integer:: i
+! 		integer:: i
 		! esialgne allokeerimine
         if (allocated(this%p)) deallocate(this%p)
         allocate(this%p(1:default_funval_storage_size))
@@ -715,7 +715,7 @@ contains
         implicit none
 		class(function_value_storage_type),intent(out):: fout
         class(function_value_storage_type),intent(in):: fin
-		integer:: i
+! 		integer:: i
         if (allocated(fout%p)) then
             deallocate(fout%p)
         end if
@@ -730,7 +730,7 @@ contains
         implicit none
 		class(function_value_storage_type),intent(inout):: this
         class(function_value_storage_type),intent(in):: fin
-		integer:: i
+! 		integer:: i
         call this%check_and_fix_alloc(fin%n)
         this%p(this%n+1:this%n+fin%n)%x=fin%p(1:fin%n)%x
         this%p(this%n+1:this%n+fin%n)%w=fin%p(1:fin%n)%w

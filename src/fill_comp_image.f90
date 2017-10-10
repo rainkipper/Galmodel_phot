@@ -18,7 +18,7 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mid
 	integer :: comp_nr !millist komponenti arvutatakse
 	type(comp_image_real_type), intent(inout) :: mdl
 	character(len=default_character_length), intent(in), optional :: mida_arvutatakse !ei kasuta... praegu votab alati tiheduses
-	real(rk) :: test1, test2
+! 	real(rk) :: test1, test2
 	interface
 		function pind(Xc, Yc) result(res)
 			import rk
@@ -36,9 +36,12 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mid
 	procedure(ruum), pointer :: ruum_ptr
 	!comp im asjad
 	type(adaptive_image_type), pointer :: adaptive_im	
-	integer :: image_number !comp image number
+! 	integer :: image_number !comp image number
 	!muud vidinad
 	integer :: i, j
+	if(present(mida_arvutatakse)) then
+		
+	end if
 ! 	print*, "fill model image", all_comp%comp(:)%adaptive_image_number
 	!
 	! ================== kontrollib ja arvutab komponendi koordinaadid uuesti kui vaja =============

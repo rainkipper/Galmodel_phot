@@ -4,30 +4,35 @@ program gm
 	use fitting_multinest_module
 	use only_output_image_module
 
-	type(all_comp_type) :: all_comp, all_comp_input
+	type(all_comp_type) :: all_comp !, all_comp_input
 	type(comp_input_type), dimension(:), allocatable :: input_comp
-	type(comp_image_real_type) :: mdl1, mdl2, mdl
+! 	type(comp_image_real_type) :: mdl1, mdl2, mdl
 	type(image_type), dimension(:), allocatable :: images
 	type(filter_type), dimension(:), allocatable :: filters
 	integer, parameter :: N_comp = 1
-	integer :: test_image_number
+! 	integer :: test_image_number
 	character(len=*), parameter :: fname="comp_im.txt"
-	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
-	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
-	logical :: kas_comp_im, kas_los
-	integer :: i, N
+! 	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
+! 	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
+	character(len=default_character_length), parameter :: input_comp_file = "Input/Mock/input_comp.txt"
+	character(len=default_character_length), parameter :: input_image_file = "Input/Mock/input_images.txt"
+! 	logical :: kas_comp_im, kas_los
+! 	integer :: i, N
 	real(rk), dimension(:,:), allocatable :: pilt
 	real(rk) :: t1,t2 !aja mootmine
-	real(rk) :: ll
+! 	real(rk) :: ll
 	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .not..false.
 	call random_seed()
 	call cpu_time(t1)
 	!
 	! ================== mingi testgalaktika tekitamine =================
 	!
+		print*, "CP1"
 	call read_components(input_comp_file, input_comp)
+	print*, "CP2"
 	call read_images_and_filters(input_image_file, images, filters)
-	
+	print*, "CP3"
+
 	if(kas_fitib_vs_lihtsalt_ouput) then
 		call jooksuta_fittimine(images, input_comp, all_comp)
 	else

@@ -42,7 +42,7 @@ contains
 		
 		IS = .true.
 		mmodal = .false. 
-		nlive = 15 !testiks nii v2ike
+		nlive = 25 !testiks nii v2ike
 		ceff = .true.
 		tol = 0.5
 		efr = 0.99
@@ -245,6 +245,7 @@ contains
 			end do
 			call cpu_time(dt)
 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
+			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
 		end subroutine fun_dumper
 end subroutine jooksuta_fittimine
 	

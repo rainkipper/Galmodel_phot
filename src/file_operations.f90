@@ -12,7 +12,15 @@ contains
       INTEGER,dimension(2):: pix_dim
       real(rk)                                    :: nullval
       logical                                     :: anynull
+	  logical :: kas_olemas
       status = 0
+	  
+	  kas_olemas = .false.
+	  inquire( file=trim(filename), exist=kas_olemas )
+	  if(.not.kas_olemas) then
+		  print*, "File does not exist: ", trim(filename)
+		  stop
+	  end if
       call ftgiou(unit, status) ! get io number for fits file....seda ei pea tegelikult kasutama...voib ka ise maarata
 
       rw = 0 ! 0-readonly, 1-readwrite

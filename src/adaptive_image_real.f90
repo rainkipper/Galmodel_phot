@@ -62,7 +62,7 @@ module adaptive_image_real_module
 			class(adaptive_image_type), intent(in) :: adaptive_im
 			real(rk), intent(in) :: Xc, Yc
 			real(rk) :: res
-			real(rk) :: f_low, f_up
+! 			real(rk) :: f_low, f_up
 			if(adaptive_im%last_level) then
 				!kui pohjas, siis bilineaarne 
 				res = adaptive_im%xy_kordaja * Xc * Yc + adaptive_im%x_kordaja * Xc + adaptive_im%y_kordaja * Yc  + adaptive_im%vabaliige

@@ -54,8 +54,10 @@ contains
 		real(rk), intent(in), optional		:: theta
 		real(rk) 							:: res
 		real(rk)							:: a
-		a = sqrt(R**2 + (z/prof%q)**2)
-		res =  prof%rho0 * exp(-1.0*(a/(prof%k*prof%a0))**(1/prof%N))
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			res =  prof%rho0 * exp(-1.0*(a/(prof%k*prof%a0))**(1/prof%N))
+		end if
 	end function fun_den_Einasto
 	subroutine init_prof_Einasto(prof)
 		implicit none

@@ -12,6 +12,7 @@ contains
 		type(comp_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk), dimension(:), allocatable :: weights
 		real(rk), dimension(:,:), allocatable, intent(out) :: pilt
+		integer :: i
 		!vajaliku abs t2psuse leidmine... optional
 		allocate(im(1:1)); im(1) = image !jama, et saada funktsiooni sisendiks oiget kuju
 		do i=1,all_comp%N_comp
