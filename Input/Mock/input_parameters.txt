@@ -1,8 +1,8 @@
 #
 # ============ parameetrid, mis iseloomustavad, mida t2pselt programm teeb
 #
-kas_los									= .false.
-kas_rakendab_psf 						= .false. 
+kas_los                                 = .false.
+kas_rakendab_psf                        = .false. 
 
 
 #

@@ -8,7 +8,6 @@ SRC_DIR = src
 _OBJ = 	constants.o \
 		yldine_matemaatika.o \
 		integration_module.o \
-		konvolutsioon.o \
 		file_operations.o \
 		psf_rakendamine.o \
 		filters.o \

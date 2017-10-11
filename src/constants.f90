@@ -130,8 +130,6 @@ contains
 		end do
 		close(unit = iunit)
 		
-		
-		stop
 	end subroutine read_constants_and_parameters
 	
 		
