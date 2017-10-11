@@ -15,6 +15,7 @@ program gm
 ! 	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
 ! 	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
 	character(len=default_character_length), parameter :: input_comp_file = "Input/Mock/input_comp.txt"
+	character(len=default_character_length), parameter :: input_param_file = "Input/Mock/input_parameters.txt"
 	character(len=default_character_length), parameter :: input_image_file = "Input/Mock/input_images.txt"
 ! 	logical :: kas_comp_im, kas_los
 ! 	integer :: i, N
@@ -24,14 +25,13 @@ program gm
 	logical, parameter :: kas_fitib_vs_lihtsalt_ouput = .not..false.
 	call random_seed()
 	call cpu_time(t1)
+	call read_constants_and_parameters(input_param_file)
 	!
 	! ================== mingi testgalaktika tekitamine =================
 	!
-		print*, "CP1"
 	call read_components(input_comp_file, input_comp)
-	print*, "CP2"
 	call read_images_and_filters(input_image_file, images, filters)
-	print*, "CP3"
+	call init_images(images) !peamiselt psf crop
 
 	if(kas_fitib_vs_lihtsalt_ouput) then
 		call jooksuta_fittimine(images, input_comp, all_comp)

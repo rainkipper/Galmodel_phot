@@ -2,6 +2,7 @@ module images_module
 	use constants_module
 	use filters_module
 	use yldine_matemaatika_module
+	use psf_rakendamine_module
 	
 	type image_type
 		!piltide sisend
@@ -41,6 +42,16 @@ module images_module
 	
 
 contains
+	subroutine init_images(images)
+		implicit none
+		type(image_type), intent(inout), dimension(:), allocatable :: images
+		integer :: i
+		do i=1,size(images,1)
+! 			call crop_psf(images(i)%psf, .true., .true.)
+			call crop_psf(psf = images(i)%psf, crop = kas_psf_crop, check = .true.) !viimane argument on psf kontroll (keskel jm eeldused)
+		end do
+
+	end subroutine init_images
 	elemental subroutine convert_XiYi_to_XpYp(im, Xi, Yi, Xp, Yp)
 		implicit none
 		class(image_type), intent(in) :: im

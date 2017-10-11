@@ -10,6 +10,7 @@ _OBJ = 	constants.o \
 		integration_module.o \
 		konvolutsioon.o \
 		file_operations.o \
+		psf_rakendamine.o \
 		filters.o \
 		profiles_den.o \
 		profile_collector.o \
@@ -22,14 +23,13 @@ _OBJ = 	constants.o \
 		comp_image.o \
 		adaptive_image_real.o \
 		fill_comp_image.o \
-		psf_rakendamine.o \
 		likelihood.o \
 		only_output_image.o \
 		fitting_multinest.o \
 		program.o
 
-# FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack
-FLAGS = -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -g -O0 -error-limit 10 -warn all
+FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack
+# FLAGS = -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -g -O0 -error-limit 10 -warn all
 # FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -prof-use -profile-loops=all -profile-loops-report=2 -prof-dir Prof
 # FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack -prof-gen -profile-loops-report=2 -prof-dir Prof
 OBJ = $(patsubst %,$(OBJ_DIR)/%,$(_OBJ))

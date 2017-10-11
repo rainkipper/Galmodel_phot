@@ -1,10 +1,5 @@
 module pixel_module
 	use constants_module
-
-	real(rk), parameter, private :: edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei kasuta
-	real(rk), parameter, private :: edasi_jagamise_rel_t2psus = 0.005
-	
-	integer, parameter  :: maxlevel = 5
 	type :: square_pixel_type
 		real(rk) :: val
 		real(rk), dimension(1:4) :: Xi_nurgad
@@ -97,7 +92,7 @@ contains
 			! =========== vaatab, kas peab edasi arvutama =========== 
 			!
 			tmp = abs(integraal1 + integraal2 - integraal) !t2psus
-			if(level<maxlevel .and. ( (tmp >  edasi_jagamise_abs_t2psus) .and. (abs(tmp/integraal) > edasi_jagamise_rel_t2psus))) then
+			if(level<pix_iter_maxlevel .and. ( (tmp >  edasi_jagamise_abs_t2psus) .and. (abs(tmp/integraal) > pix_edasi_jagamise_rel_t2psus))) then
 				valnext(1) = val_t2isnurgas; valnext(3) = val(1);  !molemal juhul samad
 				valnext(2) = val(3); xnext(2) = x(3); ynext(2) = y(3)
 				call leia_kolmnurga_v22rtus(xnext, ynext, valnext, integraal2, level+1)

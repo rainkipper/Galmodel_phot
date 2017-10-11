@@ -2,7 +2,7 @@ module only_output_image_module
 	use images_module
 	use fill_comp_image_module
 	use likelihood_module !vajalik massi t2psuse saamiseks
-	logical, parameter, private :: kas_los = .true.
+! 	logical, parameter, private :: kas_los = .true.
 	logical, parameter, private :: kas_comp_im = .true.
 contains
 	subroutine create_output_image(all_comp, image, pilt)

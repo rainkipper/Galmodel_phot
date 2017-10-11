@@ -3,18 +3,12 @@ module adaptive_image_real_module
 	use constants_module
 	implicit none
 	
-	integer, parameter :: im_list_maxsize = 101
+	integer, parameter :: im_list_maxsize = 1001
 	integer, parameter :: puudub = -199
 	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
-	real(rk), parameter :: x0_default = 0.0!-35.0_rk
-	real(rk), parameter :: y0_default = 0.0!-35.0_rk
-	real(rk), parameter :: x1_default =  35.0_rk
-	real(rk), parameter :: y1_default =  35.0_rk
-	real(rk), private :: adaptive_image_edasijagamise_maksimaalne_abs_t2psus = 1.000001_rk !peab hiljem automaatselt t2itma
-	integer, private :: adaptive_image_maxlevel = 12
-	integer, private :: adaptive_image_minlevel = 2
-	real(rk), parameter :: adaptive_image_edasijagamise_threshold = 0.01 !suhteline jagamine
-	real(rk), parameter :: min_spatial_resolution = 0.005 !praegu ei lahuta rohkem kui 10pc
+	real(rk), private :: adaptive_image_edasijagamise_maksimaalne_abs_t2psus = 1.0e10 !peab hiljem automaatselt t2itma
+
+
 ! 	integer :: adaptive_image_kokku = 1
 	
 
@@ -157,7 +151,7 @@ module adaptive_image_real_module
 	
 ! 			======= reaalne arvutamine ======== 
 
-			call fill_im(suur_pilt%adaptive_im, x0_default, y0_default, x1_default, y1_default, 0)
+			call fill_im(suur_pilt%adaptive_im, adaptive_image_x0_default, adaptive_image_y0_default, adaptive_image_x1_default, adaptive_image_y1_default, 0)
 
 
 		contains
@@ -244,7 +238,7 @@ module adaptive_image_real_module
 				
 				!diagonaale pidi interpoleerib keskkohta
 				val0 = abs(max(  abs(0.5*(val(1)%point+val(3)%point)-val(5)%point),   abs(0.5*(val(2)%point+val(4)%point)-val(5)%point)  ))
-				res_scale = (abs(x(3)-x(1)) > min_spatial_resolution) .and. (abs(y(3)-y(1)) > min_spatial_resolution) !1 pc miinimum gridi tihedus
+				res_scale = (abs(x(3)-x(1)) > adaptive_image_min_spatial_resolution) .and. (abs(y(3)-y(1)) > adaptive_image_min_spatial_resolution) !1 pc miinimum gridi tihedus
 				res_rel = val0 > (adaptive_image_edasijagamise_threshold * val(5)%point)
 				res_abs =  val0 > adaptive_image_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
 				res = res_scale .and. (res_rel .or. res_abs)

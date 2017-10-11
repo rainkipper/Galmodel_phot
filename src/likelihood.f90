@@ -15,13 +15,6 @@ module likelihood_module
 	!globaalsed muutujad selle mooduli jaoks
 	type(comp_image_real_type), dimension(:), allocatable, private :: mudelid  !siin hoitakse mudeli andmeid ... init_log_likelihood juures pannakse paika
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
-	logical, parameter, private :: kas_fitib_massid_eraldi = .true.
-	logical, parameter, private :: kas_koik_pildid_samast_vaatlusest = .true. 
-	logical, parameter, private :: via_adaptive_im = .false.
-	logical, parameter, private :: kas_los = .false.
-	logical, parameter, private :: kas_barrier = .true.
-	logical, parameter, private :: kas_rakendab_psf = .true.
-	real(rk), parameter,private :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
 contains
@@ -74,7 +67,6 @@ contains
 		real(rk), dimension(:), allocatable, intent(out) :: lisakaalud_massile !optional output
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
-call testi_psf(images(1)%obs, images(1)%psf)
 		mida_arvutatakse = "Not in use"
 		LL_counter = LL_counter + 1
 		!
@@ -155,28 +147,18 @@ call testi_psf(images(1)%obs, images(1)%psf)
 				print*, "Not yet implemented in likelihood"
 				stop
 			end if
-
-
-			
-			if(.false.) then
-				if(allocated(pilt_psf)) deallocate(pilt_psf)
-				call convolve(pilt, images(i)%psf, pilt_psf)
-				print*, "konvoleeritud"
-			else
-				if(allocated(pilt_psf)) deallocate(pilt_psf)
-				allocate(pilt_psf(1:size(pilt,1), 1:size(pilt,2)))
-				pilt_psf = pilt
-			end if
 			
 			!output horedamalt
 			if(mod(LL_counter,10)==0)then
-				call write_matrix_to_fits(pilt_psf, images(i)%output_mdl_file)
-				pilt = (images(i)%obs-pilt_psf)
-				where (.not.images(i)%mask) pilt = 0.0
-				call write_matrix_to_fits(pilt, images(i)%output_diff_file)
-				pilt = abs((images(i)%obs-pilt_psf)/images(i)%sigma) !muutuja yle kasutamine
-				where (.not.images(i)%mask) pilt = 0.0
-				call write_matrix_to_fits(pilt, images(i)%output_rel_diff_file)
+				if(allocated(pilt_psf)) deallocate(pilt_psf)
+				allocate(pilt_psf(1:size(pilt,1), 1:size(pilt,2)))
+				call write_matrix_to_fits(pilt, images(i)%output_mdl_file)
+				pilt_psf = (images(i)%obs-pilt)
+				where (.not.images(i)%mask) pilt_psf = 0.0
+				call write_matrix_to_fits(pilt_psf, images(i)%output_diff_file)
+				pilt_psf = abs((images(i)%obs-pilt)/images(i)%sigma) !muutuja yle kasutamine
+				where (.not.images(i)%mask) pilt_psf = 0.0
+				call write_matrix_to_fits(pilt_psf, images(i)%output_rel_diff_file)
 			end if
 
 			
@@ -184,10 +166,10 @@ call testi_psf(images(1)%obs, images(1)%psf)
 			! ======== loglike ise ========
 			!
 			
-			res = res + sum(-1.0*( (pilt_psf-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
+			res = res + sum(-1.0*( (pilt-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
 		end do
 		print*, LL_counter, "LL = ", res
-! 		print*, ""
+if(LL_counter == 100) stop
 	end function calc_log_likelihood
 	function leia_massi_abs_tol(comp, images) result(res)
 		!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
