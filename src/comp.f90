@@ -64,6 +64,33 @@ module comp_module
 		comp%tan_pos = tan(comp%pos)
 		comp%sec_pos = 1.0/comp%cos_pos
 	end subroutine init_comp
+	
+	function leia_vabade_parameetrite_arv(input_comps) result(res)
+		implicit none
+		integer :: i
+		type(prof_par_list_type), pointer ::  par_list
+		type(comp_input_type), dimension(:), allocatable, target :: input_comps
+		integer :: res
+		res = 0
+		do i=1,size(input_comps)
+			if(input_comps(i)%incl%kas_fitib) res=res+1
+			if(input_comps(i)%cnt_x%kas_fitib) res=res+1
+			if(input_comps(i)%cnt_y%kas_fitib) res=res+1
+			if(input_comps(i)%pos%kas_fitib) res=res+1
+			if(input_comps(i)%theta0%kas_fitib) res=res+1
+			par_list=>input_comps(i)%prof_pars
+			do while(par_list%filled)
+				if(par_list%par%kas_fitib) res=res+1
+				if(associated(par_list%next)) then
+					par_list => par_list%next
+				else
+					exit
+				end if
+			end do
+		end do
+		nullify(par_list)
+	end function leia_vabade_parameetrite_arv
+	
 	elemental subroutine convert_XpYp_to_XcYc(comp, Xp, Yp, Xc, Yc)
 		implicit none
 		real(rk), intent(in) :: Xp, Yp

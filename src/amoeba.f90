@@ -6,8 +6,8 @@
 ! see on koopia nr amoeba moodulist koos koigi lisadega
 ! eraldiseisva moodulina saan kasutada oma rk kind parameetrit
 ! ning kiiruses on ehk ka mingi efekt
-MODULE mynr_amoeba
-  use realkind
+MODULE mynr_amoeba_module
+  use constants_module
   implicit none
   private
   public:: my_amoeba
@@ -15,13 +15,13 @@ contains
   ! amoeba fitting subroutine, taken from NR
   SUBROUTINE my_amoeba(p,y,ftol,func,iter)
     IMPLICIT NONE
-    INTEGER, INTENT(OUT) :: iter
-    REAL(rk), INTENT(IN) :: ftol
-    REAL(rk), DIMENSION(:), INTENT(INOUT) :: y
-    REAL(rk), DIMENSION(:,:), INTENT(INOUT) :: p
+    INTEGER, INTENT(OUT) :: iter !n2itab, mitu iteratsiooni tegi
+    REAL(rk), INTENT(IN) :: ftol !fractional convergence tolerance
+    REAL(rk), DIMENSION(:), INTENT(INOUT) :: y ! (N+1) punktile likelihoodi vm v22rtused, mida minimeerida.. ehk likelihood tuleb teisipidi defineerida
+    REAL(rk), DIMENSION(:,:), INTENT(INOUT) :: p !(N+1,N) matrix, esimene on puntid, teine parameetrite v22rtused
     INTERFACE
        FUNCTION func(x)
-         USE RealKind
+         import rk
          IMPLICIT NONE
          REAL(rk), DIMENSION(:), INTENT(IN) :: x
          REAL(rk) :: func
@@ -126,4 +126,4 @@ contains
       amotry=ytry
     END FUNCTION amotry
   END SUBROUTINE my_amoeba
-END MODULE mynr_amoeba
+END MODULE mynr_amoeba_module

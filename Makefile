@@ -8,6 +8,7 @@ SRC_DIR = src
 _OBJ = 	constants.o \
 		yldine_matemaatika.o \
 		integration_module.o \
+		amoeba.o \
 		file_operations.o \
 		psf_rakendamine.o \
 		filters.o \
@@ -25,6 +26,8 @@ _OBJ = 	constants.o \
 		likelihood.o \
 		only_output_image.o \
 		fitting_multinest.o \
+		fitting_amoeba.o \
+		fitting.o \
 		program.o
 
 FLAGS = -O2 -module $(OBJ_DIR) -lcfitsio -lnest3 -llapack

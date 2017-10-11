@@ -143,5 +143,6 @@ contains
 		nullify(par_list)
 	end subroutine asenda_viited
 	
+
 	
 end module all_comp_module

@@ -1,17 +1,16 @@
 module fitting_multinest_module
 	use nested
 	use likelihood_module
-
 contains
-	subroutine jooksuta_fittimine(images, input_comps, all_comp)
+	subroutine fittimine_multinest(images, input_comps, all_comp)
 		implicit none
 		!
 		! jagatud sisend-v2ljund teiste fittijatega
 		!
 		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
-		type(all_comp_type), intent(out) :: all_comp !ehk v2ljundiks
+		type(all_comp_type), intent(inout) :: all_comp !ehk v2ljundiks
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-			real(rk) :: alguse_aeg
+		real(rk) :: alguse_aeg
 		!
 		! ======= multinesti muutujad =======
 		!
@@ -38,7 +37,7 @@ contains
 		integer  :: maxiter
 		integer ::  context
 		double precision :: logZero
-		logical, dimension(:), allocatable :: recalc_comp
+! 		logical, dimension(:), allocatable :: recalc_comp
 		
 		IS = .true.
 		mmodal = .false. 
@@ -46,7 +45,7 @@ contains
 		ceff = .true.
 		tol = 0.5
 		efr = 0.99
-		ndims = leia_Ndim()!hiljem
+		ndims = leia_vabade_parameetrite_arv(input_comps) !moodulist comp.f90
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
@@ -67,11 +66,8 @@ contains
 		!
 		! ========== asjade initsialiseerimine... sh all_comp jm ===============
 		!
-		allocate(recalc_comp(1:all_comp%N_comp)); recalc_comp = .true. !ehk koik peab esimene kord uuesti arvutama... likelihoodi jaoks on see globaalne parameeter, mida pidevalt muudetakse
-		call convert_input_comp_to_all_comp(input_comps, all_comp)
-		call asenda_viited(input_comps, all_comp)
-		all_comp%comp(:)%adaptive_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
-		call init_calc_log_likelihood(all_comp, images) !s2ttib likelihoodi mooduli muutujad, et v2hendada arvutamisis
+! 		allocate(recalc_comp(1:all_comp%N_comp)); recalc_comp = .true. !ehk koik peab esimene kord uuesti arvutama... likelihoodi jaoks on see globaalne parameeter, mida pidevalt muudetakse
+
 		
 		!
 		! =============== fittimine ise ================
@@ -82,31 +78,7 @@ contains
 			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
 		
 	contains
-		function leia_Ndim() result(res)
-			implicit none
-			integer :: i
-			type(prof_par_list_type), pointer ::  par_list
-			integer :: res
-			res = 0
-			do i=1,size(input_comps)
-				if(input_comps(i)%incl%kas_fitib) res=res+1
-				if(input_comps(i)%cnt_x%kas_fitib) res=res+1
-				if(input_comps(i)%cnt_y%kas_fitib) res=res+1
-				if(input_comps(i)%pos%kas_fitib) res=res+1
-				if(input_comps(i)%theta0%kas_fitib) res=res+1
-				par_list=>input_comps(i)%prof_pars
-				do while(par_list%filled)
-					if(par_list%par%kas_fitib) res=res+1
-					if(associated(par_list%next)) then
-						par_list => par_list%next
-					else
-						exit
-					end if
-				end do
-			end do
-			nullify(par_list)
-			print*, "Ndim = ", res
-		end function leia_Ndim
+
 		subroutine fun_loglike(Cube,n_dim,nPar,lnew,context)
 			implicit none
 			integer ::  n_dim, nPar, context
@@ -251,12 +223,6 @@ contains
 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
 		end subroutine fun_dumper
-end subroutine jooksuta_fittimine
-	
-	!		prior fyysikalisesse vahemikku
-	! 		function UniformPrior(r,x1,x2)
-	! 		      	implicit none
-	! 		      	double precision r,x1,x2,UniformPrior
-	! 		      	UniformPrior=x1+r*(x2-x1)
-	! 		end function UniformPrior
+	end subroutine fittimine_multinest
+		
 end module fitting_multinest_module

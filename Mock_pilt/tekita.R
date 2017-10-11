@@ -75,3 +75,14 @@ print(paste("1 pixel is ", scale ," arcsec"))
 
 
 
+
+
+
+
+
+
+
+
+
+
+
