@@ -39,10 +39,7 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mid
 ! 	integer :: image_number !comp image number
 	!muud vidinad
 	integer :: i, j
-	if(present(mida_arvutatakse)) then
-		
-	end if
-! 	print*, "fill model image", all_comp%comp(:)%adaptive_image_number
+	if(present(mida_arvutatakse)) then; 	end if !rida, et warningut ei annaks kasutamata asja p2rast
 	!
 	! ================== kontrollib ja arvutab komponendi koordinaadid uuesti kui vaja =============
 	!
@@ -97,7 +94,8 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, kas_los, mid
 	end do
 	end do
 ! 	print*, "fill_comp_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
-	
+	if(associated(f_ptr)) nullify(f_ptr)
+	if(associated(ruum_ptr)) nullify(ruum_ptr)
 contains
 	
 	function vota_adaptive_im_pilt(Xc, Yc) result(res)

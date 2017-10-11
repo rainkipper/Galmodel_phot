@@ -1,8 +1,8 @@
 module pixel_module
 	use constants_module
 
-	real(rk), parameter :: edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei kasuta
-	real(rk), parameter :: edasi_jagamise_rel_t2psus = 0.005
+	real(rk), parameter, private :: edasi_jagamise_abs_t2psus = 1.0e10 !ehk ei kasuta
+	real(rk), parameter, private :: edasi_jagamise_rel_t2psus = 0.005
 	
 	integer, parameter  :: maxlevel = 5
 	type :: square_pixel_type

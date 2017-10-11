@@ -66,6 +66,7 @@ contains
 					exit
 				end if
 			end do
+			nullify(par_list)
 ! 			call all_comp%comp(i)%prof_den%init_profile()
 ! 			call init_comp(all_comp%comp(i))
 		end do
@@ -139,6 +140,7 @@ contains
 			call all_comp%comp(i)%prof_den%init_profile()
 			call init_comp(all_comp%comp(i))
 		end do
+		nullify(par_list)
 	end subroutine asenda_viited
 	
 	

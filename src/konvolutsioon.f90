@@ -39,6 +39,8 @@ contains
         integer :: n1, n2, dn
         integer :: i, m, pow
 !         real(rk), allocatable :: pix_sum(:), out_sum(:)
+if(allocated(convolved)) deallocate(convolved)
+
 
         ! assume len xdim = len ydim
         n1 = int(sqrt(float(size(pix_img))))
@@ -63,10 +65,6 @@ contains
         !pad with zeroes up to next power of two
         call makepadded(pix_img, n1, pow, img_padded)  
         call makepadded(pix_kern, n2, pow, kern_padded)  
-! 		print*, "CP1"
-! 		print*, size(img_padded)
-! 		print*, size(kern_padded)
-! 		print*, "CP2"
         
         ! add complex counterparts to real pixel values
         ! sequence: i (odd) - real
@@ -79,26 +77,27 @@ contains
         call d2_fft(kern_padded, pow, 1) 
         
        ! multiply in frequency domain
-        print *,"! multiply in frequency domain"
+!         print *,"! multiply in frequency domain"
         allocate(convolved(1:pow,1:2*pow))
        
         do i=1,pow
             call cmplx_multiply(img_padded(i,:), kern_padded(i,:), convolved(i,:))     
         end do
         
+! 		print*, size(convolved, 1), size(convolved, 2)
         ! inverse fft
-        print *,"! inverse fft"
+!         print *,"! inverse fft"
         call d2_fft(convolved, pow, -1)
-
-        print *,"! fix "
+! 		print*, size(convolved, 1), size(convolved, 2)
+!         print *,"! fix "
         ! transform image pieces to place (because of frequency shift)        
         call fix_img(convolved, pow)
-
-        print *,"! remove complex"
+! 		print*, size(convolved, 1), size(convolved, 2)
+!         print *,"! remove complex"
          ! remove complex counterparts
         call remove_complex(pow, convolved)
         
-        print *,"! remove padding"
+!         print *,"! remove padding"
         ! remove added zeroes
         call remove_padding(convolved, pow, dn)
         
@@ -159,7 +158,7 @@ contains
         integer, intent(in) :: s, r ! m,n dim size; r original size
         integer :: i,j, dif
     
-        dif = (s-r)/2
+        dif = (s-r)/2-1
         
         allocate(temp(1:r,1:r))
         do i=1, r
@@ -215,28 +214,21 @@ contains
 		integer :: ALLOC_ERR
 ! 		character(len=:), allocatable :: err
         allocate(temp_arr(n,n))
-		print*, "CP1", size(arr, 1), size(arr,2)
         do i=1, n
             c = 2*n-1
-            do j=1, 2*n
+!             do j=1, 2*n
+			do j=1, n
                 temp_arr(i,j) = arr(i,c)
                 c = c - 2
             end do
         end do
-		print*, "CP2", allocated(arr), allocated(temp_arr)
-! 		deallocate(arr, 		 ERRMSG=err)
-! 		print*, err
 		deallocate(arr, STAT = ALLOC_ERR)
-! 		deallocate(arr)
-		print*, "CP3", ALLOC_ERR
-		stop "koik"
         allocate(arr(1:n,1:n))
         do i=1,n
             do j=1,n
                 arr(i,j) = temp_arr(i,j)
             end do
         end do
-        print*, "CP4"
     end subroutine remove_complex
 
     subroutine cmplx_multiply(x, y, out)

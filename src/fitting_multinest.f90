@@ -104,6 +104,7 @@ contains
 					end if
 				end do
 			end do
+			nullify(par_list)
 			print*, "Ndim = ", res
 		end function leia_Ndim
 		subroutine fun_loglike(Cube,n_dim,nPar,lnew,context)
@@ -158,7 +159,7 @@ contains
 					end if
 				end do
 			end do
-			
+			nullify(par_list)
 
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
@@ -175,6 +176,7 @@ contains
 					par_list => par_list%next
 				end do
 			end do
+			nullify(par_list)
 		end subroutine fun_loglike
 		subroutine fun_dumper(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
@@ -231,6 +233,7 @@ contains
 					end if
 				end do
 			end do
+			nullify(par_list)
 			print*, "-------"
 			print*, "Massid:"
 			do i=1,size(input_comps)
@@ -243,6 +246,7 @@ contains
 					par_list=>par_list%next
 				end do
 			end do
+			nullify(par_list)
 			call cpu_time(dt)
 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter

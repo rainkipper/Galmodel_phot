@@ -59,7 +59,7 @@ for(f in seq_along(filters)){
 writeFITSim(X = matrix(L*0+1, ncol=N, nrow=N), file = paste0("Input/Mock/mask.fits"))
 
 #psf tegemine
-N_psf = 15
+N_psf = 37
 psf<-matrix(0, N_psf,N_psf); cnt_val<-0.8
 tmp<-(N_psf-1)/2+1
 psf[]<-(1-cnt_val)/(length(psf)-1); psf[tmp,tmp]<-cnt_val

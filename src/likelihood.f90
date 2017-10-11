@@ -17,12 +17,12 @@ module likelihood_module
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
 	logical, parameter, private :: kas_fitib_massid_eraldi = .true.
 	logical, parameter, private :: kas_koik_pildid_samast_vaatlusest = .true. 
-	logical, parameter, private :: via_comp_im = .true.
-	logical, parameter, private :: kas_los = .true.
+	logical, parameter, private :: via_adaptive_im = .false.
+	logical, parameter, private :: kas_los = .false.
 	logical, parameter, private :: kas_barrier = .true.
 	logical, parameter, private :: kas_rakendab_psf = .true.
 	real(rk), parameter,private :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
-	real(rk), dimension(:), allocatable :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
+	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
 contains
 	subroutine init_calc_log_likelihood(all_comp, images)
@@ -35,6 +35,13 @@ contains
 		! =========== eraldi massifittimise korral asjade initsialiseerimine
 		!
 		allocate(mudelid(1:all_comp%N_comp))
+		if(kas_koik_pildid_samast_vaatlusest) then
+			do i=1,size(mudelid)
+				call create_comp_image_from_obs(mudelid(i), images(1))
+			end do
+		else
+			stop "not ready in likelihood"
+		end if
 		if(kas_fitib_massid_eraldi) then
 			allocate(to_massfit(1:size(images,1)))
 			do i=1,size(images)
@@ -50,24 +57,24 @@ contains
 		else
 			stop "not implemented in init log likelihood"
 		end if
+
+		
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
-	function calc_log_likelihood(all_comp, images, lisakaalud_massile, recalc_comp) result(res)
+	function calc_log_likelihood(all_comp, images, lisakaalud_massile) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		logical, dimension(:), allocatable, optional, intent(in) :: recalc_comp !sisend, mis komponendid on vaja ymber arvutada
-! 		type(comp_image_real_type), dimension(:), allocatable :: mudelid
 		real(rk) :: res
 		real(rk), dimension(:,:), allocatable :: pilt, pilt_psf
 		integer :: i, j !, k
 		character(len=default_character_length) :: mida_arvutatakse
 		real(rk), dimension(:,:), allocatable :: weights !ehk M/L suhted fotomeetria korral ... esimene indeks pilt, teine komponent
 		real(rk), dimension(:), allocatable :: weights_for_single_im
-! 		real(rk) :: yhikute_kordaja !10e10Lsun to counts/s
 		real(rk), dimension(:), allocatable, intent(out) :: lisakaalud_massile !optional output
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
+call testi_psf(images(1)%obs, images(1)%psf)
 		mida_arvutatakse = "Not in use"
 		LL_counter = LL_counter + 1
 		!
@@ -81,11 +88,9 @@ contains
 		!
 		if(kas_koik_pildid_samast_vaatlusest) then
 			do i=1,size(mudelid, 1)
-				if(present(recalc_comp)) mudelid(i)%recalc_image = recalc_comp(i) !lihtne erijuht recalc_comp jaoks.
 				if(mudelid(i)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
-					call create_comp_image_from_obs(mudelid(i), images(1))
-					call fill_comp_image(all_comp, i, mudelid(i), via_comp_im, kas_los, mida_arvutatakse)
+					call fill_comp_image(all_comp, i, mudelid(i), via_adaptive_im, kas_los, mida_arvutatakse)
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
 						do j=1,size(images); 
@@ -101,7 +106,6 @@ contains
 				end if
 			end do
 		else
-! 			mudelid(i)%recalc_image = .true. !siin tuleb eraldi vaadata
 			print*, "Not yet implemented in calc_log_likelihood"
 			stop
 		end if

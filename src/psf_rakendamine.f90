@@ -14,6 +14,32 @@ module psf_rakendamine_module
 		end subroutine psf_fun
 	end interface
 contains
+	subroutine testi_psf(pilt, psf)
+		implicit none
+		real(rk), intent(in), dimension(:,:), allocatable :: pilt
+		real(rk), intent(in), dimension(:,:), allocatable :: psf
+		real(rk), dimension(:,:), allocatable :: tmp
+		integer :: i,N
+		real(rk) :: t1,t2
+! 		call write_matrix_to_fits(pilt, "algne.fits")
+! 		call write_matrix_to_fits(psf, "psf.fits")
+N = 30
+		call cpu_time(t1)
+		do i=1,N
+			call rakenda_psf_toores_joud(pilt, psf, tmp)
+		end do
+		call cpu_time(t2)
+		print*, "psf suurus", size(psf,1)
+		print*, "Toores joud", t2-t1
+! 		call write_matrix_to_fits(tmp, "toores.fits")
+		do i=1,N
+			call rakenda_psf_Fourier(pilt, psf, tmp)
+		end do
+		call cpu_time(t1)
+		print*, "Fourier", t1-t2
+! 		call write_matrix_to_fits(tmp, "fourier.fits")
+		stop "psf test tehtud"
+	end subroutine testi_psf
 ! 	subroutine crop_psf(psf)
 ! 		implicit none
 ! 	end subroutine crop_psf

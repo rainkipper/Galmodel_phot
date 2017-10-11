@@ -151,12 +151,13 @@ contains
 		real(rk), dimension(:,:), allocatable :: tmp_pilt !ehk teha loogilist pilti
 		
 		call create_test_filters(filters) !
-		
+		print*, "CP2.1"
 		N_im = read_nr_of_comp(images_file)
 		allocate(images(1:N_im))
-		
+		print*, "CP2.2"
 		open(file = images_file, unit = iunit, action = "read")
 		ios = 1
+		print*, "CP2.3"
 		do while(ios .ge. 0)
 			rida = tyhi !m2lu nullimine ymberkasutamiseks... selleks, et trim k2suga asjade allaj22nud asju ei kasutaks
 			read(fmt = "(a)", iostat=ios, unit=iunit) rida
@@ -223,6 +224,7 @@ contains
 				stop
 			end select
 		end do
+		print*, "CP2.4"
 		close(unit = iunit)		
 	end subroutine read_images_and_filters
 	function read_nr_of_comp(mis_failist) result(res)
