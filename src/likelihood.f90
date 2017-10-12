@@ -3,6 +3,7 @@ module likelihood_module
 	use fill_comp_image_module
 	use file_operations_module !vaja ainult ajutiselt testimisel
 	use psf_rakendamine_module
+	use Newton_Rhapson_module
 	type masside_arvutamise_tyyp
 		!iga vaatluspildi kohta...
 		!kasutatakse masside fittimise eristamises muust fittimisest
@@ -18,6 +19,7 @@ module likelihood_module
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
 contains
+
 	subroutine init_calc_log_likelihood(all_comp, images)
 		!eesm2rk on teha m2llu ja initsialiseerida piltide arvuamise asjad
 		implicit none
@@ -54,13 +56,135 @@ contains
 		
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
-	function calc_log_likelihood(all_comp, images, lisakaalud_massile) result(res)
+	function calc_log_likelihood(all_comp, images) result(res)
+		implicit none
+		type(all_comp_type), intent(inout) :: all_comp
+		type(image_type), dimension(:), allocatable, intent(in) :: images
+		real(rk) :: res
+		real(rk), dimension(:), allocatable :: lisakaalud_massile !vaja kui populatsioone fitib
+		LL_counter = LL_counter + 1
+		select case(mis_fittimise_tyyp)
+			case(1)
+				res = calc_log_likelihood_populations(all_comp, images, lisakaalud_massile)
+			case(2)
+				res = calc_log_likelihood_components(all_comp, images)
+		case default
+			stop "Niisugust fittimise tyypi (popul voi ML) pole olemas"
+		end select 
+		print*, LL_counter, "LL = ", res
+		if(isnan(res)) stop "err: LL ei tohi olla nan"
+	end function calc_log_likelihood
+	function calc_log_likelihood_components(all_comp, images) result(res)
+		implicit none
+		type(all_comp_type), intent(inout) :: all_comp
+		type(image_type), dimension(:), allocatable, intent(in) :: images
+		real(rk), dimension(:,:), allocatable :: from_mass_to_lum, ML_kordajad!esimene indeks pilt, teine komponent
+		real(rk), dimension(:,:), allocatable :: mudelpilt
+		real(rk), dimension(:), allocatable :: algv22rtused
+		real(rk) :: res
+		integer :: i, j,mis_pilt
+		!
+		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
+		!
+		do i=1,all_comp%N_comp
+			all_comp%comp(i)%mass_abs_tol = 1.0e10 !ehk ei piira t2psust praegu, sest tyyp ei voimalda
+		end do
+		!
+		! =========== mudelpiltide arvutamine ==========
+		!
+! 		if(mudelid(i)%recalc_image) then
+		if(kas_koik_pildid_samast_vaatlusest) then
+			do i=1,size(mudelid, 1)
+				call fill_comp_image(all_comp, i, mudelid(i), via_adaptive_im, kas_los)
+				do j=1,size(images,1)
+					if(kas_rakendab_psf) then
+						call rakenda_psf(mudelid(i)%mx, images(j)%psf, mudelpilt)
+						to_massfit(i)%M(j,:,:) = mudelpilt
+					else
+						to_massfit(j)%M(j,:,:) = mudelid(i)%mx
+					end if
+				end do
+			end do
+		else; stop "not from same observations"
+		end if
+! 		else; stop "no recalc?"
+! 		end if
+		
+		!
+		! ============= komponentide mudelpiltide kombineerimised ================
+		!
+		allocate(from_mass_to_lum(1:size(images), 1:all_comp%N_comp))
+		do i=1,size(images, 1); do j=1,all_comp%N_comp
+! 			from_mass_to_lum(i,j) = images(i)%filter%mass_to_obs_unit(dist = all_comp%comp(j)%dist)
+			from_mass_to_lum(i,j) = calc_counts_mass_ratio(filter = images(i)%filter, dist = all_comp%comp(j)%dist)
+		end do; end do
+		!
+		! =============== heleduste arvutamisel sisemine fittimine ================
+		!
+		allocate(ML_kordajad(1:size(images), 1:all_comp%N_comp)); ML_kordajad = 1.0
+		allocate(algv22rtused(1:all_comp%N_comp)); algv22rtused = 1.0 !algv22rtus=1
+		do mis_pilt = 1, size(images)
+			ML_kordajad(mis_pilt,:) = optim_NR(algv22rtused, leia_gradient_ML_jaoks, leia_hessian_ML_jaoks) !siin arvutatakse LM_kordajaid, ML jaoks poordvaartus vaja votta
+		end do
+		ML_kordajad = 1.0/ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
+		!
+		! ========== p2ris likelihoodi arvutamine
+		!
+		res = 0.0
+		from_mass_to_lum = from_mass_to_lum / ML_kordajad
+		do i=1,size(images); 
+			if(allocated(mudelpilt)) deallocate(mudelpilt)
+			allocate(mudelpilt(1:size(to_massfit(i)%M, 2), 1:size(to_massfit(i)%M, 3))) !saab v2ltida kui eeldada, et koik pildid samast vaatlusest
+			mudelpilt = 0.0
+			do j=1,all_comp%N_comp
+				mudelpilt = mudelpilt + from_mass_to_lum(i,j)*to_massfit(i)%M(j,:,:)
+			end do; 
+			res = res + sum( to_massfit(i)%inv_sigma2*(to_massfit(i)%I - mudelpilt)**2 , to_massfit(i)%mask)
+		end do
+		res = res * 0.5 !et likelihood, mitte chisq
+	contains
+		function leia_gradient_ML_jaoks(x) result(res)
+			implicit none
+			real(rk), dimension(:), allocatable, intent(in) :: x
+			real(rk), dimension(:), allocatable :: res
+			real(rk), dimension(:,:), allocatable :: mudelpilt
+			integer :: j
+			
+			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
+			mudelpilt = 0.0
+			do j=1,size(images)
+				mudelpilt = mudelpilt + x(j)*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j)
+			end do
+			if(allocated(res)) deallocate(res); allocate(res(1:size(x)))
+			do j=1,size(x)
+				res(j) = sum( -2.0*to_massfit(mis_pilt)%inv_sigma2* to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) * (to_massfit(mis_pilt)%I - mudelpilt), to_massfit(mis_pilt)%mask) + massi_fiti_lambda/x(j)
+			end do			
+		end function leia_gradient_ML_jaoks
+		function leia_hessian_ML_jaoks(x) result(res)
+			implicit none
+			real(rk), dimension(:), allocatable, intent(in) :: x
+			real(rk), dimension(:,:), allocatable :: res
+			integer :: m,n
+			
+			allocate(res(1:size(x,1), 1:size(x,1))); res = 0.0 
+			do m=1,size(x)
+				do n=m,size(x)
+					res(m,n) = sum( 2.0*to_massfit(mis_pilt)%M(m,:,:)*from_mass_to_lum(mis_pilt, m)*to_massfit(mis_pilt)%M(n,:,:)*from_mass_to_lum(mis_pilt, n)*to_massfit(mis_pilt)%inv_sigma2 , to_massfit(mis_pilt)%mask)
+					res(n,m) = res(m,n) !symmeetrilise maatriksi lihtsustus
+				end do
+				res(m,m) = res(m,m) + massi_fiti_lambda/x(m) !barrier term
+			end do
+			
+		end function leia_hessian_ML_jaoks
+	end function calc_log_likelihood_components
+		
+	function calc_log_likelihood_populations(all_comp, images, lisakaalud_massile) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
 		real(rk) :: res
 		real(rk), dimension(:,:), allocatable :: pilt, pilt_psf
-		integer :: i, j !, k
+		integer :: i, j
 		character(len=default_character_length) :: mida_arvutatakse
 		real(rk), dimension(:,:), allocatable :: weights !ehk M/L suhted fotomeetria korral ... esimene indeks pilt, teine komponent
 		real(rk), dimension(:), allocatable :: weights_for_single_im
@@ -68,7 +192,7 @@ contains
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
 		mida_arvutatakse = "Not in use"
-		LL_counter = LL_counter + 1
+		
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
 		!
@@ -118,9 +242,7 @@ contains
 			end do
 			if(kas_fitib_massid_eraldi) to_massfit(i)%w(:) = weights(i,:) !hilisemaks kasutamiseks kui otsustab eraldi fittida
 		end do
-		if(any(weights == -1.234)) then
-			print*, "Vale M/L sisend"; stop
-		end if
+		if(any(weights == -1.234)) then; print*, "Vale M/L sisend"; stop; end if
 
 		!t2psustus vastavalt sellele, kas fitib massid eraldi	
 		if(kas_fitib_massid_eraldi) then
@@ -168,140 +290,141 @@ contains
 			
 			res = res + sum(-1.0*( (pilt-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
 		end do
-		print*, LL_counter, "LL = ", res
-if(LL_counter == 100) stop
-	end function calc_log_likelihood
-	function leia_massi_abs_tol(comp, images) result(res)
-		!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
-		implicit none
-		type(comp_type), intent(in) :: comp
-		type(image_type), intent(in), dimension(:), allocatable :: images
-		real(rk) :: res
-		real(rk) :: tmp
-		integer :: i
-		res = 1.0e10 !suvaline suur suurus algseks
-		do i=1,size(images, 1)
-			tmp = 1.0/images(i)%filter%mass_to_obs_unit(comp%dist, comp%population_name) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
-			if(tmp<res) then
-				res = tmp
-			end if
-		end do
-		res = res * massi_abs_tol_kordaja
+
+	contains
+		function leia_massi_abs_tol(comp, images) result(res)
+			!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
+			implicit none
+			type(comp_type), intent(in) :: comp
+			type(image_type), intent(in), dimension(:), allocatable :: images
+			real(rk) :: res
+			real(rk) :: tmp
+			integer :: i
+			res = 1.0e10 !suvaline suur suurus algseks
+			do i=1,size(images, 1)
+				tmp = 1.0/images(i)%filter%mass_to_obs_unit(comp%dist, comp%population_name) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
+				if(tmp<res) then
+					res = tmp
+				end if
+			end do
+			res = res * massi_abs_tol_kordaja
 		
-	end function leia_massi_abs_tol
-	function fiti_massi_kordajad(to_massfit) result(res)
-		implicit none
-		type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
-		integer :: i,j,k,m, iter
-		integer :: N_k, N_i, max_iter
-		real(rk), dimension(:), allocatable :: res
-		real(rk), dimension(:,:), allocatable :: L_km, L0_km, B_km, inv_L_km !kogu chisq, piltidest chisq, barrier osa chisq-st, poordmaatriks
-		real(rk), dimension(:), allocatable :: L_k, L0_k, B_k, nihe
-		real(rk), dimension(:,:), allocatable :: tmp_pilt
-		real(rk) :: lambda, gamma
-! 		real(rk) :: test1
-! 		integer :: testi
+		end function leia_massi_abs_tol
+		function fiti_massi_kordajad(to_massfit) result(res)
+			implicit none
+			type(masside_arvutamise_tyyp), dimension(:), allocatable :: to_massfit
+			integer :: i,j,k,m, iter
+			integer :: N_k, N_i, max_iter
+			real(rk), dimension(:), allocatable :: res
+			real(rk), dimension(:,:), allocatable :: L_km, L0_km, B_km, inv_L_km !kogu chisq, piltidest chisq, barrier osa chisq-st, poordmaatriks
+			real(rk), dimension(:), allocatable :: L_k, L0_k, B_k, nihe
+			real(rk), dimension(:,:), allocatable :: tmp_pilt
+	! 		real(rk) :: lambda, gamma
+	! 		real(rk) :: test1
+	! 		integer :: testi
 
-		lambda = 50.0 !m22rab kui t2pselt ei tohi massid nulli minna... voib olla problemaatiline kui on suured hypped iteratsioonide vahel.. 
-		gamma = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
-		max_iter = 50
-		!initsialiseerimised
-		N_k = size(to_massfit(1)%w, 1) !komponentide arv
-		N_i = size(to_massfit, 1) !piltide arv
-		allocate(L0_k(1:N_k)) 
-		allocate(L_k(1:N_k)) 
-		allocate(L0_km(1:N_k, 1:N_k)); 
-		allocate(L_km(1:N_k, 1:N_k))
-		if(kas_barrier) then
-			allocate(B_km(1:N_k, 1:N_k)); 
-			allocate(B_k(1:N_k))
-		end if
-		allocate(nihe(1:N_k))
-		allocate(res(1:N_k)); res = 1.0; 
-		if(.not.allocated(massi_kordajad_eelmine)) then
-			allocate(massi_kordajad_eelmine(1:N_k)); !algne masside kordajad on 1.0... seal hakkab edasi roomama
-		else
-			res = massi_kordajad_eelmine !ehk votab algl2hendi eelimise fittimise tulemusest
-		end if
-
-
-! do testi = 1,10
-! do iter=1,5; call random_number(res(iter)); res = res; end do
-	
-		do iter = 1, max_iter
-			!iteratsiooni ettevalmistus
-			L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
+		
+			max_iter = 50
+			!initsialiseerimised
+			N_k = size(to_massfit(1)%w, 1) !komponentide arv
+			N_i = size(to_massfit, 1) !piltide arv
+			allocate(L0_k(1:N_k)) 
+			allocate(L_k(1:N_k)) 
+			allocate(L0_km(1:N_k, 1:N_k)); 
+			allocate(L_km(1:N_k, 1:N_k))
 			if(kas_barrier) then
-				B_km = 0.0;  B_k = 0.0
+				allocate(B_km(1:N_k, 1:N_k)); 
+				allocate(B_k(1:N_k))
 			end if
-			nihe = 0.0
-			!Hessiani ja gradiendi arvuamised
-			do k = 1,N_k
-				!
-				! ================= gradiendi arvutamine ================= 
-				!
-				do i=1,N_i
-					if(allocated(tmp_pilt)) deallocate(tmp_pilt)
-					allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
-					!selle iteratsiooni heleduse pilt
-					do j=1,N_k
-						tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(j,:,:)
-					end do
-					!likelihoodi gradienti lisamine 
-					L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
-				end do
-				L_k(k) = L0_k(k)
-				if(kas_barrier) L_k(k) = L_k(k) - lambda / res(k) !kui piirab masse seestpoolt
-				!
-				! ================= Hessiani komopnendid ================= 
-				!
-				do m=k,N_k
-					do i=1,N_i
-						L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
-					end do
-					L_km(k,m) = L0_km(k,m)
-					L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
-				end do
-				if(kas_barrier) L_km(k,k) = L_km(k,k) + lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
-			end do
-
-			!
-			! ================= edasi liikumine miinimumi poole =================
-			!
-			inv_L_km = fun_inv_mx(L_km) !poordmaatriksi leidmine, et edasi liikuda
-			nihe = 0.0
-			massi_kordajad_eelmine = res !salvestab viimase, et testida koonduvust
-			do k = 1,N_k
-				do m=1,N_k
-					nihe(k) = nihe(k) + L_k(m) * inv_L_km(k,m) !maatriks korrutamine sisuliselt
-				end do
-				nihe(k) = nihe(k) * gamma
-			end do
-			if(any(res - nihe < 0)) then
-				!kui ekstrapoolib liiga kaugele
-				res = res - nihe * minval(abs(0.9*res/nihe)) !minval, et l2hima nullile parameetri j2rgi voetaks
+			allocate(nihe(1:N_k))
+			allocate(res(1:N_k)); res = 1.0; 
+			if(.not.allocated(massi_kordajad_eelmine)) then
+				allocate(massi_kordajad_eelmine(1:N_k)); !algne masside kordajad on 1.0... seal hakkab edasi roomama
 			else
-				res = res - nihe
+				res = massi_kordajad_eelmine !ehk votab algl2hendi eelimise fittimise tulemusest
 			end if
-			if(maxval(abs(res-massi_kordajad_eelmine)/res)<massif_fiti_rel_t2psus) then
-! 				print*, "t2psus, iter:", minval(abs(res-massi_kordajad_eelmine)/res), iter
-				exit
-			end if
-		end do
 
-! print"(5F,I)", res, iter
-! end do
-! stop
-! 		!test
-! 		test1 = 0.0
-! 		do i=1,size(to_massfit, 1)
-! 			tmp_pilt = 0.0
-! 			do j=1,size(to_massfit(i)%w,1)
-! 				tmp_pilt = tmp_pilt + to_massfit(i)%w(j)*res(j)*to_massfit(i)%M(j,:,:)
-! 			end do
-! 			test1 = test1 - sum( (to_massfit(i)%I-tmp_pilt)**2*0.5*to_massfit(i)%inv_sigma2, to_massfit(i)%mask)
-! 		end do
-! ! 		print*, "test", test1
-	end function fiti_massi_kordajad
+
+	! do testi = 1,10
+	! do iter=1,5; call random_number(res(iter)); res = res; end do
+	
+			do iter = 1, max_iter
+				!iteratsiooni ettevalmistus
+				L0_k = 0.0; L_k = 0.0; L0_km = 0.0 ; L_km = 0.0 
+				if(kas_barrier) then
+					B_km = 0.0;  B_k = 0.0
+				end if
+				nihe = 0.0
+				!Hessiani ja gradiendi arvuamised
+				do k = 1,N_k
+					!
+					! ================= gradiendi arvutamine ================= 
+					!
+					do i=1,N_i
+						if(allocated(tmp_pilt)) deallocate(tmp_pilt)
+						allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
+						!selle iteratsiooni heleduse pilt
+						do j=1,N_k
+							tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(j,:,:)
+						end do
+						!likelihoodi gradienti lisamine 
+						L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
+					end do
+					L_k(k) = L0_k(k)
+					if(kas_barrier) L_k(k) = L_k(k) - massi_fiti_lambda / res(k) !kui piirab masse seestpoolt
+					!
+					! ================= Hessiani komopnendid ================= 
+					!
+					do m=k,N_k
+						do i=1,N_i
+							L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
+						end do
+						L_km(k,m) = L0_km(k,m)
+						L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
+					end do
+					if(kas_barrier) L_km(k,k) = L_km(k,k) + massi_fiti_lambda/res(k)**2 !kui piirab masse seestpoolt... sisaldab ainult diagonaalil olevaid elemente
+				end do
+
+				!
+				! ================= edasi liikumine miinimumi poole =================
+				!
+				inv_L_km = fun_inv_mx(L_km) !poordmaatriksi leidmine, et edasi liikuda
+				nihe = 0.0
+				massi_kordajad_eelmine = res !salvestab viimase, et testida koonduvust
+				do k = 1,N_k
+					do m=1,N_k
+						nihe(k) = nihe(k) + L_k(m) * inv_L_km(k,m) !maatriks korrutamine sisuliselt
+					end do
+					nihe(k) = nihe(k) * massi_fittimise_hyppe_kordaja
+				end do
+				if(any(res - nihe < 0)) then
+					!kui ekstrapoolib liiga kaugele
+					res = res - nihe * minval(abs(0.9*res/nihe)) !minval, et l2hima nullile parameetri j2rgi voetaks
+				else
+					res = res - nihe
+				end if
+				if(maxval(abs(res-massi_kordajad_eelmine)/res)<massif_fiti_rel_t2psus) then
+	! 				print*, "t2psus, iter:", minval(abs(res-massi_kordajad_eelmine)/res), iter
+					exit
+				end if
+			end do
+
+	! print"(5F,I)", res, iter
+	! end do
+	! stop
+	! 		!test
+	! 		test1 = 0.0
+	! 		do i=1,size(to_massfit, 1)
+	! 			tmp_pilt = 0.0
+	! 			do j=1,size(to_massfit(i)%w,1)
+	! 				tmp_pilt = tmp_pilt + to_massfit(i)%w(j)*res(j)*to_massfit(i)%M(j,:,:)
+	! 			end do
+	! 			test1 = test1 - sum( (to_massfit(i)%I-tmp_pilt)**2*0.5*to_massfit(i)%inv_sigma2, to_massfit(i)%mask)
+	! 		end do
+	! ! 		print*, "test", test1
+		end function fiti_massi_kordajad
+	end function calc_log_likelihood_populations
+
+	
 	
 end module likelihood_module

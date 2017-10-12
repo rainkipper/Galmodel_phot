@@ -41,17 +41,17 @@ contains
 		
 		IS = .true.
 		mmodal = .false. 
-		nlive = 25 !testiks nii v2ike
 		ceff = .true.
 		tol = 0.5
 		efr = 0.99
 		ndims = leia_vabade_parameetrite_arv(input_comps) !moodulist comp.f90
+		nlive = ndims + 1 !testiks nii v2ike
 		nPar = ndims !hiljem
 		nCdims = 1
 		maxModes = 1
 		updInt  = 1
 		Ztol = -1.d90
-		root = "Output/"
+		root = multinest_output_header
 		seed = -1
 		allocate(pWrap(1:nPar)); pWrap = 0 !
 		feedback = .false.
@@ -75,8 +75,8 @@ contains
 		
 		call cpu_time(alguse_aeg)
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
-			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
-		
+			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper_minimaalne, context)
+
 	contains
 
 		subroutine fun_loglike(Cube,n_dim,nPar,lnew,context)
@@ -119,11 +119,10 @@ contains
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
 					if(par_list%par%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-					cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
-					par_list%par%val = cube(mitmes_cube)
-					
-				end if	
+						mitmes_cube=mitmes_cube+1
+						cube(mitmes_cube) = UniformPrior(cube(mitmes_cube), par_list%par%min,  par_list%par%max)
+						par_list%par%val = cube(mitmes_cube)
+					end if	
 					if(associated(par_list%next)) then
 						par_list => par_list%next
 					else
@@ -135,22 +134,82 @@ contains
 
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-			lnew =  calc_log_likelihood(all_comp, images, lisakaalud_massile)
-			
-			!kui lisamassidele juurde asju arvutatud, siis paneb uued massid vastavalt eelmistele... input_comps juurde
-			do i=1,all_comp%N_comp
-				par_list => input_comps(i)%prof_pars
+			lnew =  calc_log_likelihood(all_comp, images)
+			nullify(par_list)
+		end subroutine fun_loglike
+		subroutine fun_dumper_minimaalne(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
+			implicit none
+			integer :: nlive, nSamples, nPar, context
+			double precision :: maxloglike, logZ, INSlogZ,logZerr
+			double precision, pointer :: posterior(:,:)
+			double precision, pointer :: physLive(:,:)
+			double precision, pointer :: paramConstr(:)
+			double precision :: keskmine, sd_h2lve
+			integer :: i
+			type(prof_par_list_type), pointer ::  par_list
+			integer mitmes_cube	
+			integer :: parim	
+			real(rk) :: dt	
+			parim = maxloc(physLive(:,nPar+1),1)
+			keskmine = sum(posterior(:,nPar+1))/size(posterior, 1)
+			sd_h2lve = sqrt(sum( (posterior(:,nPar+1)-keskmine)**2 )/size(posterior, 1))
+! 			print*, "============== parim on ", maxloglike, size(physLive)
+! 			print "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
+			mitmes_cube = 0
+			do i=1,size(input_comps)
+				if(input_comps(i)%incl%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," Incl", physLive(parim,mitmes_cube)*180.0/pi
+				end if
+				if(input_comps(i)%cnt_x%kas_fitib) then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," cnt_x", physLive(parim,mitmes_cube)/arcsec_to_rad
+				end if
+				if(input_comps(i)%cnt_y%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," cnt_y", physLive(parim,mitmes_cube)
+				end if
+				if(input_comps(i)%pos%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," pos", physLive(parim,mitmes_cube)*180/pi
+				end if
+				if(input_comps(i)%theta0%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," theta0",	physLive(parim,mitmes_cube)
+
+				end if
+				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
-					if(trim(par_list%par_name)=="M") then
-						par_list%par%val = par_list%par%val * lisakaalud_massile(i)
+					if(par_list%par%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1
+! 					print*, trim(all_comp%comp(i)%comp_name)," ",trim(par_list%par_name), physLive(parim,mitmes_cube)
+				end if
+					if(associated(par_list%next)) then
+						par_list => par_list%next
+					else
 						exit
 					end if
-					par_list => par_list%next
 				end do
 			end do
 			nullify(par_list)
-		end subroutine fun_loglike
-		subroutine fun_dumper(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
+! 			print*, "-------"
+! 			print*, "Massid:"
+			do i=1,size(input_comps)
+				par_list=>input_comps(i)%prof_pars
+				do while(par_list%filled)
+					if(trim(par_list%par_name)=="M") then
+! 						print*, " ", trim(input_comps(i)%comp_name), par_list%par%val
+						exit
+					end if
+					par_list=>par_list%next
+				end do
+			end do
+			nullify(par_list)
+			call cpu_time(dt)
+! 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
+			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
+		end subroutine fun_dumper_minimaalne
+		subroutine fun_dumper_suur(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
 			integer :: nlive, nSamples, nPar, context
 			double precision :: maxloglike, logZ, INSlogZ,logZerr
@@ -222,7 +281,7 @@ contains
 			call cpu_time(dt)
 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
-		end subroutine fun_dumper
+		end subroutine fun_dumper_suur
 	end subroutine fittimine_multinest
 		
 end module fitting_multinest_module

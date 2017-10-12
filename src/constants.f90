@@ -16,8 +16,11 @@ module constants_module
 	character(len=*), parameter :: model_filename_end = "_mdl.fits"
 	character(len=*), parameter :: residual_filename_end = "_res.fits"
 	character(len=*), parameter :: diff_filename_end = "_dif.fits"
+	character(len=*), parameter :: multinest_output_header = "Output/MN_output/"
 	
 	!seaded
+	integer  :: mis_fittimise_algoritm = 2
+	integer  :: mis_fittimise_tyyp = 1 !mis tyypi fittimine... 1=populatsioonid ja massid,  2=komponendid ja ML
 	logical  :: kas_fitib_massid_eraldi = .true. !iga likelihoodi arvutamise juures, kas fitib sisemiselt massid eraldi
 	logical  :: kas_barrier = .true. !see, kas masside eraldi fittimisel on 0 juurde barj22r pandud
 	logical  :: kas_koik_pildid_samast_vaatlusest = .true. 
@@ -28,8 +31,13 @@ module constants_module
 	real(rk) :: psf_sisse_peab_j22ma = 0.99 !kui psf servasid natuke k2rbib, siis saab arvutamise kiiremaks
 
 	integer  :: pix_iter_maxlevel = 5
-	real(rk) :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk) :: pix_edasi_jagamise_rel_t2psus = 0.005
+	
+	real(rk) :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
+	real(rk) :: massi_fittimise_hyppe_kordaja = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
+	real(rk) :: massi_fiti_lambda = 5.0 !m22rab kui t2pselt ei tohi massid nulli minna... pot barj22ris/chisq on see kui  -lambda*log(massi_kordaja)
+	
+	real(rk) :: amoeba_fractional_tolerance = 0.01
 	
 	real(rk) :: adaptive_image_x0_default               = 0.0         !-35.0_rk
 	real(rk) :: adaptive_image_y0_default               = 0.0         !-35.0_rk
@@ -122,7 +130,18 @@ contains
 				read(subrida, fmt=*) adaptive_image_edasijagamise_threshold  
 			case("adaptive_image_min_spatial_resolution")   
 				read(subrida, fmt=*) adaptive_image_min_spatial_resolution   
-
+			case(" mis_fittimise_algoritm")
+				read(subrida, fmt=*)  mis_fittimise_algoritm
+			case("massi_fiti_lambda")
+			 	read(subrida, fmt=*) massi_fiti_lambda
+			case("massi_fittimise_hyppe_kordaja")
+			 	read(subrida, fmt=*) massi_fittimise_hyppe_kordaja
+			case("amoeba_fractional_tolerance")
+				read(subrida, fmt=*) amoeba_fractional_tolerance
+			case("mis_fittimise_tyyp")
+				read(subrida, fmt=*) mis_fittimise_tyyp
+			case("mis_fittimise_algoritm")
+				read(subrida, fmt=*) mis_fittimise_algoritm
 			case default
 				print*, "Tundmatu parameeter sisselugemisel: ",trim(adjustl(rida(1:(id2-1))))
 				stop

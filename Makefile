@@ -8,6 +8,7 @@ SRC_DIR = src
 _OBJ = 	constants.o \
 		yldine_matemaatika.o \
 		integration_module.o \
+		newton_Rhapson.o \
 		amoeba.o \
 		file_operations.o \
 		psf_rakendamine.o \

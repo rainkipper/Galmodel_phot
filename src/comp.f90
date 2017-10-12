@@ -54,7 +54,13 @@ module comp_module
 	subroutine init_comp(comp)
 		implicit none
 		type(comp_type), intent(inout) :: comp
-! 			print*, "init comp juures"
+			if(.true.) then
+				if(comp%incl<1.0e-5 ) print*, "incl vale", comp%incl
+				if(comp%incl<1.0e-5 ) comp%incl = 1.0e-5
+				if(comp%incl>89.99*pi/180.0) print*, "incl vale", comp%incl
+				if(comp%incl>89.99*pi/180.0) comp%incl = 89.99*pi/180.0
+			end if
+		
 		comp%sin_incl = sin(comp%incl)
 		comp%cos_incl = cos(comp%incl)
 		comp%tan_incl = tan(comp%incl)

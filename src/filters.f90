@@ -34,26 +34,31 @@ contains
 		!tulemusega korrutades saab massist countsid
 		implicit none
 		class(filter_type), intent(in) :: filter
-		character(len=default_character_length), intent(in) :: population_name
+		character(len=default_character_length), intent(in), optional :: population_name
 		real(rk), intent(in) :: dist
 		real(rk) :: res
 		real(rk) :: pop_ML
 		integer :: i
 
 		!M/L osa, mis tuleneb otse populatsioonist
-		pop_ML = -1234.5
-		do i=1,size(filter%population_names, 1)
-			if(trim(population_name) == trim(filter%population_names(i))) then
-				pop_ML = filter%population_mass_to_light_ratios(i)
+		if(present(population_name)) then
+			pop_ML = -1234.5
+			do i=1,size(filter%population_names, 1)
+				if(trim(population_name) == trim(filter%population_names(i))) then
+					pop_ML = filter%population_mass_to_light_ratios(i)
+				end if
+			end do
+			if(pop_ML == -1234.5) then
+				print*, "Not possible to match population in filter section"
+				stop
 			end if
-		end do
-		if(pop_ML == -1234.5) then
-			print*, "Not possible to match population in filter section"
-			stop
+		else
+			pop_ML = 1.0
 		end if
 		!pildi enda yhikute arvestamine (counts eeldusel)
 		res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
 	end function  calc_counts_mass_ratio
+
 	
 	subroutine create_hst_filters(filters)
 		implicit none

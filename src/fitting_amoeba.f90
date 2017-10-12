@@ -3,7 +3,6 @@ module fitting_amoeba_module
 	use likelihood_module
 	private
 	public fittimine_amoeba
-	real(rk), private, parameter :: ftol = 0.01
 contains
 	subroutine fittimine_amoeba(images, input_comps, all_comp, input_points)
 		implicit none
@@ -35,7 +34,7 @@ contains
 			likelihoods(j) = calc_LL(points(j,:))
 		end do
 		print*, "to amoeba"
-		call my_amoeba(points, likelihoods, ftol, calc_LL, iter)
+		call my_amoeba(points, likelihoods, amoeba_fractional_tolerance, calc_LL, iter)
 		
 	contains
 		function suvalised_priori_punktid(input_comps) result(points)
@@ -52,34 +51,34 @@ contains
 				if(input_comps(i)%incl%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
 					call random_number(single_par_random)
-					points(:,mitmes_cube) = single_par_random * (input_comps(i)%incl%max - input_comps(i)%incl%min) + input_comps(i)%incl%min
+					points(:,mitmes_cube) = get_random_to_prior(single_par_random, input_comps(i)%incl)
 				end if	
 				if(input_comps(i)%cnt_x%kas_fitib) then
 					mitmes_cube=mitmes_cube+1
 					call random_number(single_par_random)
-					points(:,mitmes_cube) = single_par_random * (input_comps(i)%cnt_x%max - input_comps(i)%cnt_x%min) + input_comps(i)%cnt_x%min	
+					points(:,mitmes_cube) = get_random_to_prior(single_par_random, input_comps(i)%cnt_x)
 				end if	
 				if(input_comps(i)%cnt_y%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
 					call random_number(single_par_random)
-					points(:,mitmes_cube) = single_par_random * (input_comps(i)%cnt_y%max - input_comps(i)%cnt_y%min) + input_comps(i)%cnt_y%min
+					points(:,mitmes_cube) = get_random_to_prior(single_par_random, input_comps(i)%cnt_y)
 				end if	
 				if(input_comps(i)%pos%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
 					call random_number(single_par_random)
-					points(:,mitmes_cube) = single_par_random * (input_comps(i)%pos%max - input_comps(i)%pos%min) + input_comps(i)%pos%min
+					points(:,mitmes_cube) = get_random_to_prior(single_par_random, input_comps(i)%pos)
 				end if	
 				if(input_comps(i)%theta0%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
 					call random_number(single_par_random)
-					points(:,mitmes_cube) = single_par_random * (input_comps(i)%theta0%max - input_comps(i)%theta0%min) + input_comps(i)%theta0%min
+					points(:,mitmes_cube) = get_random_to_prior(single_par_random, input_comps(i)%theta0)
 				end if	
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
 					if(par_list%par%kas_fitib)  then
 						mitmes_cube=mitmes_cube+1
 						call random_number(single_par_random)
-						points(:,mitmes_cube) = single_par_random * (par_list%par%max - par_list%par%min) + par_list%par%min
+						points(:,mitmes_cube) = get_random_to_prior(single_par_random, par_list%par)
 					end if	
 						if(associated(par_list%next)) then
 							par_list => par_list%next
@@ -90,6 +89,15 @@ contains
 			end do
 			nullify(par_list)
 		end function suvalised_priori_punktid
+		elemental function get_random_to_prior(rnd, prior) result(res)
+			implicit none
+			real(rk), intent(in) :: rnd
+			type(par_type_real), intent(in) :: prior
+			real(rk) :: res
+			real(rk), parameter :: kui_keskelt = 0.2
+! 			res = rnd*(prior%max - prior%min) + prior%min !yhtlaselt yle terve priori
+			res = (rnd-0.5)*(prior%max - prior%min)*kui_keskelt + 0.5*(prior%min+prior%max) !priori keskemalt
+		end function get_random_to_prior
 		function calc_LL(cube) result(res)
 			implicit none
 			real(rk) :: res
@@ -138,19 +146,68 @@ contains
 
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-			res = -1.0* calc_log_likelihood(all_comp, images, lisakaalud_massile) !-1* kuna leiab miinimumi
+			
+! 			call prindi_koik_fititavad_parameetrid(input_comps)
+			
+			res = -1.0* calc_log_likelihood(all_comp, images) !-1* kuna leiab miinimumi
 			!kui lisamassidele juurde asju arvutatud, siis paneb uued massid vastavalt eelmistele... input_comps juurde
-			do i=1,all_comp%N_comp
-				par_list => input_comps(i)%prof_pars
-				do while(par_list%filled)
-					if(trim(par_list%par_name)=="M") then
-						par_list%par%val = par_list%par%val * lisakaalud_massile(i)
-						exit
-					end if
-					par_list => par_list%next
-				end do
-			end do
 			nullify(par_list)
 		end function calc_LL
 	end subroutine fittimine_amoeba
+	subroutine prindi_koik_fititavad_parameetrid(input_comps)
+		implicit none
+		integer :: mitmes_cube, i
+		type(comp_input_type), dimension(:), allocatable, intent(in), target :: input_comps
+		type(prof_par_list_type), pointer ::  par_list
+		character(len=default_character_length) :: nimi
+			
+		mitmes_cube = 0
+		do i=1,size(input_comps)
+			if(input_comps(i)%incl%kas_fitib)  then
+				mitmes_cube=mitmes_cube+1
+				nimi = "incl"
+				call tryki_yks(nimi, input_comps(i)%incl)
+			end if	
+			if(input_comps(i)%cnt_x%kas_fitib) then
+				mitmes_cube=mitmes_cube+1
+				nimi = "cntx"
+				call tryki_yks(nimi, input_comps(i)%cnt_x)
+! 				input_comps(i)%cnt_x%val = cube(mitmes_cube)
+			end if	
+			if(input_comps(i)%cnt_y%kas_fitib)  then
+				mitmes_cube=mitmes_cube+1
+				nimi = "cnty"
+				call tryki_yks(nimi, input_comps(i)%cnt_y)
+			end if	
+			if(input_comps(i)%pos%kas_fitib)  then
+				mitmes_cube=mitmes_cube+1
+				nimi = "pos"
+				call tryki_yks(nimi, input_comps(i)%pos)
+			end if	
+			if(input_comps(i)%theta0%kas_fitib)  then
+				mitmes_cube=mitmes_cube+1
+				nimi = "theta0"
+				call tryki_yks(nimi, input_comps(i)%theta0)
+			end if	
+			par_list=>input_comps(i)%prof_pars
+			do while(par_list%filled)
+				if(par_list%par%kas_fitib)  then
+					mitmes_cube=mitmes_cube+1					
+					call tryki_yks(par_list%par_name, par_list%par)
+				end if	
+				if(associated(par_list%next)) then
+					par_list => par_list%next
+				else
+					exit
+				end if
+			end do
+		end do
+		nullify(par_list)
+	contains
+		subroutine tryki_yks(nimi,par)
+			character(len=default_character_length), intent(in) :: nimi
+			type(par_type_real), intent(in) :: par
+			print "(A,3(A,F10.5))", trim(nimi), ": ", par%min, " ----- ", par%val, " ------ ", par%max
+		end subroutine tryki_yks
+	end subroutine prindi_koik_fititavad_parameetrid
 end module fitting_amoeba_module

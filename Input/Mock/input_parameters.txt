@@ -1,6 +1,8 @@
 #
 # ============ parameetrid, mis iseloomustavad, mida t2pselt programm teeb
 #
+mis_fittimise_algoritm                  = 1 #1=multinest, 2=amoeba, 3=multinest+amoeba, 4=amoeba mineviku MN-st, 
+mis_fittimise_tyyp                      = 2 #1=populatsioonid ja massid, 2 = komponendid ja M/L
 kas_los                                 = .false.
 kas_rakendab_psf                        = .false. 
 
@@ -19,6 +21,9 @@ psf_sisse_peab_j22ma                    = 0.99
 kas_fitib_massid_eraldi                 = .true. 
 massif_fiti_rel_t2psus                  = 0.003
 kas_barrier                             = .true. 
+massi_fiti_lambda                       = 0.005
+massi_fittimise_hyppe_kordaja           = 0.95
+amoeba_fractional_tolerance             = 0.01
 
 adaptive_image_x0_default               = 0.0     
 adaptive_image_y0_default               = 0.0     
