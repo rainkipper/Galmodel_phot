@@ -1,6 +1,8 @@
 module fitting_multinest_module
 	use nested
 	use likelihood_module
+	use output_module
+	
 contains
 	subroutine fittimine_multinest(images, input_comps, all_comp)
 		implicit none
@@ -208,6 +210,8 @@ contains
 			call cpu_time(dt)
 ! 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
+			call output_like_input(input_comps)
+			call output_ML(input_comps, images)
 		end subroutine fun_dumper_minimaalne
 		subroutine fun_dumper_suur(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none

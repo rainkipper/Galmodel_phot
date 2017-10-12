@@ -62,6 +62,15 @@ contains
 	subroutine init_prof_Einasto(prof)
 		implicit none
 		class(prof_Einasto_type), intent(inout) :: prof
+		
+		!amoeba lolluste vastu... tegelikult vast ei maksaks teha seda:
+		prof%M = abs(prof%M)
+		prof%a0 = abs(prof%a0)
+		prof%N = abs(prof%N)
+		prof%q = abs(prof%q)
+		
+		
+		!
 		prof%intrinsic_symmetry = "Einasto"
 		prof%h = gamma(3*prof%N)**2 / (prof%N * gamma(2*prof%N)**3)
 		prof%k = gamma(2*prof%N)/gamma(3*prof%N)

@@ -38,6 +38,7 @@ contains
 			case default
 				stop "Niisugust fittimise meetodit pole olemas"
 			end select
+						
 			
 		contains
 			subroutine read_points_for_amoeba(file_path, res)

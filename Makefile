@@ -25,6 +25,7 @@ _OBJ = 	constants.o \
 		adaptive_image_real.o \
 		fill_comp_image.o \
 		likelihood.o \
+		output.o \
 		only_output_image.o \
 		fitting_multinest.o \
 		fitting_amoeba.o \

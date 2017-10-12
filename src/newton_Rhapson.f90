@@ -4,6 +4,7 @@ module Newton_Rhapson_module
 	integer, parameter :: NR_maxiter = 50
 contains
 	function optim_NR(initial_value, der1, der2) result(res)
+		!leiab maksimumi
 		implicit none
 		real(rk), dimension(:), intent(in) :: initial_value
 		interface
@@ -38,9 +39,12 @@ contains
 			nihe = 0.0
 			res_eelmine = res !salvestab viimase, et testida koonduvust
 			do k = 1,N
+
 				do m=1,N
 					nihe(k) = nihe(k) + grad(m) * inv_hessian(k,m) !maatriks korrutamine sisuliselt
 				end do
+
+				
 				nihe(k) = nihe(k) * massi_fittimise_hyppe_kordaja
 			end do
 			if(any(res - nihe < 0)) then				!kui ekstrapoolib liiga kaugele
@@ -53,6 +57,5 @@ contains
 				exit
 			end if
 		end do
-		
 	end function optim_NR
 end module Newton_Rhapson_module

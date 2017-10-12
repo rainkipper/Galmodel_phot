@@ -2,7 +2,7 @@ program gm
 	use fill_comp_image_module
 	use	read_input_module
 	use fitting_module
-	use only_output_image_module
+	use output_module
 	use mynr_amoeba_module
 
 	type(all_comp_type) :: all_comp !, all_comp_input
@@ -14,11 +14,11 @@ program gm
 ! 	integer :: i, iter
 ! 	integer :: test_image_number
 	character(len=*), parameter :: fname="comp_im.txt"
-! 	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
-! 	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
-	character(len=default_character_length), parameter :: input_comp_file = "Input/Mock/input_comp.txt"
+	character(len=default_character_length), parameter :: input_comp_file = "Input_sdss/input_comp.txt"
+	character(len=default_character_length), parameter :: input_image_file = "Input_sdss/input_images.txt"
+! 	character(len=default_character_length), parameter :: input_comp_file = "Input/Mock/input_comp.txt"
 	character(len=default_character_length), parameter :: input_param_file = "Input/Mock/input_parameters.txt"
-	character(len=default_character_length), parameter :: input_image_file = "Input/Mock/input_images.txt"
+! 	character(len=default_character_length), parameter :: input_image_file = "Input/Mock/input_images.txt"
 ! 	logical :: kas_comp_im, kas_los
 ! 	integer :: i, N
 	real(rk), dimension(:,:), allocatable :: pilt
@@ -31,25 +31,11 @@ program gm
 	call read_constants_and_parameters(input_param_file)
 	
 	!
-! 	allocate(pilt(1:10, 1:9))
-! 	allocate(vec(1:10))
-! 	allocate(vec2(1:9))
-! 	call random_number(pilt); pilt = pilt * 30
-! 	do i=1,10;
-! 		vec2 = pilt(i,:)
-! 		vec(i)=v2hendatav(vec2) ;
-! 	end do
-! 	print*, vec
-! 	call my_amoeba(pilt, vec, 0.001_rk, v2hendatav, iter)
-! 	print*, "iter", iter
-! 	print*, vec
-! 	print*, pilt(1,:)
-! 	stop "amoeba test tehtud"
-	
-	!
 	! ================== mingi testgalaktika tekitamine =================
 	!
 	call read_components(input_comp_file, input_comp)
+
+
 	call read_images_and_filters(input_image_file, images, filters)
 	call init_images(images) !peamiselt psf crop
 
@@ -64,7 +50,8 @@ program gm
 	
 
 ! 	ll = calc_log_likelihood(all_comp, images)
-	
+	call output_like_input(input_comp) !ekraanile tulemused
+	call output_ML(input_comp, images)
 	call  cpu_time(t2)
 	print*, "All done:D", t2-t1
 

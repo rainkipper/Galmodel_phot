@@ -2,7 +2,7 @@
 prof =Einasto 
 type = stellar
 incl = 39.7322897712719, T, 20.0, 45.0, bulge_old
-dist = 57880.0, F, 0.0, 1e8, bulge_old
+dist = 57880.0, F, 0.0, 1e6, bulge_old
 pos_wrt_phys_coord = -26.5250150258185, F, -30.0, -20.0, bulge_old
 cnt_x = 0.219498669489108,       F, -1.0e-0, 1.0e-0, bulge_old
 cnt_y = 4.810519235468368E-006,  F, -1.0e-0, 1.0e-0, bulge_old
