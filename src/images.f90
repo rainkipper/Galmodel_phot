@@ -49,6 +49,7 @@ contains
 		do i=1,size(images,1)
 ! 			call crop_psf(images(i)%psf, .true., .true.)
 			call crop_psf(psf = images(i)%psf, crop = kas_psf_crop, check = .true.) !viimane argument on psf kontroll (keskel jm eeldused)
+			images(i)%sky_noise = minval(images(i)%sigma) !sky on minimaalne sigma
 		end do
 
 	end subroutine init_images

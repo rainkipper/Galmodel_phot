@@ -60,6 +60,33 @@ contains
 			write(unit=*, fmt="(A15)", advance = "yes"), ""
 		end do
 	end subroutine output_ML
+	
+	subroutine output_images(input_comps, images)
+		implicit none
+		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
+		type(image_type), dimension(:), allocatable, intent(in) :: images
+		type(all_comp_type) :: all_comp
+		real(rk) :: LL
+		real(rk), dimension(:,:,:), allocatable :: v2ljundpildid
+		integer :: i,j
+
+		call convert_input_comp_to_all_comp(input_comps, all_comp)
+		call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
+		
+		select case(mis_fittimise_tyyp)
+		case(2) !ehk componendid ja ML
+			LL =  calc_log_likelihood(all_comp, images, v2ljundpildid)
+			do i=1,size(images)
+				call write_matrix_to_fits(v2ljundpildid[i,:,:], images(i)%output_mdl_file)
+				call write_matrix_to_fits(images(i)%obs - v2ljundpildid[i,:,:], images(i)%output_diff_file)
+				call write_matrix_to_fits( abs(images(i)%obs - v2ljundpildid[i,:,:])/images(i)%sigma , images(i)%output_rel_diff_file)
+			end do
+			print*, "Final LL was", LL
+		case default
+			print*, "no output available for this type"
+		end select
+		
+	end subroutine output_images
 end module output_module
 	
 	

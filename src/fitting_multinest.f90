@@ -2,7 +2,7 @@ module fitting_multinest_module
 	use nested
 	use likelihood_module
 	use output_module
-	
+	real(rk), dimension(:), allocatable :: parim_phys_points !ehk outputi jaoks j2tab viimase siia
 contains
 	subroutine fittimine_multinest(images, input_comps, all_comp)
 		implicit none
@@ -79,6 +79,7 @@ contains
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
 			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper_minimaalne, context)
 
+		
 	contains
 
 		subroutine fun_loglike(Cube,n_dim,nPar,lnew,context)
@@ -139,7 +140,7 @@ contains
 			lnew =  calc_log_likelihood(all_comp, images)
 			nullify(par_list)
 		end subroutine fun_loglike
-		subroutine fun_dumper_minimaalne(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
+		subroutine fun_dumper_pildid(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
 			integer :: nlive, nSamples, nPar, context
 			double precision :: maxloglike, logZ, INSlogZ,logZerr
@@ -155,111 +156,38 @@ contains
 			parim = maxloc(physLive(:,nPar+1),1)
 			keskmine = sum(posterior(:,nPar+1))/size(posterior, 1)
 			sd_h2lve = sqrt(sum( (posterior(:,nPar+1)-keskmine)**2 )/size(posterior, 1))
-! 			print*, "============== parim on ", maxloglike, size(physLive)
-! 			print "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
-			mitmes_cube = 0
-			do i=1,size(input_comps)
-				if(input_comps(i)%incl%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," Incl", physLive(parim,mitmes_cube)*180.0/pi
-				end if
-				if(input_comps(i)%cnt_x%kas_fitib) then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," cnt_x", physLive(parim,mitmes_cube)/arcsec_to_rad
-				end if
-				if(input_comps(i)%cnt_y%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," cnt_y", physLive(parim,mitmes_cube)
-				end if
-				if(input_comps(i)%pos%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," pos", physLive(parim,mitmes_cube)*180/pi
-				end if
-				if(input_comps(i)%theta0%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," theta0",	physLive(parim,mitmes_cube)
-
-				end if
-				par_list=>input_comps(i)%prof_pars
-				do while(par_list%filled)
-					if(par_list%par%kas_fitib)  then
-					mitmes_cube=mitmes_cube+1
-! 					print*, trim(all_comp%comp(i)%comp_name)," ",trim(par_list%par_name), physLive(parim,mitmes_cube)
-				end if
-					if(associated(par_list%next)) then
-						par_list => par_list%next
-					else
-						exit
-					end if
-				end do
-			end do
-			nullify(par_list)
-! 			print*, "-------"
-! 			print*, "Massid:"
-			do i=1,size(input_comps)
-				par_list=>input_comps(i)%prof_pars
-				do while(par_list%filled)
-					if(trim(par_list%par_name)=="M") then
-! 						print*, " ", trim(input_comps(i)%comp_name), par_list%par%val
-						exit
-					end if
-					par_list=>par_list%next
-				end do
-			end do
-			nullify(par_list)
-			call cpu_time(dt)
-! 			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
-			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
-			call output_like_input(input_comps)
-			call output_ML(input_comps, images)
-		end subroutine fun_dumper_minimaalne
-		subroutine fun_dumper_suur(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
-			implicit none
-			integer :: nlive, nSamples, nPar, context
-			double precision :: maxloglike, logZ, INSlogZ,logZerr
-			double precision, pointer :: posterior(:,:)
-			double precision, pointer :: physLive(:,:)
-			double precision, pointer :: paramConstr(:)
-			double precision :: keskmine, sd_h2lve
-			integer :: i
-			type(prof_par_list_type), pointer ::  par_list
-			integer mitmes_cube	
-			integer :: parim	
-			real(rk) :: dt	
-			parim = maxloc(physLive(:,nPar+1),1)
-			keskmine = sum(posterior(:,nPar+1))/size(posterior, 1)
-			sd_h2lve = sqrt(sum( (posterior(:,nPar+1)-keskmine)**2 )/size(posterior, 1))
-			print*, size(posterior, 1), size(posterior, 2)
+			if(.not.allocated(parim_phys_points)) allocate(parim_phys_points(1:nPar))
+			parim_phys_points = physLive(parim, 1:nPar) !salvestab parimad punktid mooduli muutujaks, et hiljem output oleks lihtsam
 			print*, "============== parim on ", maxloglike, size(physLive)
 			print "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," Incl", physLive(parim,mitmes_cube)*180.0/pi
+					input_comps(i)%incl%val = physLive(parim,mitmes_cube)
 				end if
 				if(input_comps(i)%cnt_x%kas_fitib) then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," cnt_x", physLive(parim,mitmes_cube)/arcsec_to_rad
+					input_comps(i)%cnt_x%val =  physLive(parim,mitmes_cube)
 				end if
 				if(input_comps(i)%cnt_y%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," cnt_y", physLive(parim,mitmes_cube)
+					input_comps(i)%cnt_y%val =  physLive(parim,mitmes_cube)
 				end if
 				if(input_comps(i)%pos%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," pos", physLive(parim,mitmes_cube)*180/pi
+					input_comps(i)%pos%val = physLive(parim,mitmes_cube)*180/pi
 				end if
 				if(input_comps(i)%theta0%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," theta0",	physLive(parim,mitmes_cube)
+					input_comps(i)%theta0%val = physLive(parim,mitmes_cube)
 
 				end if
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
 					if(par_list%par%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					print*, trim(all_comp%comp(i)%comp_name)," ",trim(par_list%par_name), physLive(parim,mitmes_cube)
+					par_list%par%val = physLive(parim,mitmes_cube)
 				end if
 					if(associated(par_list%next)) then
 						par_list => par_list%next
@@ -269,23 +197,9 @@ contains
 				end do
 			end do
 			nullify(par_list)
-			print*, "-------"
-			print*, "Massid:"
-			do i=1,size(input_comps)
-				par_list=>input_comps(i)%prof_pars
-				do while(par_list%filled)
-					if(trim(par_list%par_name)=="M") then
-						print*, " ", trim(input_comps(i)%comp_name), par_list%par%val
-						exit
-					end if
-					par_list=>par_list%next
-				end do
-			end do
-			nullify(par_list)
-			call cpu_time(dt)
-			print "(A,F15.10)", "========================================================== dt_algusest = ", dt-alguse_aeg
+			call output_images(input_comps, images)
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
-		end subroutine fun_dumper_suur
+		end subroutine fun_dumper_pildid
 	end subroutine fittimine_multinest
 		
 end module fitting_multinest_module

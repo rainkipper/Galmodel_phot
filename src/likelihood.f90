@@ -49,12 +49,11 @@ contains
 				allocate(to_massfit(i)%inv_sigma2(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				to_massfit(i)%I = images(i)%obs
 				to_massfit(i)%mask = images(i)%mask
-				to_massfit(i)%inv_sigma2 = 1.0/(images(i)%sigma**2  + images(i)%sky_noise**2 + abs(images(i)%obs))
+				to_massfit(i)%inv_sigma2 = 1.0/images(i)%sigma**2
 			end do
 		else
 			stop "not implemented in init log likelihood"
 		end if
-
 		
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
@@ -76,7 +75,7 @@ contains
 		print*, LL_counter, "LL = ", res
 		if(isnan(res)) stop "err: LL ei tohi olla nan"
 	end function calc_log_likelihood
-	function calc_log_likelihood_components(all_comp, images) result(res)
+	function calc_log_likelihood_components(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
@@ -85,6 +84,7 @@ contains
 		real(rk), dimension(:), allocatable :: algv22rtused, tmp
 		real(rk), dimension(:,:), allocatable :: amoeba_algl2hend
 		real(rk) :: res
+		real(rk), dimension(:,:,:), allocatable, optional  :: output_images
 		integer :: i, j,mis_pilt, iter, ii
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
@@ -97,6 +97,10 @@ contains
 		!
 ! 		if(mudelid(i)%recalc_image) then
 		if(kas_koik_pildid_samast_vaatlusest) then
+			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
+				allocate(output_images(1:size(images,1), 1:size(images%obs,1), 1:size(images%obs,2)))
+				output_images = 0.0 
+			end if
 			do j=1,size(mudelid, 1)
 				call fill_comp_image(all_comp, j, mudelid(j), via_adaptive_im, kas_los)
 ! 				call write_matrix_to_fits(mudelid(j)%mx, trim(images(j)%output_mdl_file))
@@ -146,6 +150,7 @@ contains
 			do j=1,all_comp%N_comp
 				mudelpilt = mudelpilt + from_mass_to_lum(i,j)*to_massfit(i)%M(j,:,:)
 			end do; 
+			if(present(output_images) .and. kas_koik_pildid_samast_vaatlusest) output_images(i,:,:) = mudelpilt !ainult viimase v2ljundi jaoks
 			res = res - sum( to_massfit(i)%inv_sigma2*(to_massfit(i)%I - mudelpilt)**2 , to_massfit(i)%mask)
 		end do
 		res = res * 0.5 !et likelihood, mitte chisq
@@ -315,9 +320,9 @@ contains
 			! ======== loglike ise ========
 			!
 			
-			res = res + sum(-1.0*( (pilt-images(i)%obs)**2*0.5/((images(i)%sigma)**2  + (images(i)%sky_noise**2 + abs(images(i)%obs)))), images(i)%mask) 
+			res = res + sum((pilt-images(i)%obs)**2/images(i)%sigma)**2, images(i)%mask) 
 		end do
-
+		res = res * -0.5
 	contains
 		function leia_massi_abs_tol(comp, images) result(res)
 			!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus

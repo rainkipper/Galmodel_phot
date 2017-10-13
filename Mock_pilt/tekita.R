@@ -70,6 +70,7 @@ for(f in seq_along(filters)){
    for(i in seq_along(ML_g)) L <- L + grid[[paste0("C",i)]]*mass_to_obs_lum(Msun=filters_M_sun[f], ML=get(paste0("ML_",filters[f]))[i])
    print(paste("median heledus (sigma?)", filters[f], median(L)))
    writeFITSim(X = matrix(L, ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],".fits"))
+   writeFITSim(X = matrix(median(L), ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],"_psf.fits"))
 }
 writeFITSim(X = matrix(L*0+1, ncol=N, nrow=N), file = paste0("Input/Mock/mask.fits"))
 
