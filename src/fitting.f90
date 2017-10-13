@@ -1,6 +1,7 @@
 module fitting_module
 	use fitting_multinest_module
 	use fitting_amoeba_module
+	use fitting_omalooming_module
 	!iga fittija peab saama sisse pildid, input_comps ning v2ljundis all_comp (kuigi seda otseselt vaja pole)
 	!iga fittija peab lopus tegema parima  input_comps-i, mis l2heb outputi tegemiseks
 	
@@ -36,10 +37,14 @@ contains
 				print*, "Amoeba from previous multinest"
 				call read_points_for_amoeba(multinest_output_header, punktid)
 				call fittimine_amoeba(images, input_comps, all_comp, punktid)
+			case(5)
+				print*, "fittimine omaloominguga"
+				call fittimine_omalooming(images, input_comps, all_comp)
 			case default
 				stop "Niisugust fittimise meetodit pole olemas"
 			end select
-					
+			
+			print*, "Kokku oli LL arvutusi", LL_counter		
 			call output_like_input(input_comps)
 			call output_images(input_comps, images)
 			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)	

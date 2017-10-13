@@ -20,6 +20,18 @@ module likelihood_module
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
+	interface
+		function eri_likelihoodide_kuju(all_comp, images, output_images) result(res)
+			import all_comp_type
+			import image_type
+			import rk
+			implicit none
+			type(all_comp_type), intent(inout) :: all_comp
+			type(image_type), dimension(:), allocatable, intent(in) :: images
+			real(rk), dimension(:,:,:), allocatable, intent(out), optional :: output_images !optional output
+			real(rk) :: res
+		end function eri_likelihoodide_kuju
+	end interface
 contains
 
 	subroutine init_calc_log_likelihood(all_comp, images)
@@ -57,22 +69,25 @@ contains
 		
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
-	function calc_log_likelihood(all_comp, images) result(res)
+	function calc_log_likelihood(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
 		real(rk) :: res
-		real(rk), dimension(:), allocatable :: lisakaalud_massile !vaja kui populatsioone fitib
+! 		real(rk), dimension(:), allocatable :: lisakaalud_massile !vaja kui populatsioone fitib
+		real(rk), dimension(:,:,:), allocatable, intent(out), optional :: output_images !optional output
+		integer, dimension(1:2) :: for_case
+		procedure(eri_likelihoodide_kuju), pointer :: f_LL
 		LL_counter = LL_counter + 1
 		select case(mis_fittimise_tyyp)
-			case(1)
-				res = calc_log_likelihood_populations(all_comp, images, lisakaalud_massile)
-			case(2)
-				res = calc_log_likelihood_components(all_comp, images)
+			case(1); f_LL => calc_log_likelihood_populations
+			case(2); f_LL => calc_log_likelihood_components
 		case default
 			stop "Niisugust fittimise tyypi (popul voi ML) pole olemas"
 		end select 
-		print*, LL_counter, "LL = ", res
+		if(present(output_images)) then; res = f_LL(all_comp, images, output_images)
+		else; res = f_LL(all_comp, images) ;end if
+! 		print*, LL_counter, "LL = ", res
 		if(isnan(res)) stop "err: LL ei tohi olla nan"
 	end function calc_log_likelihood
 	function calc_log_likelihood_components(all_comp, images, output_images) result(res)
@@ -98,7 +113,7 @@ contains
 ! 		if(mudelid(i)%recalc_image) then
 		if(kas_koik_pildid_samast_vaatlusest) then
 			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
-				allocate(output_images(1:size(images,1), 1:size(images%obs,1), 1:size(images%obs,2)))
+				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
 				output_images = 0.0 
 			end if
 			do j=1,size(mudelid, 1)
@@ -210,7 +225,7 @@ contains
 		end function leia_hessian_ML_jaoks
 	end function calc_log_likelihood_components
 		
-	function calc_log_likelihood_populations(all_comp, images, lisakaalud_massile) result(res)
+	function calc_log_likelihood_populations(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
@@ -219,8 +234,9 @@ contains
 		integer :: i, j
 		character(len=default_character_length) :: mida_arvutatakse
 		real(rk), dimension(:,:), allocatable :: weights !ehk M/L suhted fotomeetria korral ... esimene indeks pilt, teine komponent
-		real(rk), dimension(:), allocatable :: weights_for_single_im
-		real(rk), dimension(:), allocatable, intent(out) :: lisakaalud_massile !optional output
+		real(rk), dimension(:), allocatable :: weights_for_single_im, lisakaalud_massile
+		real(rk), dimension(:,:,:), allocatable, intent(out), optional :: output_images !optional output
+		
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
 
 		mida_arvutatakse = "Not in use"
@@ -235,6 +251,10 @@ contains
 		! ========= komponentide mudelpiltide arvutamised ==============
 		!
 		if(kas_koik_pildid_samast_vaatlusest) then
+			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
+				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
+				output_images = 0.0 
+			end if
 			do i=1,size(mudelid, 1)
 				if(mudelid(i)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
@@ -319,8 +339,8 @@ contains
 			!
 			! ======== loglike ise ========
 			!
-			
-			res = res + sum((pilt-images(i)%obs)**2/images(i)%sigma)**2, images(i)%mask) 
+			if(present(output_images)) output_images(i,:,:) = pilt
+			res = res + sum((pilt-images(i)%obs)**2/images(i)%sigma**2, images(i)%mask) 
 		end do
 		res = res * -0.5
 	contains

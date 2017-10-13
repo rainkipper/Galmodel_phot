@@ -9,6 +9,7 @@ _OBJ = 	constants.o \
 		yldine_matemaatika.o \
 		integration_module.o \
 		newton_Rhapson.o \
+		omalooming.o \
 		amoeba.o \
 		file_operations.o \
 		psf_rakendamine.o \
@@ -29,6 +30,7 @@ _OBJ = 	constants.o \
 		only_output_image.o \
 		fitting_multinest.o \
 		fitting_amoeba.o \
+		fitting_omalooming.o \
 		fitting.o \
 		program.o
 

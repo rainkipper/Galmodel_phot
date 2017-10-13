@@ -38,7 +38,7 @@ Bulge<-gen_Einasto1(ac = 1.155, q = 0.72, N = 2.7, dN = 7.769, rhoc = yhiku_kord
 Disc<-gen_Einasto1(ac = 10.67, q = 0.17, N = 1.2, dN = 3.273, rhoc = yhiku_kordaja*1.307e-2)
 Young_disc<-gen_Einasto1(ac = 11.83, q = 0.01, N = 0.2, dN = 0.316, rhoc = yhiku_kordaja*1.179e-2) 
 Stellar_halo<-gen_Einasto1(ac = 12.22, q = 0.50, N = 3.0, dN = 8.669, rhoc = yhiku_kordaja*4.459e-4)
-mask<-2:5
+mask<-c(F,T,T,F,T)
 funcs<-list(Nucleus, Bulge, Disc, Young_disc, Stellar_halo)[mask]
 Q_list<-unlist(Map(Q_fun, c(0.99, 0.72,0.17,0.01,0.50)[mask], incl ))
 ML_g<-c(4.44, 5.34, 5.23, 1.23, 6.19)[mask]
@@ -70,7 +70,7 @@ for(f in seq_along(filters)){
    for(i in seq_along(ML_g)) L <- L + grid[[paste0("C",i)]]*mass_to_obs_lum(Msun=filters_M_sun[f], ML=get(paste0("ML_",filters[f]))[i])
    print(paste("median heledus (sigma?)", filters[f], median(L)))
    writeFITSim(X = matrix(L, ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],".fits"))
-   writeFITSim(X = matrix(median(L), ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],"_psf.fits"))
+   writeFITSim(X = matrix(median(L)+sqrt(L), ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],"_sigma.fits"))
 }
 writeFITSim(X = matrix(L*0+1, ncol=N, nrow=N), file = paste0("Input/Mock/mask.fits"))
 

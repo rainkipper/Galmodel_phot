@@ -77,7 +77,7 @@ contains
 		
 		call cpu_time(alguse_aeg)
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
-			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper_minimaalne, context)
+			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
 
 		
 	contains
@@ -140,7 +140,7 @@ contains
 			lnew =  calc_log_likelihood(all_comp, images)
 			nullify(par_list)
 		end subroutine fun_loglike
-		subroutine fun_dumper_pildid(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
+		subroutine fun_dumper(nSamples,nlive,nPar,physLive, posterior, paramConstr,maxloglike,logZ,INSlogZ,logZerr,context)
 			implicit none
 			integer :: nlive, nSamples, nPar, context
 			double precision :: maxloglike, logZ, INSlogZ,logZerr
@@ -199,7 +199,7 @@ contains
 			nullify(par_list)
 			call output_images(input_comps, images)
 			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
-		end subroutine fun_dumper_pildid
+		end subroutine fun_dumper
 	end subroutine fittimine_multinest
 		
 end module fitting_multinest_module

@@ -38,7 +38,14 @@ contains
 		subroutine tryki_yks(nimi,par)
 			character(len=default_character_length), intent(in) :: nimi
 			type(par_type_real), intent(in) :: par
-			print "(A8,A,E13.5,L,2E13.5,A1,A)", trim(nimi), " = ", par%val, par%kas_fitib, par%min, par%max, " ", trim(input_comps(par%ref)%comp_name)
+			real(rk) :: kordaja
+			select case(trim(nimi))
+			case("incl"); kordaja = 180.0/pi
+			case("cnt_x"); kordaja = 1.0/arcsec_to_rad
+			case("cnt_y"); kordaja = 1.0/arcsec_to_rad
+			case default; kordaja = 1.0
+			end select
+			print "(A8,A,E13.5,L,2E13.5,A1,A)", trim(nimi), " = ", par%val*kordaja, par%kas_fitib, par%min*kordaja, par%max*kordaja, " ", trim(input_comps(par%ref)%comp_name)
 		end subroutine tryki_yks
 	end subroutine output_like_input
 	subroutine output_ML(input_comps, images)
@@ -77,9 +84,9 @@ contains
 		case(2) !ehk componendid ja ML
 			LL =  calc_log_likelihood(all_comp, images, v2ljundpildid)
 			do i=1,size(images)
-				call write_matrix_to_fits(v2ljundpildid[i,:,:], images(i)%output_mdl_file)
-				call write_matrix_to_fits(images(i)%obs - v2ljundpildid[i,:,:], images(i)%output_diff_file)
-				call write_matrix_to_fits( abs(images(i)%obs - v2ljundpildid[i,:,:])/images(i)%sigma , images(i)%output_rel_diff_file)
+				call write_matrix_to_fits(v2ljundpildid(i,:,:), images(i)%output_mdl_file)
+				call write_matrix_to_fits(images(i)%obs - v2ljundpildid(i,:,:), images(i)%output_diff_file)
+				call write_matrix_to_fits( abs(images(i)%obs - v2ljundpildid(i,:,:))/images(i)%sigma , images(i)%output_rel_diff_file)
 			end do
 			print*, "Final LL was", LL
 		case default
