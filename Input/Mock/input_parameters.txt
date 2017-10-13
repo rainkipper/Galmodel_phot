@@ -23,7 +23,7 @@ massif_fiti_rel_t2psus                  = 0.003
 kas_barrier                             = .true. 
 massi_fiti_lambda                       = 0.005
 massi_fittimise_hyppe_kordaja           = 0.95
-amoeba_fractional_tolerance             = 0.01
+amoeba_fractional_tolerance             = 0.001
 
 adaptive_image_x0_default               = 0.0     
 adaptive_image_y0_default               = 0.0     

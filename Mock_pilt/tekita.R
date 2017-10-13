@@ -1,7 +1,8 @@
 setwd("~/Github/Galmodel_phot/")
 incl<-75.2 * pi/180 #kaldenurk
-galdist<-10000 #kpc
+galdist<-1e4 #kpc
 lopmatus<-50
+ZP<-22.5
 #pos nurka ei arvesta
 
 
@@ -15,8 +16,16 @@ surf_lum<-function(incl, func, A){
    Q<-Q_fun(e$q, incl)
    2*e$q/Q*tmp
 }
+
+
+
 gen_Einasto1<-function(ac, q, N, dN, rhoc){
    force(N); force(q); force(ac); force(dN); force(rhoc)
+   rho0<-rhoc/exp(-dN)
+   h<-gamma(3*N)**2 / (N*gamma(2*N)**3)
+   k<-gamma(2*N)/gamma(3*N)
+   a0<-ac/(k*dN**N)
+   M<-4*pi*q*a0**3*rho0/h
    function(a){
       #a<-sqrt(R^2+(z/q)^2)
       rhoc*exp(-dN*((a/ac)^(1/N) - 1))
@@ -35,9 +44,14 @@ Q_list<-unlist(Map(Q_fun, c(0.99, 0.72,0.17,0.01,0.50)[mask], incl ))
 ML_g<-c(4.44, 5.34, 5.23, 1.23, 6.19)[mask]
 ML_r<-c(3.2, 4.08, 3.92, 1.12, 4.48)[mask]
 ML_i<-c(2.35, 3.01, 2.92, 0.88, 3.25)[mask]
+filters_M_sun<-c(6.45, 5.14, 4.65, 4.54, 4.52)[2:4]
+mass_to_obs_lum<-function(Msun, ML) 10**(0.4*(ZP-Msun) + 6.0 - 2.0*log10( galdist ) ) / ML
+
+
 
 pildi_piir<-20; N<-100
 coord<-seq(-pildi_piir, pildi_piir, length.out = N)
+# pix_pindala_sec2<- ((coord[2]-coord[1])/galdist*180/pi*3600 )**2
 grid<-expand.grid(X = coord, Y = coord);
 grid$lum<-0
 
@@ -53,7 +67,8 @@ filters<-c("g", "r", "i")
 
 for(f in seq_along(filters)){
    L<-grid$X*0 #algne
-   for(i in seq_along(ML_g)) L <- L + get(paste0("ML_",filters[f]))[i]*grid[[paste0("C",i)]]
+   for(i in seq_along(ML_g)) L <- L + grid[[paste0("C",i)]]*mass_to_obs_lum(Msun=filters_M_sun[f], ML=get(paste0("ML_",filters[f]))[i])
+   print(paste("median heledus (sigma?)", filters[f], median(L)))
    writeFITSim(X = matrix(L, ncol=N, nrow=N), file = paste0("Input/Mock/",filters[f],".fits"))
 }
 writeFITSim(X = matrix(L*0+1, ncol=N, nrow=N), file = paste0("Input/Mock/mask.fits"))

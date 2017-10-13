@@ -125,37 +125,12 @@ contains
 		! =============== heleduste arvutamisel sisemine fittimine ================
 		!
 		allocate(ML_kordajad(1:size(images), 1:all_comp%N_comp)); ML_kordajad = 1.0
-! 		if(.false.) then
-			!Newton-Rhapsody meetod
-			
-do 	ii=1,10
 			allocate(algv22rtused(1:all_comp%N_comp)); 
-			call random_number(algv22rtused) !
+			call random_number(algv22rtused); algv22rtused = algv22rtused*5.0 !
 			do mis_pilt = 1, size(images)
-				ML_kordajad(mis_pilt,:) = optim_NR(algv22rtused, leia_gradient_ML_jaoks, leia_hessian_ML_jaoks) !siin arvutatakse LM_kordajaid, ML jaoks poordvaartus vaja votta
+				!siin arvutatakse LM_kordajaid, ML jaoks poordvaartus vaja votta
+				ML_kordajad(mis_pilt,:) = optim_NR(algv22rtused, leia_gradient_ML_jaoks, leia_hessian_ML_jaoks) 
 			end do
-print*, "NR"; print*, ML_kordajad
-deallocate(algv22rtused)
-			
-! 		else
-			!simplex amoeba
-			allocate(amoeba_algl2hend(1:all_comp%N_comp + 1, 1:all_comp%N_comp))
-			allocate(algv22rtused(1:size(amoeba_algl2hend,1)))
-			allocate(tmp(1:all_comp%N_comp))
-			do mis_pilt=1,size(images)
-				call random_number(amoeba_algl2hend)
-				do j=1,size(amoeba_algl2hend, 1)
-					tmp = amoeba_algl2hend(j,:)
-					algv22rtused(j) = leia_LL_ML_jaoks(tmp)
-				end do
-				call my_amoeba(amoeba_algl2hend, algv22rtused, massif_fiti_rel_t2psus, leia_LL_ML_jaoks, iter)
-				ML_kordajad(mis_pilt,:) = amoeba_algl2hend(minloc(algv22rtused, 1),:)
-			end do
-print*, "amoeba"; print*, ML_kordajad
-deallocate(amoeba_algl2hend); deallocate(algv22rtused); deallocate(tmp)
-end do
-			stop
-! 		end if
 		ML_kordajad = 1.0/ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
 		if(.not.allocated(last_ML)) allocate(last_ML(1:size(ML_kordajad, 1), 1:size(ML_kordajad, 2)))
 		last_ML = ML_kordajad !salvestab lopptulemuse jaoks
@@ -181,12 +156,14 @@ end do
 			real(rk) :: res
 			real(rk), dimension(:,:), allocatable :: mudelpilt
 			integer :: j
+			real(rk), dimension(:), allocatable :: tmp
 			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
 			mudelpilt = 0.0
+			allocate(tmp(1:size(x))); tmp = x; do j=1,size(x); if(x(j)<1.0e-7) tmp(j) = 1.0e-7 ;end do
 			do j=1,size(images)
-				mudelpilt = mudelpilt + abs(x(j))*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) !abs on amoeba lolluste vastu
+				mudelpilt = mudelpilt + abs(tmp(j))*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) !abs on amoeba lolluste vastu
 			end do
-			res = -1.0*sum( (to_massfit(mis_pilt)%I - mudelpilt)**2 * to_massfit(mis_pilt)%inv_sigma2, to_massfit(mis_pilt)%mask) + massi_fiti_lambda*sum(log(abs(x)))
+			res = -1.0*sum( (to_massfit(mis_pilt)%I - mudelpilt)**2 * to_massfit(mis_pilt)%inv_sigma2, to_massfit(mis_pilt)%mask) + massi_fiti_lambda*sum(log(abs(tmp)))
 			!defineeritud vale m2rgiga, et saaks amoeba abil minimeerida
 			res = res * -1.0
 		end function leia_LL_ML_jaoks
