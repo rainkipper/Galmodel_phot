@@ -90,3 +90,12 @@ print(paste("1 pixel is ", scale ," arcsec"))
 
 
 
+
+
+
+
+
+
+
+f<-function(x)
+plot(x, f(x))

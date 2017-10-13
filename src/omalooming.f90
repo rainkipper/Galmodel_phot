@@ -4,8 +4,8 @@ module omalooming_module
 ! 	integer, parameter :: rk = kind(1.0)
 	use constants_module
 	real(rk), parameter, private :: gold = (3.0-sqrt(5.0))/2.0
-	integer, parameter, private :: N_iter_golden = 15	
-	integer, parameter, private :: N_iter_fittimine = 250
+	integer, parameter, private :: N_iter_golden = 10
+	integer, parameter, private :: N_iter_fittimine = 240
 	interface
 		function fititav_fun(par_list) result(res)
 			import rk
@@ -15,14 +15,15 @@ module omalooming_module
 		end function fititav_fun
 	end interface
 contains
-	function fittimine(fun, minpar, maxpar) result(res)
+	function fittimine(fun, minpar, maxpar) result(res1)
 		implicit none
 		procedure(fititav_fun) :: fun
 		real(rk), dimension(:), allocatable, intent(in) :: minpar, maxpar !parameetriruumi piirid fittimisel... prior
 		real(rk), dimension(:), allocatable :: res1, res2, res3, res4, res5, res6
+		real(rk), dimension(1:3) :: valik
 		real(rk), dimension(:), allocatable :: X0, X1 !nende punktidega moodustatud sirgel fitib
 		real(rk) :: kmin, kmax, kbest !k n2itab kui kaugel X0-st piki sirget X0-X1
-		integer :: i
+		integer :: i, halvim, parim
 
 		allocate(res1(1:size(minpar, 1))); call genereeri_suvaline_X(res1)
 		allocate(res2(1:size(minpar, 1))); call genereeri_suvaline_X(res2)
@@ -34,27 +35,62 @@ contains
 		allocate(X1(1:size(minpar, 1)))
 		call genereeri_suvaline_X(res1) !just random initial value
 		
-		!algne
+		!versioon 0
 ! 		do i=1,N_iter_fittimine
 ! 			print*, i, i*N_iter_golden
-! 			X0 = res
-! 			call genereeri_suvaline_X(X1, X0)
+! 			X0 = res1
+! 			call genereeri_suvaline_X(X1)
 ! 			call leia_k_piirid(X0, X1, kmin, kmax)
-! 			kbest = fit_1D(to_1D_fit, kmin, kmax)
-! 			res = X0 + kbest * (X1 - X0)
+! 			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
+! 			res1 = X0 + kbest * (X1 - X0)
 ! ! 			print*, res
 ! 		end do
-		
+		!versioon 2
 		do i=1,N_iter_fittimine
-			print*, i, i*N_iter_golden
-			X0 = res
-			call genereeri_suvaline_X(X1, X0)
+			print*, i, i*N_iter_golden*3
+			!1 ja 2 vahel parim
+			X0 = res1; X1 = res2
 			call leia_k_piirid(X0, X1, kmin, kmax)
-			kbest = fit_1D(to_1D_fit, kmin, kmax)
-			res = X0 + kbest * (X1 - X0)
+			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
+			res4 = X0 + kbest * (X1 - X0)
+
+			!1 ja 3 vahel parim
+			X0 = res1; X1 = res3
+			call leia_k_piirid(X0, X1, kmin, kmax)
+			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(2))
+			res5 = X0 + kbest * (X1 - X0)
+			!2 ja 3 vahel parim
+			X0 = res2; X1 = res3
+			call leia_k_piirid(X0, X1, kmin, kmax)
+			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(3))
+			res6 = X0 + kbest * (X1 - X0)
+
 ! 			print*, res
+			res1 = res4; res2 = res5; res3 = res6
+			halvim = minloc(valik, 1)
+			select case(halvim)
+				case(1)
+					 X0 = 0.5*(res2 + res3);  X1 = res1
+				case(2)
+					 X0 = 0.5*(res1 + res3);  X1 = res2
+				case(3)
+					 X0 = 0.5*(res1 + res2);  X1 = res3
+			end select
+			call leia_k_piirid(X0, X1, kmin, kmax)
+			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(halvim))
+			select case(halvim)
+			case(1); call genereeri_suvaline_X(res1)
+			case(2); call genereeri_suvaline_X(res2)
+			case(3); call genereeri_suvaline_X(res3)
+			end select
+
+			
 		end do
-		
+		select case(maxloc(valik, 1))
+			case(1); res1 = res4
+			case(2); res1 = res5
+			case(3); res1 = res6
+		end select
 	contains
 		function to_1D_fit(k) result(res)
 			implicit none
@@ -81,8 +117,7 @@ contains
 				do j=1,size(X0)
 					delta(j) = min( abs(eelmine(j)-minpar(j)), abs(eelmine(j)-maxpar(j)) )
 				end do
-				frac = (N_iter_fittimine - i)/real(N_iter_fittimine)
-				res = eelmine + delta * frac * (res - 0.5)
+				res = eelmine + delta  * (res - 0.5)
 			else
 				res = minpar + res*(maxpar - minpar)
 			end if
@@ -106,10 +141,11 @@ contains
 		end subroutine leia_k_piirid
 	end function fittimine
 	
-	function fit_1D(fun, min, max) result(res)
+	function fit_1D(fun, min, max, best_funval) result(res)
 		!otsib maksimumi 1D funktsioonil
 		implicit none
 		real(rk), intent(in) :: min, max
+		real(rk), intent(out) :: best_funval
 		real(rk) :: res
 		interface
 			function fun(k) result(res)
@@ -151,6 +187,7 @@ contains
 			end if
 		end do
 		res = punktid(maxloc(f, 1))
+		best_funval = maxval(f, 1)
 		print*, "1D parim LL = ", maxval(f,1)
 	end function fit_1D
 end module omalooming_module
