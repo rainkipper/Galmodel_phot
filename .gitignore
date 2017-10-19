@@ -1,3 +1,5 @@
+*.iterinfo
+*ptprob
 Input_sdss/*
 *.o
 *.mod
