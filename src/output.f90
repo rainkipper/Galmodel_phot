@@ -20,7 +20,7 @@ contains
 			end subroutine tryki_smth
 		end interface
 		procedure(tryki_smth), pointer :: tryki_output_par 
-		logical, parameter :: kas_reana = .true.
+		logical, parameter :: kas_reana = .false.
 		tryki_output_par => tryki_prioriga
 		if(kas_reana) tryki_output_par => tryki_reana
 		
@@ -40,8 +40,8 @@ contains
 				call tryki_output_par(nimi, input_comps(i)%cnt_y)
 				nimi = "pos_wrt_phys_coord"
 				call tryki_output_par(nimi, input_comps(i)%pos)
-! 				nimi = "theta0"
-! 				call tryki_output_par(nimi, input_comps(i)%theta0)
+				nimi = "theta0"
+				call tryki_output_par(nimi, input_comps(i)%theta0)
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
 					call tryki_output_par(par_list%par_name, par_list%par)

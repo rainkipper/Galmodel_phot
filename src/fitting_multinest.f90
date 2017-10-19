@@ -49,7 +49,7 @@ contains
 		nlive = ndims + N_multinest_extra_points !testiks nii v2ike
 		nPar = ndims !hiljem
 		nCdims = 1
-		maxModes = 3
+		maxModes = 1 !rohkem on mottetu, kui tahta hiljem multinesti rakendada
 		updInt  = 3
 		Ztol = -1.d90
 		root = repeat(" ",100); root = trim(multinest_output_header) !m2lu korrastamiseks alguses
@@ -60,7 +60,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 100000
+		maxiter = 2000 !et saada ainult esialgne l2hend
 		context = 0 !mittevajalik
 		
 		
@@ -175,12 +175,11 @@ contains
 				end if
 				if(input_comps(i)%pos%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
-					input_comps(i)%pos%val = physLive(parim,mitmes_cube)*180/pi
+					input_comps(i)%pos%val = physLive(parim,mitmes_cube)
 				end if
 				if(input_comps(i)%theta0%kas_fitib)  then
 					mitmes_cube=mitmes_cube+1
 					input_comps(i)%theta0%val = physLive(parim,mitmes_cube)
-
 				end if
 				par_list=>input_comps(i)%prof_pars
 				do while(par_list%filled)
