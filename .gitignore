@@ -1,4 +1,6 @@
-
+Input_sdss/*
+*.o
+*.mod
 Notes/notes.aux
 *.dump
 *.dyn
