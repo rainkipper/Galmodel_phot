@@ -11,12 +11,14 @@ module constants_module
 	real(rk), parameter :: arcsec_to_rad = pi/180.0 / 60.0 / 60.0 !ehk sellega korrutades saab kaaresekundid radiaanidesse
 	
 	!muud parameetrid
-	real(rk), parameter :: massi_abs_tol_kordaja = 0.1 !ehk niipalju korda pildi sky_noise teisendatud massi myraks annab abs t2psuse
 	
 	character(len=*), parameter :: model_filename_end = "_mdl.fits"
 	character(len=*), parameter :: residual_filename_end = "_res.fits"
 	character(len=*), parameter :: diff_filename_end = "_dif.fits"
-	character(len=*), parameter :: multinest_output_header = "Output/MN_output/"
+	character(len=default_character_length)  :: multinest_output_header = "Output/MN_output/"
+	character(len=default_character_length)  :: output_fit_file = "Output/out_parameters.txt"
+	character(len=default_character_length)  :: output_ML_file = "Output/out_ML.txt"
+	logical :: kas_vaikselt = .false.
 	
 	!seaded
 	integer  :: mis_fittimise_algoritm = 2
@@ -29,9 +31,13 @@ module constants_module
 	logical  :: kas_rakendab_psf = .false. !
 	logical  :: kas_psf_crop = .true. !kas kahandab psf suurust, et arvutused kiiremini oleks. 
 	real(rk) :: psf_sisse_peab_j22ma = 0.99 !kui psf servasid natuke k2rbib, siis saab arvutamise kiiremaks
-
+	integer  :: N_multinest_extra_points = 10
+	real(rk) :: multinest_efr = 0.7
+ 	
+	real(rk) :: default_los_kauguse_piir = 20.0_rk !integreerimise rada
 	integer  :: pix_iter_maxlevel = 5
 	real(rk) :: pix_edasi_jagamise_rel_t2psus = 0.005
+	real(rk) :: abs_tol_kordaja = 0.01 !ehk see kordaja korrutatakse sigma-piltidest saadud kordajaga
 	
 	real(rk) :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk) :: massi_fittimise_hyppe_kordaja = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
@@ -39,6 +45,9 @@ module constants_module
 	
 	real(rk) :: amoeba_fractional_tolerance = 0.01
 	
+	integer :: integration_min_iter=3, integration_max_iter=15 !integreerimise t2psuse parameetrid
+	
+	real(rk) :: adaptive_image_dist_piirang             = 1.0
 	real(rk) :: adaptive_image_x0_default               = 0.0         !-35.0_rk
 	real(rk) :: adaptive_image_y0_default               = 0.0         !-35.0_rk
 	real(rk) :: adaptive_image_x1_default               =  35.0
@@ -142,6 +151,33 @@ contains
 				read(subrida, fmt=*) mis_fittimise_tyyp
 			case("mis_fittimise_algoritm")
 				read(subrida, fmt=*) mis_fittimise_algoritm
+			case("default_los_kauguse_piir")
+				read(subrida, fmt=*) default_los_kauguse_piir
+			case("abs_tol_kordaja")
+				read(subrida, fmt=*) abs_tol_kordaja
+			case("adaptive_image_dist_piirang")
+				read(subrida, fmt=*) adaptive_image_dist_piirang
+			case("integration_min_iter")
+				read(subrida, fmt=*) integration_min_iter
+			case("integration_max_iter")
+				read(subrida, fmt=*) integration_max_iter
+			case("N_multinest_extra_points")
+				read(subrida, fmt=*) N_multinest_extra_points	
+			case("multinest_efr")
+				read(subrida, fmt=*) multinest_efr	
+			case("multinest_output_header")
+				read(subrida, fmt="(a)") multinest_output_header	
+			case("output_ML_file")
+				read(subrida, fmt="(a)") output_ML_file	
+			case("output_fit_file")
+				read(subrida, fmt="(a)") output_fit_file	
+			case("kas_vaikselt")
+				read(subrida, fmt = *) kas_vaikselt	
+				
+				
+				
+				
+				 
 			case default
 				print*, "Tundmatu parameeter sisselugemisel: ",trim(adjustl(rida(1:(id2-1))))
 				stop

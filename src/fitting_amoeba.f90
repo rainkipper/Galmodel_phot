@@ -1,5 +1,5 @@
 module fitting_amoeba_module
-	use mynr_amoeba_module
+	use amoeba_module
 	use likelihood_module
 	private
 	public fittimine_amoeba

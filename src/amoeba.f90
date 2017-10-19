@@ -6,7 +6,7 @@
 ! see on koopia nr amoeba moodulist koos koigi lisadega
 ! eraldiseisva moodulina saan kasutada oma rk kind parameetrit
 ! ning kiiruses on ehk ka mingi efekt
-MODULE mynr_amoeba_module
+MODULE amoeba_module
   use constants_module
   implicit none
   private
@@ -126,4 +126,4 @@ contains
       amotry=ytry
     END FUNCTION amotry
   END SUBROUTINE my_amoeba
-END MODULE mynr_amoeba_module
+END MODULE amoeba_module

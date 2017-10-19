@@ -56,6 +56,11 @@ contains
 				input_comps(mitmes_comp)%population_name = subrida
 			case("dist")
 				input_comps(mitmes_comp)%dist = read_real_par(subrida)
+			case("theta0")
+				input_comps(mitmes_comp)%theta0 = read_real_par(subrida)
+				input_comps(mitmes_comp)%theta0%val = input_comps(mitmes_comp)%theta0%val * pi/180.0
+				input_comps(mitmes_comp)%theta0%min = input_comps(mitmes_comp)%theta0%min * pi/180.0
+				input_comps(mitmes_comp)%theta0%max = input_comps(mitmes_comp)%theta0%max * pi/180.0
 			case("incl")
 				input_comps(mitmes_comp)%incl = read_real_par(subrida)
 				!vaja konvertida ka radiaanidesse

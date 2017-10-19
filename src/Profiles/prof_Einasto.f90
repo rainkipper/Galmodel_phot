@@ -18,8 +18,19 @@ module prof_Einasto_module
 		procedure :: set_val	     => set_val_Einasto
 		procedure :: get_val	    => get_val_Einasto
 		procedure :: sanity_check	=> sanity_check_Einasto
+		procedure :: fun_los_lopmatus => fun_los_lopmatus_Einasto
 	end type prof_Einasto_type
 contains
+	function fun_los_lopmatus_Einasto(prof, incl, Xc, Yc) result(res)
+		class(prof_Einasto_type), intent(in) :: prof
+		real(rk), intent(in), optional :: incl, Xc, Yc
+		real(rk) :: res
+		if(present(incl)) then
+			res = 4*(prof%a0*sin(incl) + prof%a0*prof%q*cos(incl))!
+		else
+			res = default_los_kauguse_piir
+		end if
+	end function fun_los_lopmatus_Einasto
 	subroutine set_val_Einasto(prof, par, val)
 		implicit none
 		class(prof_Einasto_type), intent(inout) :: prof
@@ -63,6 +74,7 @@ contains
 		implicit none
 		class(prof_Einasto_type), intent(inout) :: prof
 		
+		prof%kas_3D = .true.
 		!amoeba lolluste vastu... tegelikult vast ei maksaks teha seda:
 		prof%M = abs(prof%M)
 		prof%a0 = abs(prof%a0)

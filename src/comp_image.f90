@@ -6,10 +6,13 @@ module comp_image_module
 	!AINULT ruudulisele gridile
 	
 	!nurkade koordinaadid
-	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [-0.5, -0.5, 0.5, 0.5] !kui piksli v22rtus keskel voetud
-	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [-0.5, 0.5, 0.5, -0.5] !kui piksli v22rtus keskel voetud
-! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [0.0, 0.0, 1.0, 1.0] !kui piksli v22rtus all vasakul nurgas voetud
-! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [0.0, 1.0, 1.0, 0.0] !kui piksli v22rtus all vasakul nurgas voetud
+	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [-1.0, -1.0, 0.0, 0.0] !m22rab pikslite j2rjestuse massiivis (vt pixel_module)
+	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [-1.0, 0.0, 0.0, -1.0] 
+! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [-0.5, -0.5, 0.5, 0.5] !kui piksli v22rtus keskel voetud
+! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [-0.5, 0.5, 0.5, -0.5] !kui piksli v22rtus keskel voetud
+! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_x = [0.0, 0.0, 1.0, 1.0]
+! 	real(rk), parameter, dimension(1:4), private :: pix_nihe_y = [0.0, 1.0, 1.0, 0.0]
+
 	
 	type :: comp_image_real_type 
 		type(square_pixel_type), dimension(:,:), allocatable :: pix
@@ -46,7 +49,7 @@ contains
 	
 	
 
-	subroutine fill_corners(mdl, func) !t2itab func v22rtusega
+	subroutine fill_corners(mdl, func, func_approx) !t2itab func v22rtusega
 		!vaja, et pikslite komponendi koordinaadid oleks juba oiged
 		implicit none
 		interface
@@ -56,8 +59,15 @@ contains
 				real(rk) :: res
 			end function func
 		end interface
+		interface
+			function func_approx(Xc, Yc) result(res)
+				import rk
+				real(rk), intent(in) :: Xc, Yc
+				real(rk) :: res
+			end function func_approx
+		end interface
 		type(comp_image_real_type), intent(inout) :: mdl
-		integer :: i,j
+		integer :: i,j, nurk
 		integer :: Nx, Ny
 		real(rk) :: v22rtus
 		Nx = size(mdl%pix, 1)
@@ -68,40 +78,32 @@ contains
 		!keskosa t2itmine
 		do i = 2,Nx
 		do j = 2,Ny
-			v22rtus = func(mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Xc_nurgad(1))
+			if(mdl%pix(i,j)%Xc_nurgad(1)**2 + mdl%pix(i,j)%Yc_nurgad(1) **2 < adaptive_image_dist_piirang**2) then
+				v22rtus = func( mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1) )
+			else
+				v22rtus = func_approx( mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1) )
+			end if
+			mdl%pix(i, j)%val_nurgad(1) = v22rtus
 			mdl%pix(i-1, j-1)%val_nurgad(3) = v22rtus
 			mdl%pix(i-1, j)%val_nurgad(4) = v22rtus
 			mdl%pix(i, j-1)%val_nurgad(2) = v22rtus
-			mdl%pix(i, j)%val_nurgad(1) = v22rtus
 		end do
 		end do
 		!servad k2sitsi yle teha
 		do i=1,Nx
-			j = 1
-			mdl%pix(i, j)%val_nurgad(1) = func(mdl%pix(i, j)%Xc_nurgad(1), mdl%pix(i, j)%Xc_nurgad(1))
-			mdl%pix(i, j)%val_nurgad(2) = func(mdl%pix(i, j)%Xc_nurgad(2), mdl%pix(i, j)%Xc_nurgad(2))
-			mdl%pix(i, j)%val_nurgad(3) = func(mdl%pix(i, j)%Xc_nurgad(3), mdl%pix(i, j)%Xc_nurgad(3))
-			mdl%pix(i, j)%val_nurgad(4) = func(mdl%pix(i, j)%Xc_nurgad(4), mdl%pix(i, j)%Xc_nurgad(4))
-			j = Ny
-			mdl%pix(i, j)%val_nurgad(1) = func(mdl%pix(i, j)%Xc_nurgad(1), mdl%pix(i, j)%Xc_nurgad(1))
-			mdl%pix(i, j)%val_nurgad(2) = func(mdl%pix(i, j)%Xc_nurgad(2), mdl%pix(i, j)%Xc_nurgad(2))
-			mdl%pix(i, j)%val_nurgad(3) = func(mdl%pix(i, j)%Xc_nurgad(3), mdl%pix(i, j)%Xc_nurgad(3))
-			mdl%pix(i, j)%val_nurgad(4) = func(mdl%pix(i, j)%Xc_nurgad(4), mdl%pix(i, j)%Xc_nurgad(4))
+			do nurk = 1, 4
+				mdl%pix(i, 1)%val_nurgad(nurk) = func_approx(mdl%pix(i, 1)%Xc_nurgad(nurk), mdl%pix(i, 1)%Xc_nurgad(nurk))
+				mdl%pix(i, Ny)%val_nurgad(nurk) = func_approx(mdl%pix(i, Ny)%Xc_nurgad(nurk), mdl%pix(i, Ny)%Xc_nurgad(nurk))
+			end do
 		end do
 		do j=1,Ny
-			i = 1
-			mdl%pix(i, j)%val_nurgad(1) = func(mdl%pix(i, j)%Xc_nurgad(1), mdl%pix(i, j)%Xc_nurgad(1))
-			mdl%pix(i, j)%val_nurgad(2) = func(mdl%pix(i, j)%Xc_nurgad(2), mdl%pix(i, j)%Xc_nurgad(2))
-			mdl%pix(i, j)%val_nurgad(3) = func(mdl%pix(i, j)%Xc_nurgad(3), mdl%pix(i, j)%Xc_nurgad(3))
-			mdl%pix(i, j)%val_nurgad(4) = func(mdl%pix(i, j)%Xc_nurgad(4), mdl%pix(i, j)%Xc_nurgad(4))
-			i = Nx
-			mdl%pix(i, j)%val_nurgad(1) = func(mdl%pix(i, j)%Xc_nurgad(1), mdl%pix(i, j)%Xc_nurgad(1))
-			mdl%pix(i, j)%val_nurgad(2) = func(mdl%pix(i, j)%Xc_nurgad(2), mdl%pix(i, j)%Xc_nurgad(2))
-			mdl%pix(i, j)%val_nurgad(3) = func(mdl%pix(i, j)%Xc_nurgad(3), mdl%pix(i, j)%Xc_nurgad(3))
-			mdl%pix(i, j)%val_nurgad(4) = func(mdl%pix(i, j)%Xc_nurgad(4), mdl%pix(i, j)%Xc_nurgad(4))
+			do nurk = 1,4
+				mdl%pix(1, j)%val_nurgad(nurk) = func_approx(mdl%pix(1, j)%Xc_nurgad(nurk), mdl%pix(1, j)%Xc_nurgad(nurk))
+				mdl%pix(Nx, j)%val_nurgad(nurk) = func_approx(mdl%pix(Nx, j)%Xc_nurgad(nurk), mdl%pix(Nx, j)%Xc_nurgad(nurk))
+			end do
 		end do
 	end subroutine fill_corners
-	subroutine fill_corners_exact(mdl, func)
+	subroutine fill_corners_exact(mdl, func, func_approx)
 		implicit none
 		interface
 			function func(Xc, Yc) result(res)
@@ -109,16 +111,28 @@ contains
 				real(rk), intent(in) :: Xc, Yc
 				real(rk) :: res
 			end function func
+			function func_approx(Xc, Yc) result(res)
+				import rk
+				real(rk), intent(in) :: Xc, Yc
+				real(rk) :: res
+			end function func_approx
 		end interface
 		type(comp_image_real_type), intent(inout) :: mdl
 		integer :: i,j
 		
 		do i = 1,size(mdl%pix,1)
 		do j = 1,size(mdl%pix,2)
-			mdl%pix(i,j)%val_nurgad(1) = func(mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1))
-			mdl%pix(i,j)%val_nurgad(2) = func(mdl%pix(i,j)%Xc_nurgad(2), mdl%pix(i,j)%Yc_nurgad(2))
-			mdl%pix(i,j)%val_nurgad(3) = func(mdl%pix(i,j)%Xc_nurgad(3), mdl%pix(i,j)%Yc_nurgad(3))
-			mdl%pix(i,j)%val_nurgad(4) = func(mdl%pix(i,j)%Xc_nurgad(4), mdl%pix(i,j)%Yc_nurgad(4))
+			if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then
+				mdl%pix(i,j)%val_nurgad(1) = func_approx(mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1))
+				mdl%pix(i,j)%val_nurgad(2) = func_approx(mdl%pix(i,j)%Xc_nurgad(2), mdl%pix(i,j)%Yc_nurgad(2))
+				mdl%pix(i,j)%val_nurgad(3) = func_approx(mdl%pix(i,j)%Xc_nurgad(3), mdl%pix(i,j)%Yc_nurgad(3))
+				mdl%pix(i,j)%val_nurgad(4) = func_approx(mdl%pix(i,j)%Xc_nurgad(4), mdl%pix(i,j)%Yc_nurgad(4))
+			else
+				mdl%pix(i,j)%val_nurgad(1) = func(mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1))
+				mdl%pix(i,j)%val_nurgad(2) = func(mdl%pix(i,j)%Xc_nurgad(2), mdl%pix(i,j)%Yc_nurgad(2))
+				mdl%pix(i,j)%val_nurgad(3) = func(mdl%pix(i,j)%Xc_nurgad(3), mdl%pix(i,j)%Yc_nurgad(3))
+				mdl%pix(i,j)%val_nurgad(4) = func(mdl%pix(i,j)%Xc_nurgad(4), mdl%pix(i,j)%Yc_nurgad(4))				
+			end if
 		end do
 		end do
 		

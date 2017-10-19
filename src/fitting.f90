@@ -12,6 +12,7 @@ contains
 			type(all_comp_type), intent(out) :: all_comp !ehk v2ljundiks
 			type(image_type), dimension(:), allocatable, intent(in) :: images
 			real(rk), dimension(:,:), allocatable :: punktid
+			real(rk) :: LL
 			!
 			! initsialiseerimise asjad, et teha all_comp jm..
 			! sisuliselt, yhine koikidel fittijatel
@@ -20,34 +21,38 @@ contains
 			call asenda_viited(input_comps, all_comp)
 			all_comp%comp(:)%adaptive_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
 			call init_calc_log_likelihood(all_comp, images) !s2ttib likelihoodi mooduli muutujad, et v2hendada arvutamisis
-			
 			select case( mis_fittimise_algoritm)
+			case(0)
+				if(.not.kas_vaikselt) print*, "Only output"
+				call convert_input_comp_to_all_comp(input_comps, all_comp)
+				call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
+				LL =  calc_log_likelihood(all_comp, images)
 			case(1)
-				print*, "Multinest fittimine"
+				if(.not.kas_vaikselt) print*, "Multinest fittimine"
 				call fittimine_multinest(images, input_comps, all_comp)
 			case(2)
-				print*, "Amoeba fittimine"
+				if(.not.kas_vaikselt) print*, "Amoeba fittimine"
 				call fittimine_amoeba(images, input_comps, all_comp)
 			case(3)
-				print*, "Multinest+amoeba fittimine"
+				if(.not.kas_vaikselt) print*, "Multinest+amoeba fittimine"
 				call fittimine_multinest(images, input_comps, all_comp)
 				call read_points_for_amoeba(multinest_output_header, punktid)
 				call fittimine_amoeba(images, input_comps, all_comp, punktid)
 			case(4)
-				print*, "Amoeba from previous multinest"
+				if(.not.kas_vaikselt) print*, "Amoeba from previous multinest"
 				call read_points_for_amoeba(multinest_output_header, punktid)
 				call fittimine_amoeba(images, input_comps, all_comp, punktid)
 			case(5)
-				print*, "fittimine omaloominguga"
+				if(.not.kas_vaikselt) print*, "fittimine omaloominguga"
 				call fittimine_omalooming(images, input_comps, all_comp)
 			case default
 				stop "Niisugust fittimise meetodit pole olemas"
 			end select
 			
-			print*, "Kokku oli LL arvutusi", LL_counter		
-			call output_like_input(input_comps)
+			if(.not.kas_vaikselt) print*, "Kokku oli LL arvutusi", LL_counter		
 			call output_images(input_comps, images)
-			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)	
+			call output_like_input(input_comps)
+			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)
 			
 		contains
 			subroutine read_points_for_amoeba(file_path, res)

@@ -3,6 +3,7 @@ module profiles_den
 	
 	
 	type :: prof_den_base_type !this will be extended to more suitable profile ... e.g. Einasto
+		logical :: kas_3D = .false. !ehk kas tuleb yle vaatejoone integreerida
 		character(len=default_character_length) :: den_prof_name !
 		character(len=default_character_length) :: intrinsic_symmetry = "none"  
 	contains
@@ -11,6 +12,7 @@ module profiles_den
 		procedure :: set_val	    => set_val_default
 		procedure :: get_val	    => get_val_default
 		procedure :: sanity_check	=> sanity_check_default
+		procedure :: fun_los_lopmatus => fun_los_lopmatus_default
 	end type prof_den_base_type
 	
 	
@@ -27,6 +29,12 @@ contains
 		stop "Err: default does not suit for any profile"
 		print*, len(prof%den_prof_name), R,z,theta
 	end function fun_default
+	function fun_los_lopmatus_default(prof, incl, Xc, Yc) result(res)
+		class(prof_den_base_type), intent(in) :: prof
+		real(rk), intent(in), optional :: incl, Xc, Yc
+		real(rk) :: res
+		res = default_los_kauguse_piir
+	end function fun_los_lopmatus_default
 	subroutine set_val_default(prof, par, val)
 		implicit none
 		class(prof_den_base_type), intent(inout) :: prof

@@ -1,0 +1,48 @@
+
+[g]
+filter = SDSS_g
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 2.75939540129898
+scale_y = 2.75939540129898
+image_coord_cnt_x = 150.0
+image_coord_cnt_y = 150.0
+angle_wrt_phys_coord = 0.012
+obs_file = Input/Mock/g.fits
+mask_file = Input/Mock/mask.fits
+sigma_file = Input/Mock/g_sigma.fits
+psf_file = Input/Mock/psf.fits
+mdl_file = Output/g_mdl.fits
+diff_file = Output/g_diff.fits
+rel_diff_file = Output/g_rel.fits
+
+[r]
+filter = SDSS_r
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 2.75939540129898
+scale_y = 2.75939540129898
+image_coord_cnt_x = 150.0
+image_coord_cnt_y = 150.0
+angle_wrt_phys_coord = 0.012
+obs_file = Input/Mock/r.fits
+mask_file = Input/Mock/mask.fits
+sigma_file = Input/Mock/r_sigma.fits
+psf_file = Input/Mock/psf.fits
+mdl_file = Output/r_mdl.fits
+diff_file = Output/r_diff.fits
+rel_diff_file = Output/r_rel.fits
+
+[i]
+filter = SDSS_i
+#skaala, et saada pikslitest kaaresekundid
+scale_x = 2.75939540129898
+scale_y = 2.75939540129898
+image_coord_cnt_x = 150.0
+image_coord_cnt_y = 150.0
+angle_wrt_phys_coord = 0.012
+obs_file = Input/Mock/i.fits
+mask_file = Input/Mock/mask.fits
+sigma_file = Input/Mock/i_sigma.fits
+psf_file = Input/Mock/psf.fits
+mdl_file = Output/i_mdl.fits
+diff_file = Output/i_diff.fits
+rel_diff_file = Output/i_rel.fits

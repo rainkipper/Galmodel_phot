@@ -1,10 +1,12 @@
 module likelihood_module
 	use images_module
 	use fill_comp_image_module
-	use file_operations_module !vaja ainult ajutiselt testimisel
-	use psf_rakendamine_module
+! 	use file_operations_module !vaja ainult ajutiselt testimisel
+! 	use psf_rakendamine_module
 	use Newton_Rhapson_module
-	use mynr_amoeba_module
+! 	use mynr_amoeba_module
+! 	use filters_module
+	
 	type masside_arvutamise_tyyp
 		!iga vaatluspildi kohta...
 		!kasutatakse masside fittimise eristamises muust fittimisest
@@ -20,6 +22,7 @@ module likelihood_module
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
 	integer, save :: LL_counter = 0 !lihtsalt, mitu LL juba arvutatud
+	real(rk) :: alguse_aeg
 	interface
 		function eri_likelihoodide_kuju(all_comp, images, output_images) result(res)
 			import all_comp_type
@@ -66,7 +69,7 @@ contains
 		else
 			stop "not implemented in init log likelihood"
 		end if
-		
+		call cpu_time(alguse_aeg) !lihtsalt arvestamiseks kui palju votab keskmiselt aega LL arvutamine
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
 	function calc_log_likelihood(all_comp, images, output_images) result(res)
@@ -74,6 +77,7 @@ contains
 		type(all_comp_type), intent(inout) :: all_comp
 		type(image_type), dimension(:), allocatable, intent(in) :: images
 		real(rk) :: res
+		real(rk) :: dt
 ! 		real(rk), dimension(:), allocatable :: lisakaalud_massile !vaja kui populatsioone fitib
 		real(rk), dimension(:,:,:), allocatable, intent(out), optional :: output_images !optional output
 		integer, dimension(1:2) :: for_case
@@ -87,7 +91,8 @@ contains
 		end select 
 		if(present(output_images)) then; res = f_LL(all_comp, images, output_images)
 		else; res = f_LL(all_comp, images) ;end if
-! 		print*, LL_counter, "LL = ", res
+		call cpu_time(dt)
+		if(.not.kas_vaikselt) print*, LL_counter, "LL = ", res, "dt = ",(dt-alguse_aeg)/LL_counter
 		if(isnan(res)) stop "err: LL ei tohi olla nan"
 	end function calc_log_likelihood
 	function calc_log_likelihood_components(all_comp, images, output_images) result(res)
@@ -104,8 +109,10 @@ contains
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
 		!
+		
 		do i=1,all_comp%N_comp
-			all_comp%comp(i)%mass_abs_tol = 1.0e10 !ehk ei piira t2psust praegu, sest tyyp ei voimalda
+			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images) * abs_tol_kordaja  !ehk eeldab, et teatud protsent teatud min ML korral
+			all_comp%comp(i)%massi_abs_tol_los = all_comp%comp(i)%mass_abs_tol / leia_pix_pindala(images(1), all_comp%comp(1)) 
 		end do
 		!
 		! =========== mudelpiltide arvutamine ==========
@@ -117,8 +124,8 @@ contains
 				output_images = 0.0 
 			end if
 			do j=1,size(mudelid, 1)
-				call fill_comp_image(all_comp, j, mudelid(j), via_adaptive_im, kas_los)
-! 				call write_matrix_to_fits(mudelid(j)%mx, trim(images(j)%output_mdl_file))
+				call fill_comp_image(all_comp, j, mudelid(j), via_adaptive_im)
+call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fits")
 				do i=1,size(images,1)
 					if(kas_rakendab_psf) then
 						call rakenda_psf(mudelid(j)%mx, images(i)%psf, mudelpilt)
@@ -138,7 +145,7 @@ contains
 		!
 		allocate(from_mass_to_lum(1:size(images), 1:all_comp%N_comp))
 		do i=1,size(images, 1); do j=1,all_comp%N_comp
-			from_mass_to_lum(i,j) = calc_counts_mass_ratio(filter = images(i)%filter, dist = all_comp%comp(j)%dist)
+			from_mass_to_lum(i,j) = images(i)%filter%mass_to_obs_unit(dist = all_comp%comp(j)%dist)
 		end do; end do
 		!
 		! =============== heleduste arvutamisel sisemine fittimine ================
@@ -170,6 +177,23 @@ contains
 		end do
 		res = res * 0.5 !et likelihood, mitte chisq
 	contains
+		function leia_massi_abs_tol(comp, images) result(res)
+			!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
+			implicit none
+			type(comp_type), intent(in) :: comp
+			type(image_type), intent(in), dimension(:), allocatable :: images
+			real(rk) :: res
+			real(rk) :: tmp
+			integer :: i
+			res = 1.0e10 !suvaline suur suurus algseks
+			do i=1,size(images, 1)
+				tmp = 1.0/images(i)%filter%mass_to_obs_unit(comp%dist) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
+				if(tmp<res) then
+					res = tmp
+				end if
+			end do
+		
+		end function leia_massi_abs_tol
 		function leia_LL_ML_jaoks(x) result(res)
 			implicit none
 			real(rk), dimension(:), intent(in) :: x
@@ -245,7 +269,8 @@ contains
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
 		!
 		do i=1,all_comp%N_comp
-			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images)
+			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images) * abs_tol_kordaja
+			all_comp%comp(i)%massi_abs_tol_los = all_comp%comp(i)%mass_abs_tol / leia_pix_pindala(images(1), all_comp%comp(1)) 
 		end do
 		!
 		! ========= komponentide mudelpiltide arvutamised ==============
@@ -258,7 +283,7 @@ contains
 			do i=1,size(mudelid, 1)
 				if(mudelid(i)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
-					call fill_comp_image(all_comp, i, mudelid(i), via_adaptive_im, kas_los, mida_arvutatakse)
+					call fill_comp_image(all_comp, i, mudelid(i), via_adaptive_im)
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
 						do j=1,size(images); 
@@ -323,7 +348,7 @@ contains
 			end if
 			
 			!output horedamalt
-			if(mod(LL_counter,10)==0)then
+			if(mod(LL_counter,10)==1)then
 				if(allocated(pilt_psf)) deallocate(pilt_psf)
 				allocate(pilt_psf(1:size(pilt,1), 1:size(pilt,2)))
 				call write_matrix_to_fits(pilt, images(i)%output_mdl_file)
@@ -359,7 +384,6 @@ contains
 					res = tmp
 				end if
 			end do
-			res = res * massi_abs_tol_kordaja
 		
 		end function leia_massi_abs_tol
 		function fiti_massi_kordajad(to_massfit) result(res)

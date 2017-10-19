@@ -18,7 +18,8 @@ module comp_module
 		real(rk)								:: theta0  !komponendi k22ne taustsysteemi suhtes
 		logical									:: pos_pool !milline pool on meie pool... defineerime kui pa+90 deg on meie pool
 		!automaatselt m22ratavad
-		real(rk) 								:: mass_abs_tol !see kasulik mudelpildi arvutamiseks, et liiga t2pselt ei teeks seda
+		real(rk) 								:: mass_abs_tol !see kasulik mudelpildi arvutamiseks, et liiga t2pselt ei teeks seda... seotud piksli suurusega
+		real(rk)								:: massi_abs_tol_los !sirge peal olles t2psus
 		real(rk) 								:: sin_incl, cos_incl, tan_incl, sec_incl 
 		real(rk) 								:: sin_pos, cos_pos, tan_pos, sec_pos
 		integer 								:: adaptive_image_number !-1 on default negatiivne, et teeks uue pildi
@@ -113,7 +114,7 @@ module comp_module
 		real(rk), intent(out) :: R,z,theta
 		real(rk), intent(in) :: sin_incl, cos_incl, tan_incl, sec_incl, theta0
 		z = l * cos_incl
-		R = sqrt(Xc*Xc +  (z*tan_incl + Yc*sec_incl)**2)
+		R = sqrt(Xc*Xc +  (z*tan_incl - Yc*sec_incl)**2)
 		theta = sin_incl*Xc/R + theta0 !vaja KONTROLLIDA!
 	end subroutine XcYcl_to_Rztheta
 	

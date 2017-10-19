@@ -1,0 +1,87 @@
+[bulge1]
+prof = Sersic
+type = stellar
+incl = 65.2, F, 55.0, 85.0, bulge1
+dist = 10000.0, F, 0.0, 1e7, bulge1
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge1
+cnt_x = 0, F, -9.0, 9.0, bulge1
+cnt_y = 0, F, -9.0, 9.0, bulge1
+population = pop_logt10
+theta0 = 45, F, -90.0, 90.0 bulge1
+a0 = 0.63, T, 0.1, 3.0, bulge1
+N =  2.7 , T, 1.0, 4.0, bulge1
+q =  0.72, T, 0.5, 0.99, bulge1
+M =  1.0 , F, 0.00, 0.5, bulge1
+
+# [Nucleus]
+# prof = Einasto
+# type = stellar
+# incl = 75, F, 55.0, 85.0, bulge1
+# dist = 10000.0, F, 0.0, 1e7, bulge1
+# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
+# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
+# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+# population = pop_logt9
+# a0 = 1.0, T, 0.1, 3.0, Nucleus
+# N =  1.0, T, 1.0, 4.0, Nucleus
+# q =  0.7, T, 0.5, 0.99, Nucleus
+# M =  1.0, F, 0.00, 0.5, Nucleus
+
+
+[disc1]
+prof = Sersic
+type = stellar
+incl = 89, F, 55.0, 85.0, bulge1
+dist = 10000.0, F, 0.0, 1e7, bulge1
+pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
+cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
+cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+population = pop_logt6
+theta0 = 45, F, -90.0, 90.0 bulge1
+a0 = 7.7, T, 5.0, 20.0, disc1
+N  = 1.2, T, 0.5,  2.5, disc1
+q  = 0.17, T, 0.01, 0.2, disc1
+M  = 1.0, F, 0.00, 0.5, disc1
+
+
+# [disc2]
+# prof =Einasto
+# type = stellar
+# incl = 75, F, 55.0, 85.0, bulge1
+# dist = 10000.0, F, 0.0, 1e7, bulge1
+# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
+# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
+# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+# population = pop_logt9
+# a0 = 7.0, T, 5.0, 20.0,  disc2
+# N  = 1.0, T, 0.5,  2.5,  disc2
+# q  = 0.7, T, 0.01, 0.2,  disc2
+# M  = 1.0, F, 0.00, 0.5,  disc2
+#
+# [disc3]
+# prof =Einasto
+# type = stellar
+# incl = 75, F, 55.0, 85.0, bulge1
+# dist = 10000.0, F, 0.0, 1e7, bulge1
+# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
+# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
+# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+# population = pop_logt10
+# a0 = 7.0, T, 5.0, 20.0,  disc3
+# N  = 1.0, T, 0.5,  2.5,  disc3
+# q  = 0.7, T, 0.01, 0.2,  disc3
+# M  = 1.0, F, 0.00, 0.5,  disc3
+#
+# [halo]
+# prof =Einasto
+# type = stellar
+# incl = 75, F, 55.0, 85.0, bulge1
+# dist = 10000.0, F, 0.0, 1e7, bulge1
+# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
+# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
+# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+# population = pop_logt10
+# a0 = 15.0, T, 10,  30.0, halo
+# N  = 1.5,  T, 1.5, 5.0,  halo
+# q  = 0.7 , T, 0.4, 0.99, halo
+# M  = 1.0 , F, 0.00, 0.5, halo

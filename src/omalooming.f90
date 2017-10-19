@@ -4,8 +4,9 @@ module omalooming_module
 ! 	integer, parameter :: rk = kind(1.0)
 	use constants_module
 	real(rk), parameter, private :: gold = (3.0-sqrt(5.0))/2.0
-	integer, parameter, private :: N_iter_golden = 10
-	integer, parameter, private :: N_iter_fittimine = 240
+	integer, parameter, private :: N_iter_golden = 14
+	integer, parameter, private :: N_iter_fittimine = 220
+	integer, parameter, private :: mis_versioon = 2
 	interface
 		function fititav_fun(par_list) result(res)
 			import rk
@@ -35,62 +36,74 @@ contains
 		allocate(X1(1:size(minpar, 1)))
 		call genereeri_suvaline_X(res1) !just random initial value
 		
-		!versioon 0
-! 		do i=1,N_iter_fittimine
-! 			print*, i, i*N_iter_golden
-! 			X0 = res1
-! 			call genereeri_suvaline_X(X1)
-! 			call leia_k_piirid(X0, X1, kmin, kmax)
-! 			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
-! 			res1 = X0 + kbest * (X1 - X0)
-! ! 			print*, res
-! 		end do
-		!versioon 2
-		do i=1,N_iter_fittimine
-			print*, i, i*N_iter_golden*3
-			!1 ja 2 vahel parim
-			X0 = res1; X1 = res2
-			call leia_k_piirid(X0, X1, kmin, kmax)
-			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
-			res4 = X0 + kbest * (X1 - X0)
+		select case(mis_versioon)
+		case(1)
+			do i=1,N_iter_fittimine
+				print*, i, i*N_iter_golden
+				X0 = res1
+				call genereeri_suvaline_X(X1)
+				call leia_k_piirid(X0, X1, kmin, kmax)
+				kmin = kmin * (N_iter_fittimine - i)/(10+N_iter_fittimine) !et kahandab otsitavat ruumi vastavalt progressile
+				kmax = kmax * (N_iter_fittimine - i)/(10+N_iter_fittimine) !samaaegselt t2psus suureneb
+	! 			print*, kmin, kmax
+				kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
+				res1 = X0 + kbest * (X1 - X0)
+	! 			print*, res
+			end do
+		case(3)
+			call genereeri_suvaline_X(res1)
+			call genereeri_suvaline_X(res2)
+			call genereeri_suvaline_X(res3)
+			do i = 1,N_iter_fittimine
+				
+			end do
+		case(2)
+			do i=1,N_iter_fittimine
+				print*, i, i*N_iter_golden*3
+				!1 ja 2 vahel parim
+				X0 = res1; X1 = res2
+				call leia_k_piirid(X0, X1, kmin, kmax)
+				kbest = fit_1D(to_1D_fit, kmin, kmax, valik(1))
+				res4 = X0 + kbest * (X1 - X0)
 
-			!1 ja 3 vahel parim
-			X0 = res1; X1 = res3
-			call leia_k_piirid(X0, X1, kmin, kmax)
-			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(2))
-			res5 = X0 + kbest * (X1 - X0)
-			!2 ja 3 vahel parim
-			X0 = res2; X1 = res3
-			call leia_k_piirid(X0, X1, kmin, kmax)
-			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(3))
-			res6 = X0 + kbest * (X1 - X0)
+				!1 ja 3 vahel parim
+				X0 = res1; X1 = res3
+				call leia_k_piirid(X0, X1, kmin, kmax)
+				kbest = fit_1D(to_1D_fit, kmin, kmax, valik(2))
+				res5 = X0 + kbest * (X1 - X0)
+				!2 ja 3 vahel parim
+				X0 = res2; X1 = res3
+				call leia_k_piirid(X0, X1, kmin, kmax)
+				kbest = fit_1D(to_1D_fit, kmin, kmax, valik(3))
+				res6 = X0 + kbest * (X1 - X0)
 
-! 			print*, res
-			res1 = res4; res2 = res5; res3 = res6
-			halvim = minloc(valik, 1)
-			select case(halvim)
-				case(1)
-					 X0 = 0.5*(res2 + res3);  X1 = res1
-				case(2)
-					 X0 = 0.5*(res1 + res3);  X1 = res2
-				case(3)
-					 X0 = 0.5*(res1 + res2);  X1 = res3
+	! 			print*, res
+				res1 = res4; res2 = res5; res3 = res6
+				halvim = minloc(valik, 1)
+				select case(halvim)
+					case(1)
+						 X0 = 0.5*(res2 + res3);  X1 = res1
+					case(2)
+						 X0 = 0.5*(res1 + res3);  X1 = res2
+					case(3)
+						 X0 = 0.5*(res1 + res2);  X1 = res3
+				end select
+				call leia_k_piirid(X0, X1, kmin, kmax)
+				kbest = fit_1D(to_1D_fit, kmin, kmax, valik(halvim))
+				select case(halvim)
+				case(1); call genereeri_suvaline_X(res1)
+				case(2); call genereeri_suvaline_X(res2)
+				case(3); call genereeri_suvaline_X(res3)
+				end select
+
+
+			end do
+			select case(maxloc(valik, 1))
+				case(1); res1 = res4
+				case(2); res1 = res5
+				case(3); res1 = res6
 			end select
-			call leia_k_piirid(X0, X1, kmin, kmax)
-			kbest = fit_1D(to_1D_fit, kmin, kmax, valik(halvim))
-			select case(halvim)
-			case(1); call genereeri_suvaline_X(res1)
-			case(2); call genereeri_suvaline_X(res2)
-			case(3); call genereeri_suvaline_X(res3)
-			end select
-
-			
-		end do
-		select case(maxloc(valik, 1))
-			case(1); res1 = res4
-			case(2); res1 = res5
-			case(3); res1 = res6
-		end select
+	end select
 	contains
 		function to_1D_fit(k) result(res)
 			implicit none

@@ -54,6 +54,7 @@ contains
 			!profiili allokeerimine ja parameetrite paika panemine... siia peab iga profiili korral tulema kontroll
 			!
 			if(trim(all_comp%comp(i)%comp_prof_name) == "Einasto" .and. not(allocated(all_comp%comp(i)%prof_den))) allocate(prof_Einasto_type::all_comp%comp(i)%prof_den)
+			if(trim(all_comp%comp(i)%comp_prof_name) == "Sersic" .and. not(allocated(all_comp%comp(i)%prof_den))) allocate(prof_Sersic_type::all_comp%comp(i)%prof_den)
 			!
 			!
 			!

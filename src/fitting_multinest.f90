@@ -12,7 +12,6 @@ contains
 		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
 		type(all_comp_type), intent(inout) :: all_comp !ehk v2ljundiks
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		real(rk) :: alguse_aeg
 		!
 		! ======= multinesti muutujad =======
 		!
@@ -45,15 +44,15 @@ contains
 		mmodal = .false. 
 		ceff = .true.
 		tol = 0.5
-		efr = 0.99
+		efr = multinest_efr
 		ndims = leia_vabade_parameetrite_arv(input_comps) !moodulist comp.f90
-		nlive = ndims + 1 !testiks nii v2ike
+		nlive = ndims + N_multinest_extra_points !testiks nii v2ike
 		nPar = ndims !hiljem
 		nCdims = 1
-		maxModes = 1
-		updInt  = 1
+		maxModes = 3
+		updInt  = 3
 		Ztol = -1.d90
-		root = multinest_output_header
+		root = repeat(" ",100); root = trim(multinest_output_header) !m2lu korrastamiseks alguses
 		seed = -1
 		allocate(pWrap(1:nPar)); pWrap = 0 !
 		feedback = .false.
@@ -61,7 +60,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 10000
+		maxiter = 100000
 		context = 0 !mittevajalik
 		
 		
@@ -75,7 +74,7 @@ contains
 		! =============== fittimine ise ================
 		!
 		
-		call cpu_time(alguse_aeg)
+		
 		call nestRun(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nCdims, maxModes, updInt, Ztol, root, seed, &
 			 pWrap, feedback, resume, outfile, initMPI, logZero, maxiter, fun_loglike, fun_dumper, context)
 
@@ -158,8 +157,8 @@ contains
 			sd_h2lve = sqrt(sum( (posterior(:,nPar+1)-keskmine)**2 )/size(posterior, 1))
 			if(.not.allocated(parim_phys_points)) allocate(parim_phys_points(1:nPar))
 			parim_phys_points = physLive(parim, 1:nPar) !salvestab parimad punktid mooduli muutujaks, et hiljem output oleks lihtsam
-			print*, "============== parim on ", maxloglike, size(physLive)
-			print "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
+			if(.not.kas_vaikselt) print*, "============== parim on ", maxloglike, size(physLive)
+			if(.not.kas_vaikselt) print*, "(A,2F15.6)", "============== mean, sd of LL", keskmine, sd_h2lve
 			mitmes_cube = 0
 			do i=1,size(input_comps)
 				if(input_comps(i)%incl%kas_fitib)  then
@@ -197,8 +196,9 @@ contains
 				end do
 			end do
 			nullify(par_list)
-			call output_images(input_comps, images)
-			print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
+			if(.not.kas_vaikselt) call output_images(input_comps, images)
+			if(.not.kas_vaikselt) call output_like_input(input_comps)
+			if(.not.kas_vaikselt) print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
 		end subroutine fun_dumper
 	end subroutine fittimine_multinest
 		

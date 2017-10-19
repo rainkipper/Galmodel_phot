@@ -1,13 +1,13 @@
 module adaptive_image_real_module
 	use yldine_matemaatika_module !vaja interpoleerimiseks
-	use constants_module
+! 	use constants_module
 	implicit none
 	
 	integer, parameter :: im_list_maxsize = 1001
 	integer, parameter :: puudub = -199
-	integer, parameter :: maxsize = 30000 !lambi suurus, et mahutada punktide massiive
+	integer, parameter :: maxsize = 300000 !lambi suurus, et mahutada punktide massiive
 	real(rk), private :: adaptive_image_edasijagamise_maksimaalne_abs_t2psus = 1.0e10 !peab hiljem automaatselt t2itma
-
+	integer, parameter :: mis_meetodil_votab_v22rtust = 4
 
 ! 	integer :: adaptive_image_kokku = 1
 	
@@ -27,7 +27,7 @@ module adaptive_image_real_module
 		real(rk)								:: xy_kordaja, x_kordaja, y_kordaja, vabaliige !lihtsustavad edasisi arvutusi
 		logical 								:: last_level = .true. !kas omadega pohjas
 		logical 								:: kas_paremvasak !kas subkomponent on paremal-vasak poolitatud voi yles/alla
-		type(adaptive_image_type), pointer 			:: sub1, sub2 !viited alamstruktuurile
+		type(adaptive_image_type), pointer 		:: sub1, sub2 !viited alamstruktuurile
 		contains
 			procedure :: get_val => get_adaptive_image_val
 	end type adaptive_image_type
@@ -56,10 +56,75 @@ module adaptive_image_real_module
 			class(adaptive_image_type), intent(in) :: adaptive_im
 			real(rk), intent(in) :: Xc, Yc
 			real(rk) :: res
-! 			real(rk) :: f_low, f_up
+			!variant 2 muutujad
+			real(rk) :: cramer0, d(1:4), alpha, beta
+			integer :: p1, p2
+			!variant 3 muutujad
+			real(rk) :: DD(5), weights(5)
+			integer :: i
+			!variant 4 muutujad
+			real(rk) :: wikia(3), wikib(3), wikic(3), wikid(3), lin_a, lin_b, lin_c
+			logical :: prk1, prk2
+			if(abs(Xc) > adaptive_image_x1_default .or. abs(Yc)>adaptive_image_x1_default) then
+				res = 0.0
+				return
+			end if
 			if(adaptive_im%last_level) then
-				!kui pohjas, siis bilineaarne 
-				res = adaptive_im%xy_kordaja * Xc * Yc + adaptive_im%x_kordaja * Xc + adaptive_im%y_kordaja * Yc  + adaptive_im%vabaliige
+				!kui pohjas, siis valib meetodi
+				select case(mis_meetodil_votab_v22rtust)
+				case(1)
+					!siis bilineaarne 
+					res = adaptive_im%xy_kordaja * Xc * Yc + adaptive_im%x_kordaja * Xc + adaptive_im%y_kordaja * Yc  + adaptive_im%vabaliige
+				case(2)
+					!leiab 2 omavektorit ning nende summast saab v22rtuse
+					d = (Xc-adaptive_im%x(1:4))**2 + abs(adaptive_im%y(1:4) - Yc)**2
+					p1 = minloc(d,1 ); d(p1) = 1.0e10; p2 = minloc(d,1) !valib 2 l2himat
+					cramer0 = (adaptive_im%x(p1) - adaptive_im%x(5))*(adaptive_im%y(p2) - adaptive_im%y(5)) - (adaptive_im%x(p2) - adaptive_im%x(5))*(adaptive_im%y(p1) - adaptive_im%y(5))
+					beta = ((adaptive_im%x(p1) - adaptive_im%x(5))*(Yc - adaptive_im%y(5)) - (Xc - adaptive_im%x(5))*(adaptive_im%y(p1) - adaptive_im%y(5)))/cramer0
+					alpha = ((Xc - adaptive_im%x(5))*(adaptive_im%y(p2) - adaptive_im%y(5)) - (adaptive_im%x(p2) - adaptive_im%x(5))*(Yc - adaptive_im%y(5)))/cramer0
+! 					print*, adaptive_im%y(5) + alpha*(adaptive_im%y(p1) - adaptive_im%y(5)) + beta*(adaptive_im%y(p2) - adaptive_im%y(5)) - yc
+					res = adaptive_im%val(5)%point + alpha*(adaptive_im%val(p1)%point-adaptive_im%val(5)%point) + beta*(adaptive_im%val(p2)%point-adaptive_im%val(5)%point)
+! 					print*, adaptive_im%val(5)%point , res
+				case(3)
+					!kaugusega kaalutud tulemus... ei toimi h2sti
+					DD = (Xc-adaptive_im%x)**2 + abs(adaptive_im%y - Yc)**2
+					DD = sqrt(DD)
+					if(any(DD<epsilon(1.0_rk)))then
+						res = adaptive_im%val(minloc(DD,1))%point
+					else
+						weights = 1/DD
+						weights = weights / sum(weights)
+						res = 0.0
+						do i=1,5; 
+							res = res + adaptive_im%val(i)%point * weights(i); 
+! 							print*, adaptive_im%val(i)%point * weights(i) , adaptive_im%val(i)%point , weights(i);
+						end do
+! 						print*, "---------", res
+					end if
+				case(4)
+					!mitte praak tasandi fitt
+					!tousud samad abs v22rtuselt molemas diagonaalis
+					res = (adaptive_im%y(3)-adaptive_im%y(1))/(adaptive_im%x(3)-adaptive_im%x(1))*(Xc-adaptive_im%x(1)) 
+					prk1 = Yc > adaptive_im%y(1) + res
+					prk2 = Yc < adaptive_im%y(2) - res
+					if(prk1 .and. prk2) then;            p1 = 1; p2 = 2; end if !vasak
+					if(prk1 .and. .not.prk2) then;       p1 = 2; p2 = 3; end if !ylemine
+					if(.not.prk1 .and. .not.prk2) then;  p1 = 3; p2 = 4; end if !parem
+					if(.not.prk1 .and. prk2) then;       p1 = 4; p2 = 1; end if !alumine
+					wikia = [adaptive_im%x(p1), adaptive_im%x(p2), adaptive_im%x(5) ]
+					wikib = [adaptive_im%y(p1), adaptive_im%y(p2), adaptive_im%y(5) ]
+					wikic = [1.0,1.0,1.0]
+					wikid = [adaptive_im%val(p1)%point, adaptive_im%val(p2)%point, adaptive_im%val(5)%point ]
+					res = leia_det(wikia, wikib, wikic)
+					lin_a = leia_det(wikid, wikib, wikic)/res
+					lin_b = leia_det(wikia, wikid, wikic)/res
+					lin_c = leia_det(wikia, wikib, wikid)/res
+					res = Xc * lin_a + Yc * lin_b + lin_c
+				case default
+					print*, "Adaptive image value aquire mehotd not possible"
+					stop
+				end select
+				!
 			else
 				if(adaptive_im%kas_paremvasak) then
 					if(Xc<adaptive_im%x(5)) then
@@ -75,7 +140,13 @@ module adaptive_image_real_module
 					end if
 				end if
 			end if
-				
+		contains 
+			function leia_det(v1,v2,v3) result(res)
+				implicit none
+				real(rk), intent(in) :: v1(3), v2(3), v3(3)
+				real(rk) :: res
+				res = v1(1)*v2(2)*v3(3) + v2(1)*v3(2)*v1(3) + v3(1)*v1(2)*v2(3) - v1(3)*v2(2)*v3(1) - v2(3)*v3(2)*v1(1) - v3(3)*v1(2)*v2(1)
+			end function leia_det
 		end function get_adaptive_image_val !kontrollitud
 		subroutine fill_adaptive_image_real(los_val_func, image_number, abs_tol) !default on see, et ei tehta uut, vaid voetakse image_number
 			implicit none
@@ -233,7 +304,7 @@ module adaptive_image_real_module
 				implicit none
 				real(rk), dimension(1:5), intent(in) :: x,y
 				type(rk_point_type), dimension(1:5), intent(in) :: val 
-				logical :: res, res_rel, res_abs, res_scale
+				logical :: res, res_rel, res_abs, res_scale, res_l2hedus_tsentrile
 				real(rk) :: val0
 				
 				!diagonaale pidi interpoleerib keskkohta
@@ -241,7 +312,9 @@ module adaptive_image_real_module
 				res_scale = (abs(x(3)-x(1)) > adaptive_image_min_spatial_resolution) .and. (abs(y(3)-y(1)) > adaptive_image_min_spatial_resolution) !1 pc miinimum gridi tihedus
 				res_rel = val0 > (adaptive_image_edasijagamise_threshold * val(5)%point)
 				res_abs =  val0 > adaptive_image_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
-				res = res_scale .and. (res_rel .or. res_abs)
+				res_l2hedus_tsentrile = maxval(abs(x),1)< adaptive_image_dist_piirang  !ehk v2ga l2hedal tsentrile tuleb alati pilt arvutada t2pselt, ehk l2hendit pole vaja
+				res_l2hedus_tsentrile = res_l2hedus_tsentrile .and. maxval(abs(y),1) < adaptive_image_dist_piirang 
+				res = res_scale .and. (res_rel .or. res_abs) .and. .not. res_l2hedus_tsentrile
 			end function kas_jagada_edasi
 			subroutine kas_varem_arvutatud0(x,y,kas_varem, id_varem)	!(kohutavalt) aeglane ja lihtne testversioon
 				implicit none

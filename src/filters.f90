@@ -7,18 +7,18 @@ module filters_module
 		real(rk), dimension(:), allocatable 								:: population_mass_to_light_ratios
 		real(rk) 															:: Mag_sun !abs mag
 		real(rk)															:: ZP 	
-		procedure(teisenduse_kuju), pointer :: mass_to_obs_unit
+		procedure(filtri_yhikute_teisenduse_kuju), pointer :: mass_to_obs_unit
 	end type filter_type
 	interface
-		function teisenduse_kuju(filter, dist, population_name)
+		function filtri_yhikute_teisenduse_kuju(filter, dist, population_name) result(res)
 			import rk
 			import default_character_length
 			import filter_type
-			real(rk) :: teisenduse_kuju
+			real(rk) :: res
 			real(rk), intent(in) :: dist
 			class(filter_type), intent(in) :: filter
-			character(len=default_character_length), intent(in) :: population_name
-		end function teisenduse_kuju
+			character(len=default_character_length), intent(in), optional :: population_name
+		end function filtri_yhikute_teisenduse_kuju
 	end interface
 	interface create_test_filters
 ! 		module procedure :: create_hst_filters
