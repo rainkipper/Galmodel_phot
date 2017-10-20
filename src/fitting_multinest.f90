@@ -49,7 +49,7 @@ contains
 		nlive = ndims + N_multinest_extra_points !testiks nii v2ike
 		nPar = ndims !hiljem
 		nCdims = 1
-		maxModes = 1 !rohkem on mottetu, kui tahta hiljem multinesti rakendada
+		maxModes = 3 !rohkem on mottetu, kui tahta hiljem multinesti rakendada
 		updInt  = 3
 		Ztol = -1.d90
 		root = repeat(" ",100); root = trim(multinest_output_header) !m2lu korrastamiseks alguses
