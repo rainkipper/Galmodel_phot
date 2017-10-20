@@ -52,13 +52,13 @@ N = 30
 		if((present(check) .and. check) .or. (.not.present(check))) then
 			if(N.ne.size(psf,2) ) stop "psf ei ole ruudu kujuline"
 			if(mod(N,2).ne.1) stop "psf ei ole paaritu arv piksleid suur"
-			if((cntx .ne. cnty) .or. cntx .ne. ((N-1)/2+1) ) stop "psf heledaim piksel ei ole tsentris"
+			if((cntx .ne. cnty) .or. cntx .ne. ((N-1)/2+1) ) print*,  "psf heledaim piksel ei ole tsentris"
 			!kontoll, kas on heledaim piirkond keskel... ehk keskel peab igas suunas olema langus
 			if( 0.5*( psf(cntx-1, cnty) + psf(cntx, cnty) ) < psf(cntx+1, cnty) .or. &
 				0.5*( psf(cntx+1, cnty) + psf(cntx, cnty) ) < psf(cntx-1, cnty) .or. &
 				0.5*( psf(cntx, cnty-1) + psf(cntx, cnty) ) < psf(cntx, cnty+1) .or. &
 				0.5*( psf(cntx, cnty+1) + psf(cntx, cnty) ) < psf(cntx, cnty-1)) then
-				stop "psfil ei ole tsentris maksimumi"
+				print*,  "psfil ei ole tsentris maksimumi"
 			end if
 		end if
 		!cropping part
