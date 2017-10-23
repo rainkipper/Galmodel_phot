@@ -56,7 +56,8 @@ module constants_module
 	integer ::  adaptive_image_minlevel                 = 2
 	real(rk) :: adaptive_image_edasijagamise_threshold  = 0.01            !suhteline jagamine
 	real(rk) :: adaptive_image_min_spatial_resolution   = 0.005            !praegu ei lahuta rohkem kui 10pc
-	
+
+	logical :: kas_output_reana = .false.
 	
 	!tyybid jm
 	type :: par_type !tyyp, mille eesm2rk on fititavaid parameetreid m2lus hoida. 
@@ -173,8 +174,8 @@ contains
 				read(subrida, fmt="(a)") output_fit_file	
 			case("kas_vaikselt")
 				read(subrida, fmt = *) kas_vaikselt	
-				
-				
+			case("kas_output_reana")
+				read(subrida, fmt = *) kas_output_reana	
 				
 				
 				 

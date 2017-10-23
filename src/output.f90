@@ -20,16 +20,16 @@ contains
 			end subroutine tryki_smth
 		end interface
 		procedure(tryki_smth), pointer :: tryki_output_par 
-		logical, parameter :: kas_reana = .false.
+		
 		tryki_output_par => tryki_prioriga
-! 		if(kas_reana) tryki_output_par => tryki_reana
+		if(kas_output_reana) tryki_output_par => tryki_reana
 		
 		iunit = 19
 		open(file=output_fit_file, action="write", unit = iunit)
 		do i=1,size(input_comps)
-			if(.not.kas_reana) write(unit=iunit, fmt = "(A1,A,A1)")  "[",trim(input_comps(i)%comp_name),"]"
-			if(.not.kas_reana) write(unit=iunit, fmt = "(A,A)") "prof = ", trim(input_comps(i)%comp_prof_name)
-			if(.not.kas_reana) write(unit=iunit, fmt = "(A,A)") "type = ", trim(input_comps(i)%comp_type_name)
+			if(.not.kas_output_reana) write(unit=iunit, fmt = "(A1,A,A1)")  "[",trim(input_comps(i)%comp_name),"]"
+			if(.not.kas_output_reana) write(unit=iunit, fmt = "(A,A)") "prof = ", trim(input_comps(i)%comp_prof_name)
+			if(.not.kas_output_reana) write(unit=iunit, fmt = "(A,A)") "type = ", trim(input_comps(i)%comp_type_name)
 				nimi = "dist"
 				call tryki_output_par(nimi, input_comps(i)%dist)
 				nimi = "incl"
@@ -49,7 +49,7 @@ contains
 						par_list => par_list%next
 					else; exit; end if
 				end do
-				if(.not.kas_reana) write(unit=iunit, fmt = "(A)") ""
+				if(.not.kas_output_reana) write(unit=iunit, fmt = "(A)") ""
 		end do
 		write(unit=iunit, fmt=*) ""
 		close(iunit)

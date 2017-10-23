@@ -17,8 +17,10 @@ FLAGS = -O2 -lcfitsio -lnest3 -llapack
 
 
 all: $(PROG)
+	
 $(PROG): $(OBJ)
 	$(COMPILER) $(OBJ) -o $(INSTALL_DIR)/$(PROG) $(FLAGS)
+	
 $(OBJ): %.o: $(SRC_DIR)/%.f90
 	$(COMPILER) -c $< $(FLAGS)
 clean:

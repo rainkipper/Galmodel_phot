@@ -6,6 +6,7 @@ mis_fittimise_tyyp                      = 2 #1=populatsioonid ja massid, 2 = kom
 # kas_los                                 = .true.
 kas_rakendab_psf                        = .false. 
 kas_vaikselt                            = .true.
+kas_output_reana                        = .false.
 
 #
 # ======== kiirust mojutavad parameetrid
