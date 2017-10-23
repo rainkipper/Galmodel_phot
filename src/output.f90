@@ -89,7 +89,7 @@ contains
 		integer :: i,j, iunit
 		iunit = 28
 		open(file = output_ML_file, unit = iunit, action = "write")
-		 
+		
 		write(unit=iunit, fmt="(A15)", advance = "no"), "Image"
 		do j=1,size(input_comps)
 			write(unit=iunit, fmt="(A15,A1)", advance = "no"), trim(input_comps(j)%comp_name), " "
@@ -102,6 +102,14 @@ contains
 			end do
 			write(unit=iunit, fmt="(A15)", advance = "yes"), ""
 		end do
+		do i=1,size(images)
+			write(unit=iunit, fmt="(A15)", advance = "no"), trim(images(i)%name)//"_err"
+			do j=1,size(input_comps)
+				write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), ML_vead(i,j), " "
+			end do
+			write(unit=iunit, fmt="(A15)", advance = "yes"), ""
+		end do
+		
 		close(unit=iunit)
 	end subroutine output_ML
 	
@@ -122,6 +130,7 @@ contains
 		case(2) !ehk componendid ja ML
 			LL =  calc_log_likelihood(all_comp, images, v2ljundpildid)
 			if(kas_koik_pildid_samast_vaatlusest) then
+				if(allocated(pilt)) deallocate(pilt)
 				allocate(pilt(1:size(v2ljundpildid, 2), 1:size(v2ljundpildid, 3)))
 			else
 				stop "Not implemented: v2ljundit ei saa teha kui koik pole sama suured pildid"
@@ -137,7 +146,6 @@ contains
 		case default
 			print*, "no output available for this type", mis_fittimise_tyyp
 		end select
-		
 	end subroutine output_images
 end module output_module
 	

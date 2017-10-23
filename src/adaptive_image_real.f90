@@ -224,7 +224,6 @@ module adaptive_image_real_module
 
 			call fill_im(suur_pilt%adaptive_im, adaptive_image_x0_default, adaptive_image_y0_default, adaptive_image_x1_default, adaptive_image_y1_default, 0)
 
-
 		contains
 			recursive subroutine fill_im(res, x0, y0, x1, y1, mis_levelil)
 				implicit none

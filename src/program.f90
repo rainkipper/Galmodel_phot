@@ -19,7 +19,7 @@ program gm
 	call read_constants_and_parameters(input_param_file)
 	call read_components(input_comp_file, input_comp)
 	call read_images_and_filters(input_image_file, images, filters)
-	call init_images(images) !peamiselt psf crop
+	call init_images(images) !peamiselt psf crop	
 	call fit_galaxy(images, input_comp, all_comp)
 	call  cpu_time(t2)
 	if(.not.kas_vaikselt) print*, "All done:D", t2-t1

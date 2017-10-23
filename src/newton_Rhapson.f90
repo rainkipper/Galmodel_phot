@@ -17,7 +17,7 @@ contains
 			function der2(val) result(res)
 				import rk
 				implicit none
-				real(rk), dimension(:), allocatable, intent(in) :: val
+				real(rk), dimension(:), intent(in) :: val
 				real(rk), dimension(:,:), allocatable :: res
 			end function der2
 		end interface

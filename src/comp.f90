@@ -115,7 +115,7 @@ module comp_module
 		real(rk), intent(in) :: sin_incl, cos_incl, tan_incl, sec_incl, theta0
 		z = l * cos_incl
 		R = sqrt(Xc*Xc +  (z*tan_incl - Yc*sec_incl)**2)
-		theta = sin_incl*Xc/R + theta0 !vaja KONTROLLIDA!
+		theta = sin_incl*Xc/R + theta0 !TODO vaja KONTROLLIDA!
 	end subroutine XcYcl_to_Rztheta
 	
 	

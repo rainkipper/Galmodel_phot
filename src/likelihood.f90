@@ -17,7 +17,7 @@ module likelihood_module
 		real(rk), dimension(:,:,:), allocatable :: M !sama pikkusega, mis on w... esimen on mis pildi kohta k2ib, ylej22nud on pildi koordinaadid
 	end type masside_arvutamise_tyyp
 	!globaalsed muutujad selle mooduli jaoks
-	real(rk), dimension(:,:), allocatable :: last_ML
+	real(rk), dimension(:,:), allocatable :: last_ML, ML_vead
 	type(comp_image_real_type), dimension(:), allocatable, private :: mudelid  !siin hoitakse mudeli andmeid ... init_log_likelihood juures pannakse paika
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
@@ -69,6 +69,7 @@ contains
 		else
 			stop "not implemented in init log likelihood"
 		end if
+		allocate(ML_vead(1:size(images), 1:all_comp%N_comp))
 		call cpu_time(alguse_aeg) !lihtsalt arvestamiseks kui palju votab keskmiselt aega LL arvutamine
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
@@ -105,6 +106,7 @@ contains
 		real(rk), dimension(:,:), allocatable :: amoeba_algl2hend
 		real(rk) :: res
 		real(rk), dimension(:,:,:), allocatable, optional  :: output_images
+		real(rk), dimension(:,:), allocatable :: tmp_hess
 		integer :: i, j,mis_pilt, iter, ii
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
@@ -121,6 +123,7 @@ contains
 		if(kas_koik_pildid_samast_vaatlusest) then
 			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
 				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
+				if(.not.allocated(tmp_hess)) allocate(tmp_hess(1:size(images), 1:all_comp%N_comp)) !allokeerimine, et saada pilte paika
 				output_images = 0.0 
 			end if
 			do j=1,size(mudelid, 1)
@@ -156,7 +159,16 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 			do mis_pilt = 1, size(images)
 				!siin arvutatakse LM_kordajaid, ML jaoks poordvaartus vaja votta
 				ML_kordajad(mis_pilt,:) = optim_NR(algv22rtused, leia_gradient_ML_jaoks, leia_hessian_ML_jaoks) 
+				if(present(output_images)) then
+					!leiab massile ka vead siia
+ 					!https://www.physik.hu-berlin.de/de/gk1504/block-courses/autumn-2010/program_and_talks/Verkerke_part3
+					tmp_hess = leia_hessian_ML_jaoks(ML_kordajad(mis_pilt,:))
+					do j=1,all_comp%N_comp
+						ML_vead(mis_pilt, j) = sqrt(1.0/abs(tmp_hess(j,j))) !kui siin negatiivne, siis on LL miinimum hoopis
+					end do
+				end if
 			end do
+		if(present(output_images)) ML_vead = 0.5*ML_vead/ML_kordajad**2 !TODO poordv22rtus pole vist p2ris korrektne... 0.5 sellest et LL defineeritakse 2 korda suuremana
 		ML_kordajad = 1.0/ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
 		if(.not.allocated(last_ML)) allocate(last_ML(1:size(ML_kordajad, 1), 1:size(ML_kordajad, 2)))
 		last_ML = ML_kordajad !salvestab lopptulemuse jaoks
@@ -231,10 +243,11 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 		end function leia_gradient_ML_jaoks
 		function leia_hessian_ML_jaoks(x) result(res)
 			implicit none
-			real(rk), dimension(:), allocatable, intent(in) :: x
+			real(rk), dimension(:), intent(in) :: x
 			real(rk), dimension(:,:), allocatable :: res
 			integer :: m,n
 			
+			if(allocated(res)) deallocate(res)
 			allocate(res(1:size(x,1), 1:size(x,1))); res = 0.0 
 			do m=1,size(x)
 				do n=m,size(x)
