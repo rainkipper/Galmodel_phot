@@ -210,11 +210,16 @@ module adaptive_image_real_module
 			!
 			juurikas => suur_pilt%adaptive_im !p2ris see pilt
 			ladu_jrk = 1 !algv22rtus loendajale
-			allocate(x_ladu(maxsize)); x_ladu=>suur_pilt%x_ladu
-			allocate(y_ladu(maxsize)); y_ladu=>suur_pilt%y_ladu
-			allocate(id_list(maxsize)); id_list=>suur_pilt%id_list
-			allocate(kas_arvutatud_ladu(maxsize)); kas_arvutatud_ladu=>suur_pilt%kas_arvutatud_ladu
-			allocate(val_ladu(1:maxsize)); val_ladu=>suur_pilt%val_ladu
+! 			if(.not.allocated(x_ladu)) allocate(x_ladu(maxsize));
+			x_ladu=>suur_pilt%x_ladu
+! 			allocate(y_ladu(maxsize));
+			y_ladu=>suur_pilt%y_ladu
+! 			allocate(id_list(maxsize));
+			id_list=>suur_pilt%id_list
+! 			allocate(kas_arvutatud_ladu(maxsize));
+			kas_arvutatud_ladu=>suur_pilt%kas_arvutatud_ladu
+! 			allocate(val_ladu(1:maxsize));
+			val_ladu=>suur_pilt%val_ladu
 			x_ladu = 0
 			y_ladu = 0
 			val_ladu(:) = 0
@@ -469,10 +474,15 @@ module adaptive_image_real_module
 		recursive subroutine remove_all_subimages(adaptive_im)
 			implicit none
 			type(adaptive_image_type), intent(inout) :: adaptive_im
-			if(.not.adaptive_im%last_level) then
-				call remove_all_subimages(adaptive_im%sub1)
-				call remove_all_subimages(adaptive_im%sub2)
-			end if
+			nullify(adaptive_im%val(1)%point)
+			nullify(adaptive_im%val(2)%point)
+			nullify(adaptive_im%val(3)%point)
+			nullify(adaptive_im%val(4)%point)
+			nullify(adaptive_im%val(5)%point)
+
+			if(associated(adaptive_im%sub1)) call remove_all_subimages(adaptive_im%sub1)
+			if(associated(adaptive_im%sub2)) call remove_all_subimages(adaptive_im%sub2)
+
 			deallocate(adaptive_im%sub1)
 			deallocate(adaptive_im%sub2)
 			adaptive_im%last_level = .true.
