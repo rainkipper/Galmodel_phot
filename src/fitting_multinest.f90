@@ -195,8 +195,9 @@ contains
 				end do
 			end do
 			nullify(par_list)
-			if(.not.kas_vaikselt) call output_images(input_comps, images)
-			if(.not.kas_vaikselt) call output_like_input(input_comps)
+			call output_images(input_comps, images)
+			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)
+			call output_like_input(input_comps)
 			if(.not.kas_vaikselt) print "(A,F15.10)", "========================================================== t per LL = ", (dt-alguse_aeg)/LL_counter
 		end subroutine fun_dumper
 	end subroutine fittimine_multinest

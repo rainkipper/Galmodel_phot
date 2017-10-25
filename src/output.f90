@@ -26,6 +26,7 @@ contains
 		
 		iunit = 19
 		open(file=output_fit_file, action="write", unit = iunit)
+		if(kas_output_reana) call tryki_par_nimed_reana()
 		do i=1,size(input_comps)
 			if(.not.kas_output_reana) write(unit=iunit, fmt = "(A1,A,A1)")  "[",trim(input_comps(i)%comp_name),"]"
 			if(.not.kas_output_reana) write(unit=iunit, fmt = "(A,A)") "prof = ", trim(input_comps(i)%comp_prof_name)
@@ -55,12 +56,36 @@ contains
 		close(iunit)
 		nullify(par_list)
 	contains
+		subroutine tryki_par_nimed_reana()
+			implicit none
+			integer :: i
+			do i=1,size(input_comps)
+					if(input_comps(i)%dist%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":dist", " "
+					if(input_comps(i)%incl%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":incl", " "
+					if(input_comps(i)%cnt_x%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":cnt_x", " "
+					if(input_comps(i)%cnt_y%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":cnt_y", " "
+					if(input_comps(i)%pos%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":pos_wrt_phys_coord", " "
+					if(input_comps(i)%theta0%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":theta0", " "
+
+					par_list=>input_comps(i)%prof_pars
+					do while(par_list%filled)
+						if(par_list%par%kas_fitib) write(unit = iunit, fmt = "(2A)", advance = "no") trim(input_comps(i)%comp_name)//":"//trim(par_list%par_name), " "
+! 						call tryki_output_par(par_list%par_name, par_list%par)
+						if(associated(par_list%next)) then
+							par_list => par_list%next
+						else; exit; end if
+					end do
+! 					write(unit=iunit, fmt = "(A)") ""
+			end do
+			write(unit=iunit, fmt=*) ""
+		end subroutine tryki_par_nimed_reana
 		subroutine tryki_prioriga(nimi,par)
 			character(len=default_character_length), intent(in) :: nimi
 			type(par_type_real), intent(in) :: par
 			real(rk) :: kordaja
 			select case(trim(nimi))
 			case("incl"); kordaja = 180.0/pi
+			case("pos_wrt_phys_coord"); kordaja = 180.0/pi
 			case("cnt_x"); kordaja = 1.0/arcsec_to_rad
 			case("cnt_y"); kordaja = 1.0/arcsec_to_rad
 			case default; kordaja = 1.0
