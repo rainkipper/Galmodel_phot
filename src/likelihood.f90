@@ -262,6 +262,175 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 		end function leia_hessian_ML_jaoks
 	end function calc_log_likelihood_components
 		
+	function fit_NR(all_comp, images, output_images) result(res)
+		implicit none
+		type(all_comp_type), intent(inout) :: all_comp
+		type(image_type), dimension(:), allocatable, intent(in) :: images
+		real(rk), dimension(:,:), allocatable :: from_mass_to_lum, ML_kordajad!esimene indeks pilt, teine komponent
+		real(rk), dimension(:,:), allocatable :: mudelpilt
+		real(rk), dimension(:), allocatable :: algv22rtused, tmp
+		real(rk), dimension(:,:), allocatable :: amoeba_algl2hend
+		real(rk) :: res
+		real(rk), dimension(:,:,:), allocatable, optional  :: output_images
+		real(rk), dimension(:,:), allocatable :: tmp_hess
+		integer :: i, j,mis_pilt, iter, ii
+		!
+		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
+		!
+		
+		do i=1,all_comp%N_comp
+			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images) * abs_tol_kordaja  !ehk eeldab, et teatud protsent teatud min ML korral
+			all_comp%comp(i)%massi_abs_tol_los = all_comp%comp(i)%mass_abs_tol / leia_pix_pindala(images(1), all_comp%comp(1)) 
+		end do
+		!
+		! =========== mudelpiltide arvutamine ==========
+		!
+! 		if(mudelid(i)%recalc_image) then
+		if(kas_koik_pildid_samast_vaatlusest) then
+			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
+				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
+				if(.not.allocated(tmp_hess)) allocate(tmp_hess(1:size(images), 1:all_comp%N_comp)) !allokeerimine, et saada pilte paika
+				output_images = 0.0 
+			end if
+			do j=1,size(mudelid, 1)
+				call fill_comp_image(all_comp, j, mudelid(j), via_adaptive_im)
+call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fits")
+				do i=1,size(images,1)
+					if(kas_rakendab_psf) then
+						call rakenda_psf(mudelid(j)%mx, images(i)%psf, mudelpilt)
+						to_massfit(i)%M(j,:,:) = mudelpilt
+					else
+						to_massfit(i)%M(j,:,:) = mudelid(j)%mx
+					end if
+				end do
+			end do
+		else; stop "not from same observations"
+		end if
+! 		else; stop "no recalc?"
+! 		end if
+		
+		!
+		! ============= komponentide mudelpiltide kombineerimised ================
+		!
+		allocate(from_mass_to_lum(1:size(images), 1:all_comp%N_comp))
+		do i=1,size(images, 1); do j=1,all_comp%N_comp
+			from_mass_to_lum(i,j) = images(i)%filter%mass_to_obs_unit(dist = all_comp%comp(j)%dist)
+		end do; end do
+		!
+		! =============== heleduste arvutamisel sisemine fittimine ================
+		!
+		allocate(ML_kordajad(1:size(images), 1:all_comp%N_comp)); ML_kordajad = 1.0
+			allocate(algv22rtused(1:all_comp%N_comp)); 
+			call random_number(algv22rtused); algv22rtused = algv22rtused*5.0 !
+			do mis_pilt = 1, size(images)
+				!siin arvutatakse LM_kordajaid, ML jaoks poordvaartus vaja votta
+				ML_kordajad(mis_pilt,:) = optim_NR(algv22rtused, leia_gradient_ML_jaoks, leia_hessian_ML_jaoks) 
+				if(present(output_images)) then
+					!leiab massile ka vead siia
+ 					!https://www.physik.hu-berlin.de/de/gk1504/block-courses/autumn-2010/program_and_talks/Verkerke_part3
+					tmp_hess = leia_hessian_ML_jaoks(ML_kordajad(mis_pilt,:))
+					do j=1,all_comp%N_comp
+						ML_vead(mis_pilt, j) = sqrt(1.0/abs(tmp_hess(j,j))) !kui siin negatiivne, siis on LL miinimum hoopis
+					end do
+				end if
+			end do
+		if(present(output_images)) ML_vead = 0.5*ML_vead/ML_kordajad**2 !TODO poordv22rtus pole vist p2ris korrektne... 0.5 sellest et LL defineeritakse 2 korda suuremana
+		ML_kordajad = 1.0/ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
+		if(.not.allocated(last_ML)) allocate(last_ML(1:size(ML_kordajad, 1), 1:size(ML_kordajad, 2)))
+		last_ML = ML_kordajad !salvestab lopptulemuse jaoks
+		!
+		! ========== p2ris likelihoodi arvutamine
+		!
+		res = 0.0
+		from_mass_to_lum = from_mass_to_lum / ML_kordajad
+		do i=1,size(images); 
+			if(allocated(mudelpilt)) deallocate(mudelpilt)
+			allocate(mudelpilt(1:size(to_massfit(i)%M, 2), 1:size(to_massfit(i)%M, 3))) !saab v2ltida kui eeldada, et koik pildid samast vaatlusest
+			mudelpilt = 0.0
+			do j=1,all_comp%N_comp
+				mudelpilt = mudelpilt + from_mass_to_lum(i,j)*to_massfit(i)%M(j,:,:)
+			end do; 
+			if(present(output_images) .and. kas_koik_pildid_samast_vaatlusest) output_images(i,:,:) = mudelpilt !ainult viimase v2ljundi jaoks
+			res = res - sum( to_massfit(i)%inv_sigma2*(to_massfit(i)%I - mudelpilt)**2 , to_massfit(i)%mask)
+		end do
+		res = res * 0.5 !et likelihood, mitte chisq
+	contains
+! 		function leia_gradient_par_jaoks
+			
+! 		end function
+		function leia_massi_abs_tol(comp, images) result(res)
+			!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
+			implicit none
+			type(comp_type), intent(in) :: comp
+			type(image_type), intent(in), dimension(:), allocatable :: images
+			real(rk) :: res
+			real(rk) :: tmp
+			integer :: i
+			res = 1.0e10 !suvaline suur suurus algseks
+			do i=1,size(images, 1)
+				tmp = 1.0/images(i)%filter%mass_to_obs_unit(comp%dist) !poordvaartus, kuna vaja massi hajumist saada countside hajumisest
+				if(tmp<res) then
+					res = tmp
+				end if
+			end do
+		
+		end function leia_massi_abs_tol
+		function leia_LL_ML_jaoks(x) result(res)
+			implicit none
+			real(rk), dimension(:), intent(in) :: x
+			real(rk) :: res
+			real(rk), dimension(:,:), allocatable :: mudelpilt
+			integer :: j
+			real(rk), dimension(:), allocatable :: tmp
+			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
+			mudelpilt = 0.0
+			allocate(tmp(1:size(x))); tmp = x; do j=1,size(x); if(x(j)<1.0e-7) tmp(j) = 1.0e-7 ;end do
+			do j=1,size(images)
+				mudelpilt = mudelpilt + abs(tmp(j))*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) !abs on amoeba lolluste vastu
+			end do
+			res = -1.0*sum( (to_massfit(mis_pilt)%I - mudelpilt)**2 * to_massfit(mis_pilt)%inv_sigma2, to_massfit(mis_pilt)%mask) + massi_fiti_lambda*sum(log(abs(tmp)))
+			!defineeritud vale m2rgiga, et saaks amoeba abil minimeerida
+			res = res * -1.0
+		end function leia_LL_ML_jaoks
+		function leia_gradient_ML_jaoks(x) result(res)
+			implicit none
+			real(rk), dimension(:), allocatable, intent(in) :: x
+			real(rk), dimension(:), allocatable :: res
+			real(rk), dimension(:,:), allocatable :: mudelpilt
+			integer :: j
+			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
+			mudelpilt = 0.0
+			do j=1,size(x)
+				mudelpilt = mudelpilt + x(j)*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j)
+			end do
+			if(allocated(res)) deallocate(res); allocate(res(1:size(x)))
+			do j=1,size(x)
+				res(j) = sum( to_massfit(mis_pilt)%inv_sigma2 * &
+							to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) * &
+							(to_massfit(mis_pilt)%I - mudelpilt), to_massfit(mis_pilt)%mask) + massi_fiti_lambda/x(j)
+			end do
+		end function leia_gradient_ML_jaoks
+		function leia_hessian_ML_jaoks(x) result(res)
+			implicit none
+			real(rk), dimension(:), intent(in) :: x
+			real(rk), dimension(:,:), allocatable :: res
+			integer :: m,n
+			
+			if(allocated(res)) deallocate(res)
+			allocate(res(1:size(x,1), 1:size(x,1))); res = 0.0 
+			do m=1,size(x)
+				do n=m,size(x)
+					res(m,n) = sum( -1.0*to_massfit(mis_pilt)%M(m,:,:)*from_mass_to_lum(mis_pilt, m)*&
+										 to_massfit(mis_pilt)%M(n,:,:)*from_mass_to_lum(mis_pilt, n)*&
+										 to_massfit(mis_pilt)%inv_sigma2 , to_massfit(mis_pilt)%mask)
+					res(n,m) = res(m,n) !symmeetrilise maatriksi lihtsustus
+				end do
+				res(m,m) = res(m,m) - massi_fiti_lambda/x(m)**2 !barrier term
+			end do
+			
+		end function leia_hessian_ML_jaoks
+	end function fit_NR
+	
 	function calc_log_likelihood_populations(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp

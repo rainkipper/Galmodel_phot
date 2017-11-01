@@ -6,19 +6,40 @@ module profiles_den
 		logical :: kas_3D = .false. !ehk kas tuleb yle vaatejoone integreerida
 		character(len=default_character_length) :: den_prof_name !
 		character(len=default_character_length) :: intrinsic_symmetry = "none"  
+		procedure(kuju), pointer :: tuletis => fun_den_default
 	contains
+		
 		procedure :: init_profile 	=> init_prof_default
 		procedure :: fun_den 		=> fun_den_default
 		procedure :: set_val	    => set_val_default
 		procedure :: get_val	    => get_val_default
 		procedure :: sanity_check	=> sanity_check_default
 		procedure :: fun_los_lopmatus => fun_los_lopmatus_default
+		procedure :: lingi_tuletis => lingi_tuletis_default
 	end type prof_den_base_type
+abstract interface 
+	elemental function kuju(prof, R,z,theta) result(res)
+		import rk
+		import prof_den_base_type
+		implicit none
+		class(prof_den_base_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+	end function kuju
+end interface
 	
 	
 
 
 contains
+	subroutine lingi_tuletis_default(prof, par1, par2)
+		implicit none
+		class(prof_den_base_type), intent(inout) 	:: prof
+		character(len=default_character_length), intent(in) :: par1
+		character(len=default_character_length), intent(in), optional :: par2
+		stop
+	end subroutine lingi_tuletis_default
 	function fun_default(prof, R,z,theta) result(res)
 		class(prof_den_base_type), intent(in) :: prof
 		real(rk), intent(in) :: R
@@ -29,6 +50,7 @@ contains
 		stop "Err: default does not suit for any profile"
 		print*, len(prof%den_prof_name), R,z,theta
 	end function fun_default
+	
 	function fun_los_lopmatus_default(prof, incl, Xc, Yc) result(res)
 		class(prof_den_base_type), intent(in) :: prof
 		real(rk), intent(in), optional :: incl, Xc, Yc
