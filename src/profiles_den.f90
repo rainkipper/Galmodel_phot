@@ -6,9 +6,8 @@ module profiles_den
 		logical :: kas_3D = .false. !ehk kas tuleb yle vaatejoone integreerida
 		character(len=default_character_length) :: den_prof_name !
 		character(len=default_character_length) :: intrinsic_symmetry = "none"  
-		procedure(kuju), pointer :: tuletis => fun_den_default
+		procedure(kuju), pointer :: tuletis !=>fun_tuletis_default ! => fun_tuletis_default
 	contains
-		
 		procedure :: init_profile 	=> init_prof_default
 		procedure :: fun_den 		=> fun_den_default
 		procedure :: set_val	    => set_val_default
@@ -18,14 +17,14 @@ module profiles_den
 		procedure :: lingi_tuletis => lingi_tuletis_default
 	end type prof_den_base_type
 abstract interface 
-	elemental function kuju(prof, R,z,theta) result(res)
+	function kuju(prof, R,z,theta) result(res)
 		import rk
 		import prof_den_base_type
 		implicit none
-		class(prof_den_base_type), intent(in) 	:: prof
-		real(rk), intent(in) 				:: R,z
-		real(rk), intent(in), optional		:: theta
-		real(rk) 							:: res
+		class(prof_den_base_type),  intent(in) 	:: prof
+		real(rk), intent(in), dimension(:) 				:: R,z
+		real(rk), intent(in), optional, dimension(:)		:: theta
+		real(rk), dimension(1:size(R,1)) 							:: res
 	end function kuju
 end interface
 	
@@ -84,6 +83,16 @@ contains
 		res = 0/0 + R+z+theta + len(prof%den_prof_name)
 		
 	end function fun_den_default
+	function fun_tuletis_default(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_den_base_type), intent(in) 		:: prof
+		real(rk), intent(in), dimension(:) 						:: R,z
+		real(rk), intent(in), optional, dimension(:)				:: theta
+		real(rk), dimension(1:size(R,1))  									:: res
+		
+		res = 0/0 + R+z+theta + len(prof%den_prof_name)
+		
+	end function fun_tuletis_default
 	subroutine init_prof_default(prof)
 		implicit none
 		class(prof_den_base_type), intent(inout) :: prof
