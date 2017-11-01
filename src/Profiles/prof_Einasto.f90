@@ -52,8 +52,7 @@ contains
 		character(len=default_character_length), intent(in) :: par1
 		character(len=default_character_length), intent(in), optional :: par2
 		
-		select type(mingiasi=>prof)
-		class is (prof_Einasto_type)
+
 			if(present(par2)) then
 				if(trim(par1) == "N" .and. trim(par2)=="N") prof%tuletis => den_derivative_NN
 				if(trim(par1) == "a0" .and. trim(par2)=="N") prof%tuletis => den_derivative_Na0
@@ -69,91 +68,118 @@ contains
 				if(trim(par1) == "a0") prof%tuletis => den_derivative_a0
 				if(trim(par1) == "q") prof%tuletis => den_derivative_q
 			end if
-		end select
+
 	end subroutine lingi_tuletis_Einasto
 	function den_derivative_N(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		res = -1.0/(prof%inv_N*prof%inv_N)*(prof%der_N1 - log(a*prof%inv_ka0))*prof%rho0*(a*prof%inv_ka0)**prof%inv_N * exp(-1.0*(a*prof%inv_ka0)**prof%inv_N)
+				end select
 	end function den_derivative_N
 	function den_derivative_a0(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
 		res = prof%rho0*z**2*exp_alune*exp(-1.0*exp_alune)/((R**2*prof%q**2 + z**2)*prof%N*prof%q)
+				end select
 	end function den_derivative_a0
 	function den_derivative_q(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
 		res = prof%rho0*exp_alune*exp(-1.0*exp_alune)/(prof%N*prof%a0)
+				end select
 	end function den_derivative_q
 	function den_derivative_a0q(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
 
 		!SAGE-ist kopeeritud valem, mida kopeerimise j2rel muditud...
 		res = prof%rho0*z**2*(exp_alune - 1)*exp_alune*exp(-1.0*exp_alune)/((R**2*prof%q2 + z*z)*prof%N2*prof%a0*prof%q)
+				end select
 	end function den_derivative_a0q	
 	function den_derivative_a0a0(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
 
 		!SAGE-ist kopeeritud valem, mida kopeerimise j2rel muditud...
 		res = -1.0*(prof%N - exp_alune + 1)*prof%rho0*exp_alune*exp(-1.0*exp_alune)/(prof%N2*prof%a0**2)
+				end select
 	end function den_derivative_a0a0
 	function den_derivative_qq(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
 
 		!SAGE-ist kopeeritud valem, mida kopeerimise j2rel muditud...
 		res = -(3*prof%N*R**2*prof%q2 + prof%N*z*z - z*z*(exp_alune + z*z))*prof%rho0*z*z*exp_alune*exp(-1.0*exp_alune)/((R**2*prof%q2 + z*z)**2*prof%N2*prof%q2)
+				end select
 	end function den_derivative_qq
 	function den_derivative_Nq(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+		! 		class(prof_Einasto_type), intent(in) 	:: prof
+				class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
@@ -166,14 +192,18 @@ contains
 		3*prof%N*prof%psi3N + 2*prof%N*prof%psi2N + prof%N +  &
 		log(exp_alune_astmeta)  &
 		) * prof%rho0*z**2*exp_alune*exp(-1.0*exp_alune)/((R**2*prof%q**2 + z**2)*prof%N**3*prof%q)
+				end select
 	end function den_derivative_Nq
 	function den_derivative_Na0(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
+! 		class(prof_Einasto_type), intent(in) 	:: prof
+		class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
+		select type(prof)
+		class is (prof_Einasto_type)
 		a = sqrt(R*R + (z/prof%q)**2)
 		exp_alune_astmeta = (a*prof%inv_ka0)
 		exp_alune = exp_alune_astmeta**(1/prof%N)
@@ -187,36 +217,39 @@ contains
 		3*prof%N*prof%psi3N + 2*prof%N*prof%psi2N + prof%N +  &
 		log(exp_alune_astmeta)) *  &
 		prof%rho0*exp_alune*exp(-1.0*exp_alune)/(prof%N**3*prof%a0)
+				end select
 	end function den_derivative_Na0
 	function den_derivative_NN(prof, R, z, theta) result(res)
 		implicit none
-		class(prof_Einasto_type), intent(in) 	:: prof
-! 		class(prof_den_base_type), intent(in) 	:: prof
+! 		class(prof_Einasto_type), intent(in) 	:: prof
+		class(prof_den_base_type), intent(in) 	:: prof
 		real(rk), intent(in), dimension(:) 				:: R,z
 		real(rk), intent(in), optional, dimension(:)		:: theta
 		real(rk) 							:: res(1:size(R, 1))
 		real(rk)							:: a(1:size(R, 1)), exp_alune(1:size(R, 1)), exp_alune_astmeta(1:size(R, 1))
-		
-		a = sqrt(R*R + (z/prof%q)**2)
-		exp_alune_astmeta = (a*prof%inv_ka0)
-		exp_alune = exp_alune_astmeta**(1/prof%N)
+		select type(prof)
+		class is (prof_Einasto_type)
+			a = sqrt(R*R + (z/prof%q)**2)
+			exp_alune_astmeta = (a*prof%inv_ka0)
+			exp_alune = exp_alune_astmeta**(1/prof%N)
 
-		!SAGE-ist kopeeritud valem, mida kopeerimise j2rel muditud...
-		res = ( &
-		9*prof%N2*exp_alune*prof%psi3N**2 -  &
-		12*prof%N2*exp_alune*prof%psi3N*prof%psi2N +  &
-		4*prof%N2*exp_alune*prof%psi2N**2 +  &
-		4*prof%N2*prof%N*prof%psi12 -  &
-		6*prof%N*exp_alune*log(exp_alune_astmeta)*prof%psi3N -  &
-		9*prof%N2*prof%N*prof%psi13 -  &
-		9*prof%N2*prof%psi3N**2 +  &
-		4*prof%N*exp_alune*log(exp_alune_astmeta)*prof%psi2N +  &
-		12*prof%N2*prof%psi3N*prof%psi2N -  &
-		4*prof%N2*prof%psi2N**2 + &
-		exp_alune*log(exp_alune_astmeta)**2 +  &
-		6*prof%N2*prof%psi3N + 6*prof%N*log(exp_alune_astmeta)*prof%psi3N -  &
-		4*prof%N2*prof%psi2N - 4*prof%N*log(exp_alune_astmeta)*prof%psi2N -  &
-		2*prof%N*log(exp_alune_astmeta) - log(exp_alune_astmeta)**2) * prof%rho0*exp_alune*exp(-exp_alune)/prof%N4
+			!SAGE-ist kopeeritud valem, mida kopeerimise j2rel muditud...
+			res = ( &
+			9*prof%N2*exp_alune*prof%psi3N**2 -  &
+			12*prof%N2*exp_alune*prof%psi3N*prof%psi2N +  &
+			4*prof%N2*exp_alune*prof%psi2N**2 +  &
+			4*prof%N2*prof%N*prof%psi12 -  &
+			6*prof%N*exp_alune*log(exp_alune_astmeta)*prof%psi3N -  &
+			9*prof%N2*prof%N*prof%psi13 -  &
+			9*prof%N2*prof%psi3N**2 +  &
+			4*prof%N*exp_alune*log(exp_alune_astmeta)*prof%psi2N +  &
+			12*prof%N2*prof%psi3N*prof%psi2N -  &
+			4*prof%N2*prof%psi2N**2 + &
+			exp_alune*log(exp_alune_astmeta)**2 +  &
+			6*prof%N2*prof%psi3N + 6*prof%N*log(exp_alune_astmeta)*prof%psi3N -  &
+			4*prof%N2*prof%psi2N - 4*prof%N*log(exp_alune_astmeta)*prof%psi2N -  &
+			2*prof%N*log(exp_alune_astmeta) - log(exp_alune_astmeta)**2) * prof%rho0*exp_alune*exp(-exp_alune)/prof%N4
+		end select
 	end function den_derivative_NN
 	
 	
