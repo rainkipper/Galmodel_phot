@@ -15,6 +15,11 @@ module profiles_den
 		procedure :: sanity_check	=> sanity_check_default
 		procedure :: fun_los_lopmatus => fun_los_lopmatus_default
 		procedure :: lingi_tuletis => lingi_tuletis_default
+		procedure :: fun_der_R 		=> fun_den_default
+		procedure :: fun_der_z		=> fun_den_default
+		procedure :: fun_der_RR		=> fun_den_default
+		procedure :: fun_der_zz		=> fun_den_default
+		procedure :: fun_der_Rz		=> fun_den_default
 	end type prof_den_base_type
 abstract interface 
 	function kuju(prof, R,z,theta) result(res)

@@ -5,16 +5,21 @@ module fill_comp_image_module
 	use adaptive_image_real_module
 	use los_real_integration_module
 	integer, save :: countersees=0, counterv2ljas=0
+	type :: mida_fittida_type
+		logical :: tuletiste_fittimine
+		character(len=default_character_length) :: tuletis1, tuletis2
+	end type mida_fittida_type
 contains
 
 
-subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im)
+subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im, mida_fittida)
 	implicit none
 	logical, intent(in), optional :: via_adaptive_im
 	logical :: via_ci !ehk via_adaptive_im
 	type(all_comp_type), intent(inout) :: all_comp !out osa ainult adaptive_im numbri jaoks
 	integer :: comp_nr !millist komponenti arvutatakse
 	type(comp_image_real_type), intent(inout) :: mdl
+	type(mida_fittida_type), intent(in), optional :: mida_fittida
 
 ! 	real(rk) :: test1, test2
 	interface
@@ -31,7 +36,7 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im)
 		end function ruum
 	end interface
 	procedure(pind), pointer :: f_ptr, f_ptr_otse
-	procedure(ruum), pointer :: ruum_ptr
+	procedure(ruum), pointer :: ruum_ptr, enne_incl_parandit
 	!comp im asjad
 	type(adaptive_image_type), pointer :: adaptive_im	
 ! 	integer :: image_number !comp image number
@@ -62,7 +67,15 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im)
 
 	
 	!valitakse, milline funktsioon arvutamiseks
-	ruum_ptr => tihedus 
+	if(present(mida_fittida)) then
+		if(mida_fittida%tuletiste_fittimine) then
+			enne_incl_parandit => tihedus !tihedus lihtsalt praegu sisse pandud
+			
+		end if
+	else
+		!ehk default votab, et tiheduse profiili leitakse, mitte tuletisi vms 
+		ruum_ptr => tihedus 
+	end if
 	
 	!
 	! =========== konstrueeritakse piksli t2itmiseks sobilik funktsioon vastavalt sellele
@@ -127,6 +140,20 @@ contains
 		theta = atan2(Yc,(Xc*all_comp%comp(comp_nr)%cos_incl)) + all_comp%comp(comp_nr)%theta0
 		res = ruum_ptr(R, 0.0_rk, theta)
 	end function surface
+	
+	function func_ja_incl_tuletis(R, z, theta)
+		implicit none
+		real(rk), intent(in) :: R,z
+		real(rk), intent(in), optional :: theta
+		real(rk) :: res, incl_parand, l
+		associate(cmp=>all_comp%comp(comp_nr))
+		l = z*cmp%cos_incl !integreerimise muutuja, mis otseselt z seotud
+		incl_parand = &
+		SIIA J@I POOLELI
+			all_comp%comp(comp_nr)%fun_der_R(R,z,theta) * (l*cmp%sin_incl - )/R !viimane osa on dR dgamma
+		res = enne_incl_parandit(R,z,theta) * incl_parand
+		end associate 
+	end function fun_ja_incl_tuletis
 	
 	function los(Xc, Yc) result(res)
 		implicit none

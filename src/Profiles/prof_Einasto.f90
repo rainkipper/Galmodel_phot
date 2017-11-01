@@ -25,6 +25,11 @@ module prof_Einasto_module
 	contains
 		procedure :: init_profile 	=> init_prof_Einasto
 		procedure :: fun_den 		=> fun_den_Einasto
+		procedure :: fun_der_R 		=> fun_der_R_Einasto 	
+		procedure :: fun_der_z		=> fun_der_z_Einasto	
+		procedure :: fun_der_RR		=> fun_der_RR_Einasto	
+		procedure :: fun_der_zz		=> fun_der_zz_Einasto	
+		procedure :: fun_der_Rz		=> fun_der_Rz_Einasto	
 		procedure :: set_val	     => set_val_Einasto
 		procedure :: get_val	    => get_val_Einasto
 		procedure :: sanity_check	=> sanity_check_Einasto
@@ -303,6 +308,108 @@ contains
 			res =  prof%rho0 * exp(-1.0*(a/(prof%k*prof%a0))**(1/prof%N))
 		end if
 	end function fun_den_Einasto
+	elemental function fun_der_R_Einasto(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_Einasto_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+		real(rk)							:: a
+		associate(q2 => prof%q2)
+		associate(inv_N => prof%inv_N)
+		associate(inv_ka0 => prof%inv_ka0)
+		associate(rho0 => prof%rho0)
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			res =  -(a*inv_ka0)**(inv_N - 1)*R*inv_N*inv_ka0*rho0*exp(-(a*inv_ka0)**inv_N)/a
+		end if
+		end associate
+		end associate
+		end associate
+		end associate
+	end function fun_der_R_Einasto
+	elemental function fun_der_z_Einasto(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_Einasto_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+		real(rk)							:: a
+		associate(q2 => prof%q2)
+		associate(inv_N => prof%inv_N)
+		associate(inv_ka0 => prof%inv_ka0)
+		associate(rho0 => prof%rho0)
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			res =  -(a*inv_ka0)**(inv_N - 1)*inv_N*inv_ka0*rho0*z*exp(-(a*inv_ka0)**inv_N)/(a*q2)
+		end if
+		end associate
+		end associate
+		end associate
+		end associate
+	end function fun_der_z_Einasto
+	elemental function fun_der_Rz_Einasto(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_Einasto_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+		real(rk)							:: a
+		associate(q2 => prof%q2)
+		associate(inv_N => prof%inv_N)
+		associate(inv_ka0 => prof%inv_ka0)
+		associate(rho0 => prof%rho0)
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			!valemit saab lyhemaks kui factor teha
+			res =  ((inv_ka0*a)**inv_N*inv_N - inv_N + 2)*(inv_ka0*a)**inv_N*R*inv_N*q2*rho0*z*exp(-(inv_ka0*a)**inv_N)/(R**2*q2 + z**2)**2
+		end if
+		end associate
+		end associate
+		end associate
+		end associate
+	end function fun_der_Rz_Einasto
+	elemental function fun_der_RR_Einasto(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_Einasto_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+		real(rk)							:: a
+		associate(q2 => prof%q2)
+		associate(inv_N => prof%inv_N)
+		associate(inv_ka0 => prof%inv_ka0)
+		associate(rho0 => prof%rho0)
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			res =  ((inv_ka0*a)**inv_N*R**2*inv_N*q2 - R**2*inv_N*q2 + R**2*q2 - z**2)*(inv_ka0*a)**inv_N*inv_N*q2*rho0*exp(-(inv_ka0*a)**inv_N)/(R**2*q2 + z**2)**2
+		end if
+		end associate
+		end associate
+		end associate
+		end associate
+	end function fun_der_RR_Einasto
+	elemental function fun_der_zz_Einasto(prof, R,z,theta) result(res)
+		implicit none
+		class(prof_Einasto_type), intent(in) 	:: prof
+		real(rk), intent(in) 				:: R,z
+		real(rk), intent(in), optional		:: theta
+		real(rk) 							:: res
+		real(rk)							:: a
+		associate(q2 => prof%q2)
+		associate(inv_N => prof%inv_N)
+		associate(inv_ka0 => prof%inv_ka0)
+		associate(rho0 => prof%rho0)
+		if(present(theta) .or. .not.present(theta)) then
+			a = sqrt(R**2 + (z/prof%q)**2)
+			res =  ((inv_ka0*a)**inv_N*inv_N*z**2 - R**2*q2 - inv_N*z**2 + z**2)*(inv_ka0*a)**inv_N*inv_N*rho0*exp(-(inv_ka0*a)**inv_N)/(R**2*q2 + z**2)**2
+		end if
+		end associate
+		end associate
+		end associate
+		end associate
+	end function fun_der_zz_Einasto
+	
 	subroutine init_prof_Einasto(prof)
 		implicit none
 		class(prof_Einasto_type), intent(inout) :: prof
