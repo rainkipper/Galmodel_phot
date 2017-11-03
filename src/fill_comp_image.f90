@@ -7,10 +7,8 @@ module fill_comp_image_module
 	integer, save :: countersees=0, counterv2ljas=0
 contains
 
-
-subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im)
+subroutine fill_comp_image(all_comp, comp_nr, mdl)
 	implicit none
-	logical, intent(in), optional :: via_adaptive_im
 	logical :: via_ci !ehk via_adaptive_im
 	type(all_comp_type), intent(inout) :: all_comp !out osa ainult adaptive_im numbri jaoks
 	integer :: comp_nr !millist komponenti arvutatakse
@@ -53,12 +51,9 @@ subroutine fill_comp_image(all_comp, comp_nr, mdl, via_adaptive_im)
 	!
 	! ============= valib, kas kasutab kiirendamiseks adaptive_im arvutust ====================
 	!
-	if(.not.present(via_adaptive_im)) then
-		via_ci = .false.
-	else
-		via_ci = via_adaptive_im
-		via_ci = via_ci .and. all_comp%comp(comp_nr)%prof_den%kas_3D !ehk kui on 2D prof, siis ei kasuta kunagi adaptiivset pilti.
-	end if
+
+	via_ci = via_adaptive_im
+	via_ci = via_ci .and. all_comp%comp(comp_nr)%prof_den%kas_3D !ehk kui on 2D prof, siis ei kasuta kunagi adaptiivset pilti.
 
 	
 	!valitakse, milline funktsioon arvutamiseks

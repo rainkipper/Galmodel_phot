@@ -31,8 +31,8 @@ contains
 		integer :: Nx, Ny, i,j
 
 		Nx = size(im%obs, 1); Ny = size(im%obs, 2)
-		allocate(mdl%pix(1:Nx, 1:Ny))
-		allocate(mdl%mx(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%pix)) allocate(mdl%pix(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%mx)) allocate(mdl%mx(1:Nx, 1:Ny))
 		mdl%recalc_image = .true. !ehk see koige algsem ning midagi pole veel arvutatud
 		mdl%recalc_XcYc_coords = .true.
 		mdl%corresponding_adaptive_im = -1 !ehk pole

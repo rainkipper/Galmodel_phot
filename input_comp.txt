@@ -1,5 +1,5 @@
 [bulge1]
-prof = Sersic
+prof = Einasto
 type = stellar
 incl = 65.2, F, 55.0, 85.0, bulge1
 dist = 10000.0, F, 0.0, 1e7, bulge1
@@ -29,7 +29,7 @@ M =  1.0 , F, 0.00, 0.5, bulge1
 
 
 [disc1]
-prof = Sersic
+prof = Einasto
 type = stellar
 incl = 89, F, 55.0, 85.0, bulge1
 dist = 10000.0, F, 0.0, 1e7, bulge1

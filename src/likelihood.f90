@@ -57,11 +57,11 @@ contains
 		if(kas_fitib_massid_eraldi) then
 			allocate(to_massfit(1:size(images,1)))
 			do i=1,size(images)
-				allocate(to_massfit(i)%w(1:all_comp%N_comp))
-				allocate(to_massfit(i)%I(1:size(images(i)%obs,1), size(images(i)%obs,2)))
-				allocate(to_massfit(i)%mask(1:size(images(i)%obs,1), size(images(i)%obs,2)))
-				allocate(to_massfit(i)%M(1:all_comp%N_comp, 1:size(images(i)%obs,1), size(images(i)%obs,2)))
-				allocate(to_massfit(i)%inv_sigma2(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				if(.not.allocated(to_massfit(i)%w)) allocate(to_massfit(i)%w(1:all_comp%N_comp))
+				if(.not.allocated(to_massfit(i)%I)) allocate(to_massfit(i)%I(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				if(.not.allocated(to_massfit(i)%mask)) allocate(to_massfit(i)%mask(1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				if(.not.allocated(to_massfit(i)%M)) allocate(to_massfit(i)%M(1:all_comp%N_comp, 1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				if(.not.allocated(to_massfit(i)%inv_sigma2)) allocate(to_massfit(i)%inv_sigma2(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				to_massfit(i)%I = images(i)%obs
 				to_massfit(i)%mask = images(i)%mask
 				to_massfit(i)%inv_sigma2 = 1.0/images(i)%sigma**2
@@ -127,7 +127,7 @@ contains
 				output_images = 0.0 
 			end if
 			do j=1,size(mudelid, 1)
-				call fill_comp_image(all_comp, j, mudelid(j), via_adaptive_im)
+				call fill_comp_image(all_comp, j, mudelid(j))
 call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fits")
 				do i=1,size(images,1)
 					if(kas_rakendab_psf) then
@@ -296,7 +296,7 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 			do i=1,size(mudelid, 1)
 				if(mudelid(i)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
-					call fill_comp_image(all_comp, i, mudelid(i), via_adaptive_im)
+					call fill_comp_image(all_comp, i, mudelid(i))
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
 						do j=1,size(images); 

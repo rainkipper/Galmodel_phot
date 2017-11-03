@@ -55,6 +55,9 @@ contains
 		write(unit=iunit, fmt=*) ""
 		close(iunit)
 		nullify(par_list)
+		
+
+		
 	contains
 		subroutine tryki_par_nimed_reana()
 			implicit none
@@ -138,19 +141,22 @@ contains
 		close(unit=iunit)
 	end subroutine output_ML
 	
-	subroutine output_images(input_comps, images)
+	subroutine output_images(input_comps, images, all_comp)
 		implicit none
 		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		type(all_comp_type) :: all_comp
+		type(all_comp_type), intent(inout) :: all_comp
 		real(rk) :: LL
 		real(rk), dimension(:,:,:), allocatable :: v2ljundpildid
 		real(rk), dimension(:,:), allocatable :: pilt
 		integer :: i,j
 		
-		call convert_input_comp_to_all_comp(input_comps, all_comp)
-		call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
-
+! 		call convert_input_comp_to_all_comp(input_comps, all_comp)
+! 		call asenda_viited(input_comps, all_comp) !all_comp muutujas asendamine
+! 		call init_calc_log_likelihood(all_comp, images)
+		
+! 		do i=1,all_comp%N_comp; all_comp%comp(i)%adaptive_image_number = i; end do !numbrite t2itmine
+		
 		select case(mis_fittimise_tyyp)
 		case(2) !ehk componendid ja ML
 			LL =  calc_log_likelihood(all_comp, images, v2ljundpildid)
@@ -171,6 +177,13 @@ contains
 		case default
 			print*, "no output available for this type", mis_fittimise_tyyp
 		end select
+		
+		if(via_adaptive_im) then
+			do i=1,all_comp%N_comp
+				if(all_comp%comp(i)%prof_den%kas_3D) call kirjuta_adaptive_image_faili(all_comp%comp(i)%adaptive_image_number, trim(multinest_output_header)//trim(input_comps(i)%comp_name)//"_adaptive_image.txt") 
+			end do
+		end if
+		
 	end subroutine output_images
 end module output_module
 	

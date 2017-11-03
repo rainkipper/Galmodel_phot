@@ -5,7 +5,7 @@ mis_fittimise_algoritm                  = 0 #0=output, 1=multinest, 2=amoeba, 3=
 mis_fittimise_tyyp                      = 2 #1=populatsioonid ja massid, 2 = komponendid ja M/L
 # kas_los                                 = .true.
 kas_rakendab_psf                        = .false. 
-kas_vaikselt                            = .true.
+kas_vaikselt                            = .false.
 kas_output_reana                        = .false.
 
 #
@@ -43,6 +43,6 @@ adaptive_image_min_spatial_resolution   = 0.005
 
 N_multinest_extra_points                = 10
 multinest_efr                           = 0.7 #ehk ei suurenda ruumala puntkide otsimisel
-multinest_output_header                 = Output/MN_output/
+multinest_output_header                 = Output/
 output_fit_file                         = Output/out_parameters.txt
 output_ML_file                          = Output/out_ML.txt

@@ -445,7 +445,11 @@ module adaptive_image_real_module
 				type(adaptive_image_type), intent(in) :: adaptive_im
 				integer :: i
 				do i=1,5
-					write(unit=iunit, fmt = "(3F16.8)") adaptive_im%x(i), adaptive_im%y(i), adaptive_im%val(i)%point
+					if(associated(adaptive_im%val(i)%point)) then
+						write(unit=iunit, fmt = "(3F16.8)") adaptive_im%x(i), adaptive_im%y(i), adaptive_im%val(i)%point
+					else
+						stop "Adatpive image pole piisavalt joonistatud"
+					end if
 				end do
 				if(.not.adaptive_im%last_level) then
 					call kirjuta_kast(adaptive_im%sub1)
