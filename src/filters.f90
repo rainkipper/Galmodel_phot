@@ -84,7 +84,7 @@ contains
 	
 	
 		
-	subroutine create_sdss_filters(filters)
+	subroutine create_sdss_filters_test(filters)
 		!Mass heledus suhted on arvutatud mingi SSP pohjal Bruzual-Charlot 
 		!http://www.bruzual.org/bc03/Updated_version_2016/
 		!R script ML_arvutamine.R t2psete numbrite saamiseks
@@ -134,6 +134,63 @@ contains
 		filters(5)%population_mass_to_light_ratios = [0.5834451, 0.9559606, 2.369627]
 		filters(5)%Mag_sun = 4.52_rk
 		filters(5)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		
+		
+
+	end subroutine create_sdss_filters_test
+	
+	subroutine create_sdss_filters(filters)
+		!Blantoni templateite pohjal, kus on tolm ja spektri jooned ka olemas
+! 		    filter	Vega	AB	  Apparent_AB mag_Vega
+! 		26	SDSS u'	5.46	6.45	-26.12	0.995
+! 		27	SDSS g'	5.22	5.14	-26.36	-0.087
+! 		28	SDSS r'	4.50	4.65	-27.08	0.147
+! 		29	SDSS i'	4.16	4.54	-27.42	0.376
+! 		30	SDSS z'	4.01	4.52	-27.58	0.518
+		implicit none
+		type(filter_type), dimension(:), allocatable :: filters
+		integer :: N
+		N = 5
+		allocate(filters(1:N))
+
+		filters(1)%population_names = ["Blanton_1", "Blanton_2", "Blanton_3", "Blanton_4", "Blanton_5"]
+		filters(2)%population_names = ["Blanton_1", "Blanton_2", "Blanton_3", "Blanton_4", "Blanton_5"]
+		filters(3)%population_names = ["Blanton_1", "Blanton_2", "Blanton_3", "Blanton_4", "Blanton_5"]
+		filters(4)%population_names = ["Blanton_1", "Blanton_2", "Blanton_3", "Blanton_4", "Blanton_5"]
+		filters(5)%population_names = ["Blanton_1", "Blanton_2", "Blanton_3", "Blanton_4", "Blanton_5"]
+		filters(1)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(2)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(3)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(4)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		filters(5)%ZP = 22.5_rk !yhikute ning ABmag erip2ra
+		
+		filters(1)%name = "SDSS_u"
+		filters(1)%population_mass_to_light_ratios = [23.3301748622864,0.00121417016930545,0.439758219586101,7.19578436927323,0.148393334920314]
+		filters(1)%Mag_sun = 6.45_rk
+		filters(1)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		
+		filters(2)%name = "SDSS_g"
+		filters(2)%population_mass_to_light_ratios = [8.22717332271278,0.00432318253378151,0.454359561061207,5.00051509903871,0.255755562862128]
+		filters(2)%Mag_sun = 5.14_rk
+		filters(2)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(3)%name = "SDSS_r"
+		filters(3)%population_mass_to_light_ratios = [3.95596422691167,0.00883400910870545,0.495677538251191,3.85409345140553,0.339372528787265]
+		filters(3)%Mag_sun = 4.65_rk
+		filters(3)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(4)%name = "SDSS_i"
+		filters(4)%population_mass_to_light_ratios = [2.44997274893593,0.0158117700010423,0.562029102838556,3.12625952921625,0.344491806973725]
+		filters(4)%Mag_sun = 4.54_rk
+		filters(4)%mass_to_obs_unit => calc_counts_mass_ratio
+		
+		filters(5)%name = "SDSS_z"
+		filters(5)%population_mass_to_light_ratios = [1.54877795627825,0.0184719568573701,0.512100014012443,2.51197061658436,0.357531160626106]
+		filters(5)%Mag_sun = 4.52_rk
+
 		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
 		
 		
