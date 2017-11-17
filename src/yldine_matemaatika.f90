@@ -1,10 +1,15 @@
 module yldine_matemaatika_module
 	use constants_module
+	use distributions_module
 	public
 	interface coordinate_rotation
 		module procedure coordinate_rotation_alpha
 		module procedure coordinate_rotation_sincos_alpha
 	end interface ! coordinate_rotation
+	interface interpolate_1D
+		module procedure interpolate_1D_arr
+		module procedure interpolate_1D_nr
+	end interface
 contains
 	elemental subroutine coordinate_rotation_alpha(xin, yin, alpha, xout, yout)
 		implicit none
@@ -23,15 +28,39 @@ contains
 		xout = xin*cos_alpha - yin*sin_alpha
 		yout = xin*sin_alpha + yin*cos_alpha
 	end subroutine coordinate_rotation_sincos_alpha
-	
-	elemental function interpolate_1D(x0, x1, val0, val1, x) result(res)
+	elemental function interpolate_1D_arr(distr, x) result(res)
+		implicit none
+		type(distribution_1D_type), intent(in) :: distr
+		real(rk), intent(in) :: x
+		integer :: i
+		real(rk) :: res
+		i = leia_l2him( x)
+		!praegu ykskoik kas interpoleerib voi ekstrapoleerib... v2hem t2pne, aga aeglaselt muutuvatele funktsioonidele sobib... kiirem implemnteerida
+		if(i>1) then
+			res = interpolate_1D(distr%x(i-1), distr%x(i), distr%f(i-1), distr%f(i), x)
+		else
+			res = interpolate_1D(distr%x(i), distr%x(i+1), distr%f(i), distr%f(i+1), x)
+		end if
+	contains
+		elemental function leia_l2him(x) result(i)
+		!annab l2hima indeksi x-le
+			implicit none
+			real(rk), intent(in) :: x
+			integer :: i
+			! ======= meetod 1 ===== brute force - aeglane, aga kindel
+			i = minloc(abs(distr%x	-x), 1)
+			! ======= meetod 2 ====== not implemented
+		end function leia_l2him
+	end function interpolate_1D_arr
+	elemental function interpolate_1D_nr(x0, x1, val0, val1, x) result(res)
 		implicit none
 		real(rk), intent(in) :: x0, x1, val0, val1, x
 		real(rk) :: res
 		real(rk) :: tuletis
 		tuletis = (val1 - val0)/(x1-x0)
 		res = val0 + tuletis*(x-x0)
-	end function interpolate_1D
+	end function interpolate_1D_nr
+
 	elemental function Gauss(x, mean, sigma2) result(res)
 		implicit none
 		real(rk), intent(in) :: x, mean, sigma2

@@ -8,7 +8,10 @@ module read_input_module
 	use filters_module
 	use images_module
 	use file_operations_module
-	
+	use populations_module
+	use filters_module
+	use dust_module
+	use filters_module
 
 	character(len=default_character_length), dimension(:), allocatable :: viitamiseks_comp_nimed !vastavalt selline j2rjekord, mis input_comp failis on... globaalne muutuja yldkasutuseks eri asjade sisselugemisel
 ! 	type(prof_par_list_type), dimension(1:max_prof_par_size), target :: all_prof_pars
@@ -94,6 +97,7 @@ contains
 				end if
 				par_list%par_name = trim(rida(1:(id2-1)))
 				par_list%par = read_real_par(subrida)
+! print "(A,A,A,A,I)", trim(input_comps(mitmes_comp)%comp_name), ":", trim(par_list%par_name), "->",par_list%par%ref
 				par_list%filled = .true.
 				nullify(par_list%next)
 			end select
@@ -130,8 +134,9 @@ contains
 			do i=1,N_comp
 				if(trim(vidin) == trim(viitamiseks_comp_nimed(i))) res = i
 			end do
-			if(res == -1) stop "Niisugust comp nime pole olemas faili sisselugemisel"
+			if(res == -1) stop "Niisugust comp nime pole olemas faili sisselugemisel (veel)"
 		end function get_ref_from_name
+		
 		function read_real_par(rida) result(res)
 			implicit none
 			character(len=default_character_length), intent(in) :: rida
@@ -142,11 +147,11 @@ contains
 			res%ref = get_ref_from_name(pisirida)
 		end function read_real_par
 	end subroutine read_components
-	subroutine read_images_and_filters(images_file, images, filters)
+	subroutine read_images_and_filters(images_file, images)
 		implicit none
 		type(image_type), intent(out), dimension(:), allocatable :: images
 		character(len=default_character_length), intent(in) :: images_file
-		type(filter_type), dimension(:), allocatable, intent(out), target :: filters !vaja, et linkida kohe kylge
+! 		type(filter_type), dimension(:), allocatable, intent(out), target :: filters !vaja, et linkida kohe kylge
 		integer :: N_im
 		integer :: i
 		integer :: id1, id2 !ajutised abimuutujad	
@@ -155,7 +160,7 @@ contains
 		character(len=default_character_length) :: rida, subrida, tyhi
 		real(rk), dimension(:,:), allocatable :: tmp_pilt !ehk teha loogilist pilti
 		
-		call create_test_filters(filters) !
+
 		N_im = read_nr_of_comp(images_file)
 		allocate(images(1:N_im))
 		open(file = images_file, unit = iunit, action = "read")

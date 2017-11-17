@@ -46,7 +46,7 @@ contains
 	end subroutine set_val_Sersic
 	subroutine get_val_Sersic(prof, par, val)
 		implicit none
-		class(prof_Sersic_type), intent(inout) :: prof
+		class(prof_Sersic_type), intent(in) :: prof
 		character(len=*), intent(in) 	:: par
 		real(rk), intent(out) 			:: val
 		select case(par)

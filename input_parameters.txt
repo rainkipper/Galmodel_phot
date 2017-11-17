@@ -2,9 +2,9 @@
 # ============ parameetrid, mis iseloomustavad, mida t2pselt programm teeb
 #
 mis_fittimise_algoritm                  = 0 #0=output, 1=multinest, 2=amoeba, 3=multinest+amoeba, 4=amoeba mineviku MN-st, 5=omalooming
-mis_fittimise_tyyp                      = 2 #1=populatsioonid ja massid, 2 = komponendid ja M/L
+mis_fittimise_tyyp                      = 3 #1=populatsioonid ja massid, 2 = komponendid ja M/L, 3 = populatsioonid ja massid tolmuga
 # kas_los                                 = .true.
-kas_rakendab_psf                        = .false. 
+kas_rakendab_psf                        = .true. 
 kas_vaikselt                            = .false.
 kas_output_reana                        = .false.
 
@@ -15,7 +15,8 @@ pix_iter_maxlevel                       = 4
 pix_edasi_jagamise_rel_t2psus           = 0.05
 default_los_kauguse_piir                = 20.0
 abs_tol_kordaja                         = 1.0 #n2itab, mitu korda piltidest leitud t2psust kahandatakse, et saada mudeli arvutamise t2psus
-                                        
+lainepikkuse_dl                         = 0.1 #ehk integreerimisel filtri heledusi saada, kui suure sammuga integreerib (box integration)
+										
 kas_koik_pildid_samast_vaatlusest       = .true. 
 via_adaptive_im                         = .true.  #eelduselt, et tegemist on 3D profiiliga... 2D korral ei kasuta kunagi
 kas_psf_crop                            = .false.
@@ -33,7 +34,7 @@ integration_min_iter                    = 2 #kui los on 30, siis 12 on integreer
 
 adaptive_image_dist_piirang             = 0.4 #ehk niisuguse piiri sees kasutatakse alati piksli arvutamisel otsest mudelit
 adaptive_image_x0_default               = -0.0 #praegu votab nagunii abs v22rtuse molemas koorinaadist otsides, seega neg poolt pole vaja
-adaptive_image_y0_default               = -0.0
+adaptive_image_y0_default               = -35.0
 adaptive_image_x1_default               = 35.0
 adaptive_image_y1_default               = 35.0
 adaptive_image_maxlevel                 = 15
@@ -45,4 +46,7 @@ N_multinest_extra_points                = 10
 multinest_efr                           = 0.7 #ehk ei suurenda ruumala puntkide otsimisel
 multinest_output_header                 = Output/
 output_fit_file                         = Output/out_parameters.txt
-output_ML_file                          = Output/out_ML.txt
+
+sol_file                                = Populations/solar_standard_spectrum.csv
+populations_file                        = Populations/blanton_spec_raw.txt
+filters_file                            = Populations/

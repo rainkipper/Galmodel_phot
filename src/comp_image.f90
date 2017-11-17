@@ -17,10 +17,11 @@ module comp_image_module
 	type :: comp_image_real_type 
 		type(square_pixel_type), dimension(:,:), allocatable :: pix
 		real(rk), dimension(:,:), allocatable :: mx !reaalne maatriks tuleb siia
+		real(rk), dimension(:,:), allocatable :: M_enne_tasandit, M_p2rast_tasandit !enne ja p2rast tolmu tasandit piki vaatejoont
 		!
 		logical :: recalc_XcYc_coords !kas vaja arvutada fyysikalistest koordinaatidest uuesti komponenti koordinaadid
 		logical :: recalc_image
-		integer :: corresponding_adaptive_im	!kui kasutab adaptive_im abi, et pilti joonistada
+		integer :: corresponding_adaptive_im, corresponding_adaptive_im_enne_tasandit, corresponding_adaptive_im_p2rast_tasandit	!kui kasutab adaptive_im abi, et pilti joonistada
 	end type comp_image_real_type
 contains
 	subroutine create_comp_image_from_obs(mdl, im)
@@ -33,6 +34,8 @@ contains
 		Nx = size(im%obs, 1); Ny = size(im%obs, 2)
 		if(.not.allocated(mdl%pix)) allocate(mdl%pix(1:Nx, 1:Ny))
 		if(.not.allocated(mdl%mx)) allocate(mdl%mx(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%mx)) allocate(mdl%M_enne_tasandit(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%mx)) allocate(mdl%M_p2rast_tasandit(1:Nx, 1:Ny))
 		mdl%recalc_image = .true. !ehk see koige algsem ning midagi pole veel arvutatud
 		mdl%recalc_XcYc_coords = .true.
 		mdl%corresponding_adaptive_im = -1 !ehk pole

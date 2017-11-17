@@ -1,6 +1,75 @@
 module file_operations_module
 	use constants_module
 contains
+	function read_tabel(loetav_file, N) result(res)
+		!vajalik spektrite ja filtrite jm andmefailide sisselugemisel
+		implicit none
+		character(len=default_character_length), intent(in) :: loetav_file
+		integer, intent(in) :: N !veergude arv tabelis
+		integer :: iunit, ierr
+		integer :: ios
+		integer :: i
+		integer :: ridu
+		real(rk), dimension(:,:), allocatable :: res
+		character(len=default_character_length) :: rida, formaat
+		logical :: olemas
+		
+		INQUIRE(FILE = trim(loetav_file), exist = olemas)
+		if(.not. olemas) then
+			print*, "File", trim(loetav_file), "does not exits"
+			stop
+		end if
+		
+		formaat = repeat(" ", default_character_length)
+		write(unit = formaat, fmt="(A,I,A)", iostat=ios) "(", N, "F)"
+
+		ios  = 0
+		iunit = 40
+		ridu = 0
+		
+		!
+		! alguses loeb mitu rida on failis, et allokeerida oige suurusega massiivid
+		!
+		open(file = trim(loetav_file), unit = iunit, action = "read")
+		do while(ios .ge. 0)
+			ridu = ridu + 1
+			rida = repeat(" ", default_character_length) !m2lu nullimine ymberkasutamiseks
+			read(fmt = "(A)", iostat=ios, unit=iunit) rida
+			print*, trim(rida)
+			print*, ios
+		end do
+		print*, "ridu kokku", ridu, trim(loetav_file)
+		print*, "laius", N, trim(loetav_file)
+		close(unit = iunit)
+		!
+		! massiiivi asjade lugemine
+		!
+		allocate(res(1:ridu, 1:(N)))
+		iunit = 41
+		res = 0.0
+		i = 0
+		ios = 0
+		open(file = trim(loetav_file), unit = iunit, action = "read")
+		do while(ios .ge. 0)
+			i = i+1
+			read(fmt = *, iostat=ios, unit=iunit) res(i,:)
+			print*, i
+			print*, res(i,:)
+		end do
+		stop
+		print*, i
+		close(unit = iunit)
+		!
+		! ==== populatsiooni muutujate tegemine
+		!
+! 		do i=1,5
+! 			pops(i)%population_name = repeat(" ", default_character_length)
+! 			allocate(pops(i)%spec%x(1:size(res, 1)))
+! 			allocate(pops(i)%spec%f(1:size(res, 1)))
+! 			pops(i)%spec%x = res(:,1)
+! 			pops(i)%spec%f = res(:,i+1)
+! 		end do
+	end function read_tabel
     SUBROUTINE read_fits_to_matrix(filename,pix)
       implicit none
   		integer,parameter  :: rsp = kind(1.0)

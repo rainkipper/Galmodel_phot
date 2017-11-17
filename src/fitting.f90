@@ -20,6 +20,8 @@ contains
 			call convert_input_comp_to_all_comp(input_comps, all_comp)
 			call asenda_viited(input_comps, all_comp)
 			all_comp%comp(:)%adaptive_image_number = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
+			all_comp%comp(:)%adaptive_im_enne_tasandit = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
+			all_comp%comp(:)%adaptive_im_p2rast_tasandit = -1 !default -1, et teeks uue adaptiivse pildi esimene kord
 			call init_calc_log_likelihood(all_comp, images) !s2ttib likelihoodi mooduli muutujad, et v2hendada arvutamisis
 			select case( mis_fittimise_algoritm)
 			case(0)
@@ -50,8 +52,8 @@ contains
 			end select
 			
 			if(.not.kas_vaikselt) print*, "Kokku oli LL arvutusi", LL_counter	
-			call output_images(input_comps, images, all_comp)
 			call output_like_input(input_comps)
+			call output_images(input_comps, images, all_comp)
 			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)
 			
 		contains

@@ -41,12 +41,14 @@ contains
 		case("a0"); prof%a0 = val; 
 		case("N"); prof%N = val
 		case("q"); prof%q = val
-		case default; stop "Err: niisugust parameetrit Einasto profiilil pole"
+		case default; 
+			print*, "Err: niisugust parameetrit Einasto profiilil pole:", trim(par)
+			stop
 		end select
 	end subroutine set_val_Einasto
 	subroutine get_val_Einasto(prof, par, val)
 		implicit none
-		class(prof_Einasto_type), intent(inout) :: prof
+		class(prof_Einasto_type), intent(in) :: prof
 		character(len=*), intent(in) 	:: par
 		real(rk), intent(out) 			:: val
 		select case(par)
@@ -54,7 +56,9 @@ contains
 		case("a0");	val = prof%a0
 		case("N") ;	val = prof%N 
 		case("q") ;	val = prof%q 
-		case default; stop "Err: niisugust parameetrit Einasto profiilil pole"
+		case default; 
+		print*, "Err: niisugust parameetrit Einasto profiilil pole:", trim(par)
+		stop
 		end select
 		
 	end subroutine get_val_Einasto

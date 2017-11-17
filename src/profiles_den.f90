@@ -45,7 +45,7 @@ contains
 	end subroutine set_val_default
 	subroutine get_val_default(prof, par, val)
 		implicit none
-		class(prof_den_base_type), intent(inout) :: prof
+		class(prof_den_base_type), intent(in) :: prof
 		character(len=*), intent(in) 	:: par
 		real(rk), intent(out) 			:: val
 		val = 0.0_rk

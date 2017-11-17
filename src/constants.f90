@@ -18,6 +18,9 @@ module constants_module
 	character(len=default_character_length)  :: multinest_output_header = "Output/MN_output/"
 	character(len=default_character_length)  :: output_fit_file = "Output/out_parameters.txt"
 	character(len=default_character_length)  :: output_ML_file = "Output/out_ML.txt"
+	character(len=default_character_length)  :: sol_file_name
+	character(len=default_character_length)  :: populations_file_name
+	character(len=default_character_length)  :: filters_file_name
 	logical :: kas_vaikselt = .false.
 	
 	!seaded
@@ -42,6 +45,7 @@ module constants_module
 	real(rk) :: massif_fiti_rel_t2psus = 0.003 !suhteline t2psus, mille korral loeb koondunuks masside eraldi fittimise
 	real(rk) :: massi_fittimise_hyppe_kordaja = 0.7 !ehk kui kiiresti liigub iteratsioonide vahel
 	real(rk) :: massi_fiti_lambda = 5.0 !m22rab kui t2pselt ei tohi massid nulli minna... pot barj22ris/chisq on see kui  -lambda*log(massi_kordaja)
+	real(rk) :: lainepikkuse_dl = 0.1 !dl, yle mille integreeritakse
 	
 	real(rk) :: amoeba_fractional_tolerance = 0.01
 	
@@ -102,83 +106,52 @@ contains
 			subrida = tyhi
 			subrida = trim(ADJUSTL(rida((id2+1):len(rida))))
 			select case(trim(adjustl(rida(1:(id2-1)))))
-			case("kas_fitib_massid_eraldi") 
-				read(subrida, fmt=*) kas_fitib_massid_eraldi
-			case("kas_barrier")
-				read(subrida, fmt = *) kas_barrier
-			case("kas_koik_pildid_samast_vaatlusest")
-				read(subrida, fmt = *) kas_koik_pildid_samast_vaatlusest
-			case("via_adaptive_im")
-				read(subrida, fmt = *) via_adaptive_im
-			case("kas_los")
-				read(subrida, fmt = *) kas_los
-			case("kas_rakendab_psf")
-				read(subrida, fmt = *) kas_rakendab_psf
-			case("kas_psf_crop")
-				read(subrida, fmt = *) kas_psf_crop
-			case("psf_sisse_peab_j22ma")
-				read(subrida, fmt = *) psf_sisse_peab_j22ma
-			case("pix_iter_maxlevel")
-				read(subrida, fmt = *) pix_iter_maxlevel
-			case("massif_fiti_rel_t2psus")
-				read(subrida, fmt = *) massif_fiti_rel_t2psus
-			case("pix_edasi_jagamise_rel_t2psus")
-				read(subrida, fmt = *) pix_edasi_jagamise_rel_t2psus	
-			case("adaptive_image_x0_default")               
-				read(subrida, fmt=*) adaptive_image_x0_default               
-			case("adaptive_image_y0_default")               
-				read(subrida, fmt=*) adaptive_image_y0_default               
-			case("adaptive_image_x1_default")               
-				read(subrida, fmt=*) adaptive_image_x1_default               
-			case("adaptive_image_y1_default")               
-				read(subrida, fmt=*) adaptive_image_y1_default               
-			case("adaptive_image_maxlevel")                 
-				read(subrida, fmt=*) adaptive_image_maxlevel                 
-			case("adaptive_image_minlevel")                 
-				read(subrida, fmt=*) adaptive_image_minlevel                 
-			case("adaptive_image_edasijagamise_threshold")  
-				read(subrida, fmt=*) adaptive_image_edasijagamise_threshold  
-			case("adaptive_image_min_spatial_resolution")   
-				read(subrida, fmt=*) adaptive_image_min_spatial_resolution   
-			case(" mis_fittimise_algoritm")
-				read(subrida, fmt=*)  mis_fittimise_algoritm
-			case("massi_fiti_lambda")
-			 	read(subrida, fmt=*) massi_fiti_lambda
-			case("massi_fittimise_hyppe_kordaja")
-			 	read(subrida, fmt=*) massi_fittimise_hyppe_kordaja
-			case("amoeba_fractional_tolerance")
-				read(subrida, fmt=*) amoeba_fractional_tolerance
-			case("mis_fittimise_tyyp")
-				read(subrida, fmt=*) mis_fittimise_tyyp
-			case("mis_fittimise_algoritm")
-				read(subrida, fmt=*) mis_fittimise_algoritm
-			case("default_los_kauguse_piir")
-				read(subrida, fmt=*) default_los_kauguse_piir
-			case("abs_tol_kordaja")
-				read(subrida, fmt=*) abs_tol_kordaja
-			case("adaptive_image_dist_piirang")
-				read(subrida, fmt=*) adaptive_image_dist_piirang
-			case("integration_min_iter")
-				read(subrida, fmt=*) integration_min_iter
-			case("integration_max_iter")
-				read(subrida, fmt=*) integration_max_iter
-			case("N_multinest_extra_points")
-				read(subrida, fmt=*) N_multinest_extra_points	
-			case("multinest_efr")
-				read(subrida, fmt=*) multinest_efr	
-			case("multinest_output_header")
-				read(subrida, fmt="(a)") multinest_output_header	
-			case("output_ML_file")
-				read(subrida, fmt="(a)") output_ML_file	
-			case("output_fit_file")
-				read(subrida, fmt="(a)") output_fit_file	
-			case("kas_vaikselt")
-				read(subrida, fmt = *) kas_vaikselt	
-			case("kas_output_reana")
-				read(subrida, fmt = *) kas_output_reana	
-				
-				
-				 
+			case("kas_fitib_massid_eraldi") ; read(subrida, fmt=*) kas_fitib_massid_eraldi
+			case("kas_barrier"); read(subrida, fmt = *) kas_barrier
+			case("kas_koik_pildid_samast_vaatlusest"); read(subrida, fmt = *) kas_koik_pildid_samast_vaatlusest
+			case("via_adaptive_im"); read(subrida, fmt = *) via_adaptive_im
+			case("kas_los"); read(subrida, fmt = *) kas_los
+			case("kas_rakendab_psf"); read(subrida, fmt = *) kas_rakendab_psf
+			case("kas_psf_crop"); read(subrida, fmt = *) kas_psf_crop
+			case("psf_sisse_peab_j22ma"); read(subrida, fmt = *) psf_sisse_peab_j22ma
+			case("pix_iter_maxlevel"); read(subrida, fmt = *) pix_iter_maxlevel
+			case("massif_fiti_rel_t2psus"); read(subrida, fmt = *) massif_fiti_rel_t2psus
+			case("pix_edasi_jagamise_rel_t2psus"); read(subrida, fmt = *) pix_edasi_jagamise_rel_t2psus	
+			case("adaptive_image_x0_default"); read(subrida, fmt=*) adaptive_image_x0_default               
+			case("adaptive_image_y0_default"); read(subrida, fmt=*) adaptive_image_y0_default               
+			case("adaptive_image_x1_default"); read(subrida, fmt=*) adaptive_image_x1_default               
+			case("adaptive_image_y1_default"); read(subrida, fmt=*) adaptive_image_y1_default               
+			case("adaptive_image_maxlevel"); read(subrida, fmt=*) adaptive_image_maxlevel                 
+			case("adaptive_image_minlevel"); read(subrida, fmt=*) adaptive_image_minlevel                 
+			case("adaptive_image_edasijagamise_threshold"); read(subrida, fmt=*) adaptive_image_edasijagamise_threshold  
+			case("adaptive_image_min_spatial_resolution"); read(subrida, fmt=*) adaptive_image_min_spatial_resolution   
+			case(" mis_fittimise_algoritm"); read(subrida, fmt=*)  mis_fittimise_algoritm
+			case("massi_fiti_lambda"); read(subrida, fmt=*) massi_fiti_lambda
+			case("massi_fittimise_hyppe_kordaja"); read(subrida, fmt=*) massi_fittimise_hyppe_kordaja
+			case("amoeba_fractional_tolerance"); read(subrida, fmt=*) amoeba_fractional_tolerance
+			case("mis_fittimise_tyyp"); read(subrida, fmt=*) mis_fittimise_tyyp
+			case("mis_fittimise_algoritm"); read(subrida, fmt=*) mis_fittimise_algoritm
+			case("default_los_kauguse_piir"); read(subrida, fmt=*) default_los_kauguse_piir
+			case("abs_tol_kordaja"); read(subrida, fmt=*) abs_tol_kordaja
+			case("adaptive_image_dist_piirang"); read(subrida, fmt=*) adaptive_image_dist_piirang
+			case("integration_min_iter"); read(subrida, fmt=*) integration_min_iter
+			case("integration_max_iter"); read(subrida, fmt=*) integration_max_iter
+			case("N_multinest_extra_points"); read(subrida, fmt=*) N_multinest_extra_points	
+			case("multinest_efr"); read(subrida, fmt=*) multinest_efr	
+			case("multinest_output_header"); read(subrida, fmt="(a)") multinest_output_header	
+			case("output_ML_file"); read(subrida, fmt="(a)") output_ML_file	
+			case("output_fit_file"); read(subrida, fmt="(a)") output_fit_file	
+			case("kas_vaikselt"); read(subrida, fmt = *) kas_vaikselt	
+			case("kas_output_reana"); read(subrida, fmt = *) kas_output_reana	
+			case("lainepikkuse_dl"); read(subrida, fmt = *) lainepikkuse_dl
+			case("sol_file"); read(subrida, fmt = "(a)") sol_file_name
+			case("populations_file"); read(subrida, fmt = "(a)") populations_file_name
+			case("filters_file"); read(subrida, fmt = "(a)") filters_file_name
+		
+		
+		
+		
+			
 			case default
 				print*, "Tundmatu parameeter sisselugemisel: ",trim(adjustl(rida(1:(id2-1))))
 				stop

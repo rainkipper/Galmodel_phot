@@ -2,13 +2,15 @@ module comp_module
 ! 	use constants
 	use profile_collector_module
 	use yldine_matemaatika_module
+	use populations_module
 	
 	type comp_type
 		!kasutaja poolt sisestatud asjad
 		character(len=default_character_length) 						:: comp_prof_name !profiili nimi ... nt "Einasto" vms
 		character(len=default_character_length) 						:: comp_name !komponendi enda nimi ... lihtsustab testimisi jm
 		character(len=default_character_length) 						:: comp_type_name !tyybi nimi ... valikud: stellar, attenuation, gas, DM
-		character(len=default_character_length) 						:: population_name !tyybi nimi ... valikud: stellar, attenuation, gas, DM
+		character(len=default_character_length) 						:: population_name !
+		integer 														:: population_number !populations moodulist vastav number
 		class(prof_den_base_type), allocatable	:: prof_den !profiil, mis saadakse profiles_den moodulist.... peab olema extended mingist pohityybist
 		real(rk)			 					:: incl    !kaldenurk 0=faceon pi/2 = edge on
 		real(rk)			 					:: dist    !galaktika kaugus kiloparsekites
@@ -22,7 +24,7 @@ module comp_module
 		real(rk)								:: massi_abs_tol_los !sirge peal olles t2psus
 		real(rk) 								:: sin_incl, cos_incl, tan_incl, sec_incl 
 		real(rk) 								:: sin_pos, cos_pos, tan_pos, sec_pos
-		integer 								:: adaptive_image_number !-1 on default negatiivne, et teeks uue pildi
+		integer 								:: adaptive_image_number, adaptive_im_enne_tasandit, adaptive_im_p2rast_tasandit !-1 on default negatiivne, et teeks uue pildi
 	contains
 		procedure, pass :: XpYp_to_XcYc => convert_XpYp_to_XcYc
 	end type comp_type
@@ -70,6 +72,17 @@ module comp_module
 		comp%cos_pos = cos(comp%pos)
 		comp%tan_pos = tan(comp%pos)
 		comp%sec_pos = 1.0/comp%cos_pos
+		comp%population_number = get_pop_number_from_name(comp%population_name)
+	contains
+		function get_pop_number_from_name(pop_name) result(i)
+			integer :: i
+			character(len=default_character_length), intent(in) :: pop_name
+			do i=1,size(populations)
+				if(trim(populations(i)%name) == trim(pop_name)) return
+			end do
+			print*,  "Err: cannot match the population name with existing populations", trim(pop_name)
+			stop
+		end function
 	end subroutine init_comp
 	
 	function leia_vabade_parameetrite_arv(input_comps) result(res)
