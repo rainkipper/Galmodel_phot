@@ -8,6 +8,7 @@ module yldine_matemaatika_module
 	end interface ! coordinate_rotation
 	interface interpolate_1D
 		module procedure interpolate_1D_arr
+		module procedure interpolate_1D_arr_v2
 		module procedure interpolate_1D_nr
 	end interface
 contains
@@ -28,6 +29,9 @@ contains
 		xout = xin*cos_alpha - yin*sin_alpha
 		yout = xin*sin_alpha + yin*cos_alpha
 	end subroutine coordinate_rotation_sincos_alpha
+	
+	
+	
 	elemental function interpolate_1D_arr(distr, x) result(res)
 		implicit none
 		type(distribution_1D_type), intent(in) :: distr
@@ -35,6 +39,7 @@ contains
 		integer :: i
 		real(rk) :: res
 		i = leia_l2him( x)
+! 		i = leia_l2him_v2(x, 1, size(distr%x,1))
 		!praegu ykskoik kas interpoleerib voi ekstrapoleerib... v2hem t2pne, aga aeglaselt muutuvatele funktsioonidele sobib... kiirem implemnteerida
 		if(i>1) then
 			res = interpolate_1D(distr%x(i-1), distr%x(i), distr%f(i-1), distr%f(i), x)
@@ -51,7 +56,43 @@ contains
 			i = minloc(abs(distr%x	-x), 1)
 			! ======= meetod 2 ====== not implemented
 		end function leia_l2him
+
 	end function interpolate_1D_arr
+	
+	function interpolate_1D_arr_v2(distr, x) result(res)
+		implicit none
+		type(distribution_1D_type), intent(in) :: distr
+		real(rk), intent(in), dimension(:), allocatable :: x
+		integer :: i, j
+		real(rk), dimension(:), allocatable :: res
+		allocate(res(1:size(x, 1)))
+		res = -1.100 !suvaline number alguseks
+		do j=1,size(x, 1)
+			i = leia_l2him(x(j), 1, size(distr%x,1))
+			res(j) = interpolate_1D(distr%x(i), distr%x(i+1), distr%f(i), distr%f(i+1), x(j))
+		end do
+	contains
+		recursive function leia_l2him(x, i0, i1) result(i)
+			implicit none
+			integer, intent(in) :: i0, i1
+			real(rk), intent(in) :: x
+			integer :: vahepeal, i
+			if(i1-i0 == 1) then
+				i = i0
+				return
+			end if
+			vahepeal = (i0+i1+0.25)/2
+			if( x <  distr%x(vahepeal)) then
+				i = leia_l2him(x, i0, vahepeal)
+			else
+				i = leia_l2him(x, vahepeal, i1)
+			end if
+		end function leia_l2him
+	end function interpolate_1D_arr_v2
+	
+
+	
+	
 	elemental function interpolate_1D_nr(x0, x1, val0, val1, x) result(res)
 		implicit none
 		real(rk), intent(in) :: x0, x1, val0, val1, x

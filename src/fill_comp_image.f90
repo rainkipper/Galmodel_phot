@@ -179,11 +179,12 @@ contains
 		do i=1,size(mdl%mx, 1)
 			!component coodinates
 			call all_comp%comp(comp_nr)%XpYp_to_XcYc(mdl%pix(i,j)%Xp_nurgad,mdl%pix(i,j)%Yp_nurgad, mdl%pix(i,j)%Xc_nurgad, mdl%pix(i,j)%Yc_nurgad) !koordinaatide teisendus
-			mdl%pix(i,j)%dXc2 =  sqrt((mdl%pix(i,j)%Xc_nurgad(2) - mdl%pix(i,j)%Xc_nurgad(1))**2 +  (mdl%pix(i,j)%Yc_nurgad(2) - mdl%pix(i,j)%Yc_nurgad(1))**2 ) &
-							   * sqrt((mdl%pix(i,j)%Xc_nurgad(4) - mdl%pix(i,j)%Xc_nurgad(1))**2 +  (mdl%pix(i,j)%Yc_nurgad(4) - mdl%pix(i,j)%Yc_nurgad(1))**2 )
+! 			mdl%pix(i,j)%dXc2 =  sqrt((mdl%pix(i,j)%Xc_nurgad(2) - mdl%pix(i,j)%Xc_nurgad(1))**2 +  (mdl%pix(i,j)%Yc_nurgad(2) - mdl%pix(i,j)%Yc_nurgad(1))**2 ) &
+! 							   sqrt((mdl%pix(i,j)%Xc_nurgad(4) - mdl%pix(i,j)%Xc_nurgad(1))**2 +  (mdl%pix(i,j)%Yc_nurgad(4) - mdl%pix(i,j)%Yc_nurgad(1))**2 )
 		end do
 		end do
-
+		mdl%pix(:,:)%dXc2 =  sqrt((mdl%pix(1,1)%Xc_nurgad(2) - mdl%pix(1,1)%Xc_nurgad(1))**2 +  (mdl%pix(1,1)%Yc_nurgad(2) - mdl%pix(1,1)%Yc_nurgad(1))**2 ) &
+						   * sqrt((mdl%pix(1,1)%Xc_nurgad(4) - mdl%pix(1,1)%Xc_nurgad(1))**2 +  (mdl%pix(1,1)%Yc_nurgad(4) - mdl%pix(1,1)%Yc_nurgad(1))**2 )
 		!
 		! ============= valib, kas kasutab kiirendamiseks adaptive_im arvutust ====================
 		!

@@ -1,99 +1,159 @@
-[bulge1]
+#
+# ======= mohnad ======
+#
+#koige vanem populatsioon... sellele viidatakse suur enamus parameetreid
+
+[bulge_B4]
 prof = Einasto
 type = stellar
-incl = 75.2, F, 55.0, 85.0, bulge1
-dist = 10000.0, F, 0.0, 1e7, bulge1
-pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge1
-cnt_x = 0, F, -9.0, 9.0, bulge1
-cnt_y = 0, F, -9.0, 9.0, bulge1
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_4
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 0.63, T, 0.1, 3.0, bulge_B4
+N =  2.7 , T, 1.0, 4.0, bulge_B4
+q =  0.72, T, 0.5, 0.99, bulge_B4
+M =  1.0 , F, 0.00, 0.5, bulge_B4
+
+[bulge_B1]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
 population = Blanton_1
-theta0 = 45, F, -90.0, 90.0 bulge1
-a0 = 0.63, T, 0.1, 3.0, bulge1
-N =  2.7 , T, 1.0, 4.0, bulge1
-q =  0.72, T, 0.5, 0.99, bulge1
-M =  1.0 , F, 0.00, 0.5, bulge1
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 0.63, T, 0.1, 3.0, bulge_B4
+N =  2.7 , T, 1.0, 4.0, bulge_B4
+q =  0.72, T, 0.5, 0.99, bulge_B4
+M =  1.0 , F, 0.00, 0.5, bulge_B1
+
+[bulge_B3]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_3
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 0.63, T, 0.1, 3.0, bulge_B4
+N =  2.7 , T, 1.0, 4.0, bulge_B4
+q =  0.72, T, 0.5, 0.99, bulge_B4
+M =  1.0 , F, 0.00, 0.5, bulge_B3
+
+[bulge_B5]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_5
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 0.63, T, 0.1, 3.0, bulge_B4
+N =  2.7 , T, 1.0, 4.0, bulge_B4
+q =  0.72, T, 0.5, 0.99, bulge_B4
+M =  1.0 , F, 0.00, 0.5, bulge_B5
+
+#
+# ========= ketttad ========
+#
+# B3 voiks olla koige viisakam populatsioon, mille j2rgi ylej22nud seada ... B4 ja B2 on iidne pop ja t2heteke, niiet need koik eraldi parameetritega
 
 [tolm]
 prof = dustplane
 type = dust
-incl = 65.2, F, 55.0, 85.0, bulge1
-dist = 10000.0, F, 0.0, 1e7, bulge1
-pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge1
-cnt_x = 0, F, -9.0, 9.0, bulge1
-cnt_y = 0, F, -9.0, 9.0, bulge1
-population = Blanton_1
-tau0 = 1.0, F, -5.0, 5.0 tolm
+incl = 65.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+tau0 = 0.1, T, -5.0, 5.0 tolm
 M =  1.0 , F, 0.00, 0.5, tolm
 
-# [Nucleus]
-# prof = Einasto
-# type = stellar
-# incl = 75, F, 55.0, 85.0, bulge1
-# dist = 10000.0, F, 0.0, 1e7, bulge1
-# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
-# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
-# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
-# population = pop_logt9
-# a0 = 1.0, T, 0.1, 3.0, Nucleus
-# N =  1.0, T, 1.0, 4.0, Nucleus
-# q =  0.7, T, 0.5, 0.99, Nucleus
-# M =  1.0, F, 0.00, 0.5, Nucleus
 
-
-[disc1]
+[disc_B3]
 prof = Einasto
 type = stellar
-incl = 89, F, 55.0, 85.0, bulge1
-dist = 10000.0, F, 0.0, 1e7, bulge1
-pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
-cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
-cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_3
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 5.63, T, 2.0, 20.0, disc_B3
+N =  2.7 , T, 0.5, 2.5, disc_B3
+q =  0.1, T, 0.01, 0.3, disc_B3
+M =  1.0 , F, 0.00, 1.5, disc_B3
+
+[disc_B1]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_1
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 5.63, T, 2.0, 20.0, disc_B3
+N =  2.7 , T, 0.5, 2.5, disc_B3
+q =  0.1, T, 0.01, 0.3, disc_B3
+M =  1.0 , F, 0.00, 1.5, disc_B1
+
+[disc_B5]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_5
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 5.63, T, 2.0, 20.0, disc_B3
+N =  2.7 , T, 0.5, 2.5, disc_B3
+q =  0.1, T, 0.01, 0.3, disc_B3
+M =  1.0 , F, 0.00, 1.5, disc_B5
+
+
+#disc _B2 paksust ei fiti, kuna selle j2rgi m22rame kaldenurga... seega olemuselt minimaalselt ohuke, mille votab M31 j2rgi q=0.01
+[disc_B2]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
 population = Blanton_2
-theta0 = 45, F, -90.0, 90.0 bulge1
-a0 = 7.7, T, 5.0, 20.0, disc1
-N  = 1.2, T, 0.5,  2.5, disc1
-q  = 0.17, T, 0.01, 0.2, disc1
-M  = 1.0, F, 0.00, 0.5, disc1
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 5.63, T, 2.0, 20.0, disc_B2
+N =  2.7 , T, 0.5, 2.5, disc_B2
+q =  0.01, F, 0.01, 0.01, disc_B2
+M =  1.0 , F, 0.00, 1.5, disc_B2
 
-
-# [disc2]
-# prof =Einasto
-# type = stellar
-# incl = 75, F, 55.0, 85.0, bulge1
-# dist = 10000.0, F, 0.0, 1e7, bulge1
-# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
-# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
-# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
-# population = pop_logt9
-# a0 = 7.0, T, 5.0, 20.0,  disc2
-# N  = 1.0, T, 0.5,  2.5,  disc2
-# q  = 0.7, T, 0.01, 0.2,  disc2
-# M  = 1.0, F, 0.00, 0.5,  disc2
-#
-# [disc3]
-# prof =Einasto
-# type = stellar
-# incl = 75, F, 55.0, 85.0, bulge1
-# dist = 10000.0, F, 0.0, 1e7, bulge1
-# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
-# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
-# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
-# population = pop_logt10
-# a0 = 7.0, T, 5.0, 20.0,  disc3
-# N  = 1.0, T, 0.5,  2.5,  disc3
-# q  = 0.7, T, 0.01, 0.2,  disc3
-# M  = 1.0, F, 0.00, 0.5,  disc3
-#
-# [halo]
-# prof =Einasto
-# type = stellar
-# incl = 75, F, 55.0, 85.0, bulge1
-# dist = 10000.0, F, 0.0, 1e7, bulge1
-# pos_wrt_phys_coord = 0, F, -90.0, 90.0, bulge1
-# cnt_x = 0, F, -1.0e-3, 1.0e-3, bulge1
-# cnt_y = 0, F, -1.0e-3, 1.0e-3, bulge1
-# population = pop_logt10
-# a0 = 15.0, T, 10,  30.0, halo
-# N  = 1.5,  T, 1.5, 5.0,  halo
-# q  = 0.7 , T, 0.4, 0.99, halo
-# M  = 1.0 , F, 0.00, 0.5, halo
+[disc_B4]
+prof = Einasto
+type = stellar
+incl = 75.2, F, 55.0, 85.0, bulge_B4
+dist = 10000.0, F, 0.0, 1e7, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+cnt_x = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B4
+population = Blanton_4
+theta0 = 45, F, -90.0, 90.0 bulge_B4
+a0 = 5.63, T, 2.0, 20.0, disc_B4
+N =  2.7 , T, 0.5, 2.5, disc_B4
+q =  0.1, T, 0.01, 0.3, disc_B4
+M =  1.0 , F, 0.00, 1.5, disc_B4

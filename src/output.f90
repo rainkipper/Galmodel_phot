@@ -114,29 +114,47 @@ contains
 		implicit none
 		type(comp_input_type), dimension(:), allocatable, intent(inout), target :: input_comps
 		type(image_type), dimension(:), allocatable, intent(in) :: images
-		integer :: i,j, iunit
+		integer :: i,j, iunit, counter
 		iunit = 28
 		open(file = output_ML_file, unit = iunit, action = "write")
 		
-		write(unit=iunit, fmt="(A15)", advance = "no"), "Image"
-		do j=1,size(input_comps)
-			write(unit=iunit, fmt="(A15,A1)", advance = "no"), trim(input_comps(j)%comp_name), " "
-		end do
-		write(unit=iunit, fmt="(A15)", advance = "yes"), ""
-		do i=1,size(images)
-			write(unit=iunit, fmt="(A15)", advance = "no"), trim(images(i)%name)
+		if(allocated(last_ML)) then
+			write(unit=iunit, fmt="(A15)", advance = "no"), "Image"
 			do j=1,size(input_comps)
-				write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), last_ML(i,j), " "
+				write(unit=iunit, fmt="(A15,A1)", advance = "no"), trim(input_comps(j)%comp_name), " "
 			end do
 			write(unit=iunit, fmt="(A15)", advance = "yes"), ""
-		end do
-		do i=1,size(images)
-			write(unit=iunit, fmt="(A15)", advance = "no"), trim(images(i)%name)//"_err"
-			do j=1,size(input_comps)
-				write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), ML_vead(i,j), " "
+			do i=1,size(images)
+				write(unit=iunit, fmt="(A15)", advance = "no"), trim(images(i)%name)
+				do j=1,size(input_comps)
+					write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), last_ML(i,j), " "
+				end do
+				write(unit=iunit, fmt="(A15)", advance = "yes"), ""
 			end do
+			do i=1,size(images)
+				write(unit=iunit, fmt="(A15)", advance = "no"), trim(images(i)%name)//"_err"
+				do j=1,size(input_comps)
+					write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), ML_vead(i,j), " "
+				end do
+				write(unit=iunit, fmt="(A15)", advance = "yes"), ""
+			end do
+		end if
+		
+		counter = 0
+		if(allocated(last_comp_M)) then
+			do j=1,size(input_comps)
+				if(trim(input_comps(j)%comp_type_name) == "stellar") write(unit=iunit, fmt="(A15,A1)", advance = "no"), trim(input_comps(j)%comp_name), " "
+			end do
+			counter = 0
 			write(unit=iunit, fmt="(A15)", advance = "yes"), ""
-		end do
+			
+				do j=1,size(input_comps,1)
+					if(trim(input_comps(j)%comp_type_name) == "stellar") then
+						counter = counter + 1
+						write(unit=iunit, fmt="(E15.8,A1)", advance = "no"), last_comp_M(counter), " "
+					end if
+				end do
+		end if
 		
 		close(unit=iunit)
 	end subroutine output_ML
@@ -157,8 +175,8 @@ contains
 		
 ! 		do i=1,all_comp%N_comp; all_comp%comp(i)%adaptive_image_number = i; end do !numbrite t2itmine
 		
-		select case(mis_fittimise_tyyp)
-		case(2) !ehk componendid ja ML
+! 		select case(mis_fittimise_tyyp)
+! 		case(2) !ehk componendid ja ML
 			LL =  calc_log_likelihood(all_comp, images, v2ljundpildid)
 			if(kas_koik_pildid_samast_vaatlusest) then
 				if(allocated(pilt)) deallocate(pilt)
@@ -174,15 +192,15 @@ contains
 				call write_matrix_to_fits( pilt, images(i)%output_rel_diff_file)
 			end do
 			if(.not.kas_vaikselt) print*, "Final LL was", LL
-		case default
-			print*, "no output available for this type", mis_fittimise_tyyp
-		end select
+! 		case default
+! 			print*, "no output available for this type", mis_fittimise_tyyp
+! 		end select
 		
-		if(via_adaptive_im) then
-			do i=1,all_comp%N_comp
-				if(all_comp%comp(i)%prof_den%kas_3D) call kirjuta_adaptive_image_faili(all_comp%comp(i)%adaptive_image_number, trim(multinest_output_header)//trim(input_comps(i)%comp_name)//"_adaptive_image.txt") 
-			end do
-		end if
+! 		if(via_adaptive_im) then
+! 			do i=1,all_comp%N_comp
+! 				if(all_comp%comp(i)%prof_den%kas_3D) call kirjuta_adaptive_image_faili(all_comp%comp(i)%adaptive_image_number, trim(multinest_output_header)//trim(input_comps(i)%comp_name)//"_adaptive_image.txt")
+! 			end do
+! 		end if
 		
 	end subroutine output_images
 end module output_module

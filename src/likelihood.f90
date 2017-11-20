@@ -19,6 +19,7 @@ module likelihood_module
 	end type masside_arvutamise_tyyp
 	!globaalsed muutujad selle mooduli jaoks
 	real(rk), dimension(:,:), allocatable :: last_ML, ML_vead
+	real(rk), dimension(:), allocatable :: last_comp_M
 	type(comp_image_real_type), dimension(:), allocatable, private :: mudelid  !siin hoitakse mudeli andmeid ... init_log_likelihood juures pannakse paika
 	type(masside_arvutamise_tyyp), dimension(:), allocatable, private :: to_massfit !lihtsustav muutuja
 	real(rk), dimension(:), allocatable, private :: massi_kordajad_eelmine !massi kordajad... globaalne muutuja, et j2rgmine loglike arvutamine oleks hea algl2hend votta
@@ -70,7 +71,8 @@ contains
 		else
 			stop "not implemented in init log likelihood"
 		end if
-		allocate(ML_vead(1:size(images), 1:all_comp%N_comp))
+		if(mis_fittimise_tyyp == 2) allocate(ML_vead(1:size(images), 1:all_comp%N_comp))
+		if(mis_fittimise_tyyp == 1 .or. mis_fittimise_tyyp == 3) allocate(last_comp_M(1:all_comp%N_comp))
 		call cpu_time(alguse_aeg) !lihtsalt arvestamiseks kui palju votab keskmiselt aega LL arvutamine
 		mudelid(:)%recalc_image = .true.
 	end subroutine init_calc_log_likelihood
@@ -341,6 +343,7 @@ contains
 		if(kas_fitib_massid_eraldi) then
 			!lisab kaaludele veel massi kordaja sisemisest fittimisest
 			lisakaalud_massile = fiti_massi_kordajad(to_massfit)
+			last_comp_M = lisakaalud_massile
 			do j=1,all_comp%N_comp
 				weights(:,j) = weights(:,j) * lisakaalud_massile(j) !lisab kaaludesse, et peaks v2hem arvutama
 			end do
@@ -551,8 +554,9 @@ contains
 			do j=1,size(mudelid, 1)
 				if(mudelid(j)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
-! 					call fill_comp_image(all_comp, i, mudelid(i))
-					call fill_comp_image_dustplane(all_comp, j, mudelid(j))
+					!call fill_comp_image(all_comp, i, mudelid(i))
+					!kontrollib, kas midagi juba sarnast arvutatud.. kui on siis if-i sees juba asendatakse 2ra
+					if(.not.kas_sama_juba_arvutatud(j)) call fill_comp_image_dustplane(all_comp, j, mudelid(j)) 
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
 						do i=1,size(images); 
@@ -596,6 +600,7 @@ contains
 		if(kas_fitib_massid_eraldi) then
 			!lisab kaaludele veel massi kordaja sisemisest fittimisest
 			lisakaalud_massile = fiti_massi_kordajad(to_massfit)
+			last_comp_M = lisakaalud_massile !v2ljundi jaoks (lopliku output jaoks) on see koopia
 			do j=1,all_comp%N_comp
 				weights(:,j) = weights(:,j) * lisakaalud_massile(j) !lisab kaaludesse, et peaks v2hem arvutama
 			end do
@@ -640,6 +645,60 @@ contains
 		end do
 		res = res * -0.5
 	contains
+		function kas_sama_juba_arvutatud(id) result(kas_vaste_olemas)
+			!sisuliselt vaatab id j2rgi, kas samade parameetritega komponent on v2iksema id-ga juba olemas.
+			!kui on olemas, siis kopeerib pildid jm oige sisse ning annab vasteks TRUE, muidu FALSE
+			implicit none
+			integer, intent(in) :: id
+			logical :: kas_vaste_olemas
+			logical :: kas_see_on_sama
+			integer :: i, j
+			real(rk) :: par1, par2
+			character(len=*), dimension(1:3), parameter :: E_par_nimed = ["a0", "q", "N"] !struktuuri parameetrid... mass ei kuulu siia
+			
+			!
+			! ========= otsib vastet =========
+			!
+			kas_vaste_olemas = .false. !default vastus, et pole ja koik arvutatakse uuesti
+			if(id == 1 .or. .not.kas_koik_pildid_samast_vaatlusest) return
+			do i=1,id-1
+				kas_see_on_sama = .true.
+				kas_see_on_sama = kas_see_on_sama .and. (abs(all_comp%comp(i)%dist - all_comp%comp(id)%dist)<epsilon(1.0_rk))
+				kas_see_on_sama = kas_see_on_sama .and. (abs(all_comp%comp(i)%pos - all_comp%comp(id)%pos)<epsilon(1.0_rk))
+				kas_see_on_sama = kas_see_on_sama .and. (abs(all_comp%comp(i)%theta0 - all_comp%comp(id)%theta0)<epsilon(1.0_rk))
+				kas_see_on_sama = kas_see_on_sama .and. (abs(all_comp%comp(i)%incl - all_comp%comp(id)%incl)<epsilon(1.0_rk))
+				kas_see_on_sama = kas_see_on_sama .and. (trim(all_comp%comp(i)%comp_prof_name) == trim(all_comp%comp(id)%comp_prof_name))
+				if(.not.kas_see_on_sama) cycle !ehk parameetreid ei kontrolli kui midagi juba nihkes
+				select case(trim(all_comp%comp(i)%comp_prof_name))
+				case("Einasto")
+					do j=1,size(E_par_nimed, 1)
+						call all_comp%comp(i)%prof_den%get_val(E_par_nimed(j), par1)
+						call all_comp%comp(id)%prof_den%get_val(E_par_nimed(j), par2)
+						kas_see_on_sama = kas_see_on_sama .and. abs(par1-par2)<epsilon(1.0_rk)
+					end do
+				case default
+					print*, "Kiirendavat vordsust ei ole, arvutab asju palju uuesti (voibolla)"
+					kas_see_on_sama = .false.
+				end select
+				if(kas_see_on_sama) then
+					kas_vaste_olemas = .true.
+					exit
+				else
+					return !ehk kui vastet pole, siis v2lja subroutine-ist
+				end if
+			end do
+			!
+			! ========== kui vaste olemas, siis kopeerib vajalikud asjad ============
+			!
+			 mudelid(id)%M_p2rast_tasandit = mudelid(i)%M_p2rast_tasandit 
+			 mudelid(id)%M_enne_tasandit = mudelid(i)%M_enne_tasandit 
+			 all_comp%comp(id)%adaptive_im_enne_tasandit = all_comp%comp(i)%adaptive_im_enne_tasandit
+			 all_comp%comp(id)%adaptive_im_p2rast_tasandit = all_comp%comp(i)%adaptive_im_p2rast_tasandit
+			 !nurkade koordinaatide infot pole vaja arvutada kuna pikslid juba arvutatud.
+			 if(.false.) then
+				 mudelid(id)%pix(:,:)%dXc2 = 0.0 !muud koordinaadid oleka ka muidu vaja
+			 end if
+		end function kas_sama_juba_arvutatud
 		function leia_massi_abs_tol(comp, images) result(res)
 			!leiab kauguste, filtrite jm pohjal massi hajuvuse ning korrutab konstandiga, et saada hajumisest t2psus
 			implicit none

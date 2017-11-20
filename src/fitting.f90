@@ -54,7 +54,7 @@ contains
 			if(.not.kas_vaikselt) print*, "Kokku oli LL arvutusi", LL_counter	
 			call output_like_input(input_comps)
 			call output_images(input_comps, images, all_comp)
-			if(mis_fittimise_tyyp == 2) call output_ML(input_comps, images)
+			call output_ML(input_comps, images)
 			
 		contains
 			subroutine read_points_for_amoeba(file_path, res)

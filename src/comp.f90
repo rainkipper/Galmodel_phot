@@ -72,7 +72,7 @@ module comp_module
 		comp%cos_pos = cos(comp%pos)
 		comp%tan_pos = tan(comp%pos)
 		comp%sec_pos = 1.0/comp%cos_pos
-		comp%population_number = get_pop_number_from_name(comp%population_name)
+		if(trim(comp%comp_type_name)== "stellar") comp%population_number = get_pop_number_from_name(comp%population_name)
 	contains
 		function get_pop_number_from_name(pop_name) result(i)
 			integer :: i
