@@ -244,7 +244,7 @@ contains
 		filters(5)%Mag_sun = 4.52_rk
 		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
 ! 		filters(5)%get_tau_kordaja=>get_tau_kordaja
-		
+
 		path = "Populations/"
 		do i=1,N
 			file = repeat(" ", default_character_length); file = trim(path)//trim(filenames(i))
@@ -255,7 +255,8 @@ contains
 			filters(i)%spec%f = mx(:,4)
 		end do
 		
-		
+
+
 
 	end subroutine create_sdss_filters
 end module filters_module

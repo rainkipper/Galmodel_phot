@@ -130,7 +130,7 @@ contains
 			end if
 			do j=1,size(mudelid, 1)
 				call fill_comp_image(all_comp, j, mudelid(j))
-call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fits")
+				call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fits")
 				do i=1,size(images,1)
 					if(kas_rakendab_psf) then
 						call rakenda_psf(mudelid(j)%mx, images(i)%psf, mudelpilt)
@@ -263,7 +263,8 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 			
 		end function leia_hessian_ML_jaoks
 	end function calc_log_likelihood_components
-		
+	
+	
 	function calc_log_likelihood_populations(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
@@ -547,21 +548,21 @@ call write_matrix_to_fits(mudelid(j)%mx, trim(all_comp%comp(j)%comp_name)//".fit
 				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
 				output_images = 0.0 
 			end if
-			do i=1,size(mudelid, 1)
-				if(mudelid(i)%recalc_image) then
+			do j=1,size(mudelid, 1)
+				if(mudelid(j)%recalc_image) then
 		    		!reaalselt vaja yhe korra ainult teha (koord arvutused sisuslielt)...seega mitteoptimaalsus siin  
 ! 					call fill_comp_image(all_comp, i, mudelid(i))
-					call fill_comp_image_dustplane(all_comp, i, mudelid(i))
+					call fill_comp_image_dustplane(all_comp, j, mudelid(j))
 					!kui massid fitib teistest eraldi, siis salvestab massi pildid eraldi
 					if(kas_fitib_massid_eraldi) then
-						do j=1,size(images); 
+						do i=1,size(images); 
 							pop => populations(all_comp%comp(j)%population_number)
-							mudelid(i)%mx = make_lum_image(mudelid(i), images(j)%filter, pop, all_comp%dust_comp(1), all_comp%comp(i)%dist)
+							mudelid(j)%mx = make_lum_image(mudelid(j), images(i)%filter, pop, all_comp%dust_comp(1), all_comp%comp(j)%dist)
 							if(kas_rakendab_psf) then
-								call rakenda_psf(mudelid(i)%mx, images(j)%psf, pilt_psf)
-								to_massfit(j)%M(i,:,:) = pilt_psf
+								call rakenda_psf(mudelid(j)%mx, images(i)%psf, pilt_psf)
+								to_massfit(i)%M(j,:,:) = pilt_psf
 							else
-								to_massfit(j)%M(i,:,:) = mudelid(i)%mx; 
+								to_massfit(i)%M(j,:,:) = mudelid(j)%mx; 
 							end if
 							
 						end do

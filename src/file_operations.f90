@@ -35,16 +35,14 @@ contains
 			ridu = ridu + 1
 			rida = repeat(" ", default_character_length) !m2lu nullimine ymberkasutamiseks
 			read(fmt = "(A)", iostat=ios, unit=iunit) rida
-			print*, trim(rida)
-			print*, ios
 		end do
-		print*, "ridu kokku", ridu, trim(loetav_file)
-		print*, "laius", N, trim(loetav_file)
+! 		print*, "ridu kokku", ridu, trim(loetav_file)
+! 		print*, "laius", N, trim(loetav_file)
 		close(unit = iunit)
 		!
 		! massiiivi asjade lugemine
 		!
-		allocate(res(1:ridu, 1:(N)))
+		allocate(res(1:(ridu-1), 1:(N)))
 		iunit = 41
 		res = 0.0
 		i = 0
@@ -53,11 +51,10 @@ contains
 		do while(ios .ge. 0)
 			i = i+1
 			read(fmt = *, iostat=ios, unit=iunit) res(i,:)
-			print*, i
-			print*, res(i,:)
 		end do
-		stop
-		print*, i
+		
+! 		stop
+		
 		close(unit = iunit)
 		!
 		! ==== populatsiooni muutujate tegemine

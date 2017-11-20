@@ -47,6 +47,6 @@ multinest_efr                           = 0.7 #ehk ei suurenda ruumala puntkide 
 multinest_output_header                 = Output/
 output_fit_file                         = Output/out_parameters.txt
 
-sol_file                                = Populations/solar_standard_spectrum.csv
+sol_file                                = Populations/solar_standard_spectrum.txt
 populations_file                        = Populations/blanton_spec_raw.txt
 filters_file                            = Populations/

@@ -6,7 +6,7 @@ contains
 		implicit none
 		real(rk), intent(in) :: l
 		real(rk) :: mu, res
-		mu = l * 1e-4 !valemid on antud mikronites... vaja angstromides
+		mu = l * 1e-4 !valemid on antud mikronites... sisend angstromides
 		if(mu<0.12 .or. mu>2.20) then
 			res = 0
 		else

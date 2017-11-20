@@ -97,7 +97,7 @@ contains
 				end if
 				par_list%par_name = trim(rida(1:(id2-1)))
 				par_list%par = read_real_par(subrida)
-! print "(A,A,A,A,I)", trim(input_comps(mitmes_comp)%comp_name), ":", trim(par_list%par_name), "->",par_list%par%ref
+! print "(A,A,A,A,I,F10.5)", trim(input_comps(mitmes_comp)%comp_name), ":", trim(par_list%par_name), "->",par_list%par%ref, par_list%par%val
 				par_list%filled = .true.
 				nullify(par_list%next)
 			end select

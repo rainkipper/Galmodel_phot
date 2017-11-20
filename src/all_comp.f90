@@ -80,16 +80,9 @@ contains
 		logical :: kas_recalc !ehk kas on vaja t2ita ymber arvutuste asju
 		integer, dimension(:), allocatable :: input_comps_ref_to_lum_comp_ref, input_comps_ref_to_dust_comp_ref
 		class(comp_type), pointer :: comp_point, kuhu_viited_pannakse
-		
-		
-! 		print*, "test cp1"
-! 		call all_comp%comp(2)%prof_den%get_val("a0",tmp)
-! 		print*, "test", tmp
-				
-				
+			
 		kas_recalc = present(recalc_comp) 
 		
-! 		do i=1,all_comp%N_comp
 		do i=1,size(input_comps,1)
 			call point_to_right_component(i, kuhu_viited_pannakse, input_comps, all_comp)
 			call point_to_right_component(input_comps(i)%incl%ref, comp_point, input_comps, all_comp)
@@ -103,40 +96,11 @@ contains
 			call point_to_right_component(input_comps(i)%theta0%ref, comp_point, input_comps, all_comp)
 			kuhu_viited_pannakse%theta0     = comp_point%theta0
 
-
-
-! 			viide = input_comps(i)%incl%ref
-! 			all_comp%comp(i)%dist      = all_comp%comp(viide)%dist
-! ! 			if(kas_recalc .and. input_comps(viide)%dist%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
-!
-! 			viide = input_comps(i)%cnt_x%ref
-! 			all_comp%comp(i)%cnt_x     = all_comp%comp(viide)%cnt_x
-! ! 			if(kas_recalc .and. input_comps(viide)%cnt_x%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
-!
-! 			viide = input_comps(i)%cnt_y%ref
-! 			all_comp%comp(i)%cnt_y     = all_comp%comp(viide)%cnt_y
-! ! 			if(kas_recalc .and. input_comps(viide)%cnt_y%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
-!
-! 			viide = input_comps(i)%pos%ref
-! 			all_comp%comp(i)%pos       = all_comp%comp(viide)%pos
-! ! 			if(kas_recalc .and. input_comps(viide)%pos%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
-!
-! 			viide = input_comps(i)%theta0%ref
-! 			all_comp%comp(i)%theta0     = all_comp%comp(viide)%theta0
-! ! 			if(kas_recalc .and. input_comps(viide)%theta0%kas_fitib .and.  recalc_comp(viide) ) recalc_comp(i) = .true.
-
 			par_list=>input_comps(i)%prof_pars
 			do while(par_list%filled)
-				
-				!=====V1 toimib ainult kui koik lum komponendid
-! 				call all_comp%comp( par_list%par%ref )%prof_den%get_val(trim(par_list%par_name), tmp) !votab v22rtuse ref jaoks
-! 				call all_comp%comp(i)%prof_den%set_val(trim(par_list%par_name), tmp) !paneb v22rtuse teise kohta paika
-
-				!====V2... toimib mitmekomponendilise systeemiga
 				call point_to_right_component(par_list%par%ref, comp_point, input_comps, all_comp)
 				call comp_point%prof_den%get_val(trim(par_list%par_name), tmp) !votab v22rtuse ref jaoks
 				call kuhu_viited_pannakse%prof_den%set_val(trim(par_list%par_name), tmp) !paneb v22rtuse teise kohta paika
-
 				if(associated(par_list%next)) then
 					par_list => par_list%next
 				else
@@ -159,20 +123,16 @@ contains
 		Nlum = 0; Ndust=0
 		do i=1,input_comp_number
 			select case (trim(input_comps(i)%comp_type_name))
-			case("stellar")
-				Nlum = Nlum + 1
-			case("dust")
-				Ndust = Ndust + 1
+			case("stellar"); Nlum = Nlum + 1
+			case("dust"); Ndust = Ndust + 1
 			case default
 				print*, "unknown type of component in all_comp.f90:", trim(input_comps(i)%comp_type_name)
 				stop 
 			end select
 		end do
 		select case (trim(input_comps(input_comp_number)%comp_type_name))
-		case("stellar")
-			res => all_comp%comp(Nlum)
-		case("dust")
-			res => all_comp%dust_comp(Ndust)
+		case("stellar"); res => all_comp%comp(Nlum)
+		case("dust"); res => all_comp%dust_comp(Ndust)
 		end select
 	end subroutine point_to_right_component
 	subroutine loenda_komponentide_tyypide_arvud(input_comps, Nlum, Ndust)

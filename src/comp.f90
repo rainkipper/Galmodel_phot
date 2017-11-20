@@ -58,9 +58,9 @@ module comp_module
 		implicit none
 		type(comp_type), intent(inout) :: comp
 			if(.true.) then
-				if(comp%incl<1.0e-5 ) print*, "incl vale", comp%incl
+				if(comp%incl<1.0e-5 ) print*, "incl liiga v2ike, s2tib suuremaks", comp%incl
 				if(comp%incl<1.0e-5 ) comp%incl = 1.0e-5
-				if(comp%incl>89.99*pi/180.0) print*, "incl vale", comp%incl
+				if(comp%incl>89.99*pi/180.0) print*, "incl liiga suur... s2tib v2iksemaks", comp%incl
 				if(comp%incl>89.99*pi/180.0) comp%incl = 89.99*pi/180.0
 			end if
 		
@@ -77,8 +77,10 @@ module comp_module
 		function get_pop_number_from_name(pop_name) result(i)
 			integer :: i
 			character(len=default_character_length), intent(in) :: pop_name
-			do i=1,size(populations)
-				if(trim(populations(i)%name) == trim(pop_name)) return
+			do i=1,size(populations, 1)
+				if(trim(populations(i)%name) == trim(pop_name)) then
+					return
+				end if
 			end do
 			print*,  "Err: cannot match the population name with existing populations", trim(pop_name)
 			stop
