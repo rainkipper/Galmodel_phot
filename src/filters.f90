@@ -245,7 +245,7 @@ contains
 		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
 ! 		filters(5)%get_tau_kordaja=>get_tau_kordaja
 
-		path = "Populations/"
+		path = "/Users/rain/Suured_tegemised/Califa_SDSS/Populations/"
 		do i=1,N
 			file = repeat(" ", default_character_length); file = trim(path)//trim(filenames(i))
 			if(allocated(mx)) deallocate(mx); mx = read_tabel(file, 5)

@@ -16,8 +16,11 @@ program gm
 	call cpu_time(t1)
 	call read_constants_and_parameters(input_param_file)
 	call init_lum_dependencies(sol_file_name, populations_file_name) !siin s2titakse filtrid ja tolmu ja populatsioonide spektraaljaotused paika
+	print*, "comp lugemisse"
 	call read_components(input_comp_file, input_comp)
+	print*, "pilte lugema"
 	call read_images_and_filters(input_image_file, images)
+	print*, "to init images"
 	call init_images(images) !peamiselt psf crop		
 	call fit_galaxy(images, input_comp, all_comp)
 	call cpu_time(t2)

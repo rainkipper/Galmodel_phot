@@ -2,7 +2,7 @@ module constants_module
 	implicit none
 	!progemise parameetrid
 	integer, parameter :: rk = kind(1.0d0)
-	integer, parameter :: default_character_length = 128
+	integer, parameter :: default_character_length = 256
 	integer, parameter :: max_prof_par_size = 1000 !ehk kokku fittimise peale tohib olla niipalju parameetreid
 	!yldised konstandid
 	real(rk), parameter :: pi = 4.0_rk*atan(1.0_rk)
