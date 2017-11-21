@@ -561,7 +561,7 @@ contains
 					if(kas_fitib_massid_eraldi) then
 						do i=1,size(images); 
 							pop => populations(all_comp%comp(j)%population_number)
-							mudelid(j)%mx = make_lum_image(mudelid(j), images(i)%filter, pop, all_comp%dust_comp(1), all_comp%comp(j)%dist)
+							mudelid(j)%mx = make_lum_image(mudelid(j), images(i)%filter, pop, all_comp%dust_comp(1), all_comp%comp(j)%dist, all_comp%comp(j)%comp_name)
 							if(kas_rakendab_psf) then
 								call rakenda_psf(mudelid(j)%mx, images(i)%psf, pilt_psf)
 								to_massfit(i)%M(j,:,:) = pilt_psf

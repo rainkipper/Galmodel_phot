@@ -47,12 +47,13 @@ contains
 		res = 0.0
 	end function ML_abil_image
 	
-	function population_dust_image(comp_im, filter, pop, dust, dist) result(res)
+	function population_dust_image(comp_im, filter, pop, dust, dist, comp_nimi) result(res)
 		implicit none
 		type(comp_image_real_type), intent(in) :: comp_im
 		class(comp_type), intent(in) :: dust
 		type(filter_type), intent(in) :: filter
 		type(population_type), intent(in) :: pop
+		character(len=default_character_length), intent(in), optional :: comp_nimi
 		real(rk) :: tau0, tau
 		real(rk), intent(in) :: dist
 		real(rk) :: ML
@@ -86,7 +87,7 @@ contains
 		sollum = lainepikkuse_dl * sum(interpolate_1D(sol_spec, lainepikkus) * interpolate_1D(filter%spec, lainepikkus)) !tavaline Riemanni integraal
 		dustlesslum = lainepikkuse_dl * sum(interpolate_1D(pop%spec, lainepikkus) * interpolate_1D(filter%spec, lainepikkus))
 		!kui tahta mingit muud tolmu varianti panna (sh 2mikroni feature-ga), siis see tuleks panna j2rgneva rea peale exp alla.
-		dustylum = lainepikkuse_dl * sum((interpolate_1D(pop%spec, lainepikkus)) * interpolate_1D(filter%spec, lainepikkus) * exp(-abs(tau)*dust_kappa(lainepikkus)))
+		dustylum = lainepikkuse_dl * sum((interpolate_1D(pop%spec, lainepikkus)) * interpolate_1D(filter%spec, lainepikkus) * exp(-abs(tau)*dust_kappa(lainepikkus))) 
 ! 		print*, "sol spec", sol_spec%x(20), sol_spec%f(20)
 ! 		print*, "sol na", count(isnan(interpolate_1D(sol_spec, lainepikkus))), sum((interpolate_1D(sol_spec, lainepikkus)))
 ! 		print*, "tau na", count(isnan(exp(-abs(tau0)*dust_kappa(lainepikkus)))), sum(exp(-abs(tau0)*dust_kappa(lainepikkus)))
@@ -116,6 +117,10 @@ contains
 		if(count(isnan(res))>0) then
 			print "(A,A,A,A)", "Tekkisid mingid NA-d (filt, pop):", trim(filter%name), " ", trim(pop%name)
 		end if
+		if(present(comp_nimi)) then
+			call write_matrix_to_fits(res, "Output/comp_im_"//trim(comp_nimi)//"_"//trim(filter%name)//".fits")
+		end if
+		
 ! 		print*, "ML", ML_tolmuta, ML_tolmuga
 ! 		print*, "CP inf"
 	end function population_dust_image

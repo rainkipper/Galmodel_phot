@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage[colorlinks=true]{hyperref}
+
+\begin{document}
+	\section{Yhikud} % (fold)
+	\label{sec:yhikud}
+	\begin{tabular}{llll}
+		Suurus & input yhik & Sisemine yhik & olemus\\
+		\hline
+		$X_i$, $Y_i$ & pix & pix & sisuliselt reaalarvuline piksli koordinaat maatriksil\\
+		$X_p$, $Y_p$ & arcsec & radiaan & piltide omavahelise yhendamise koordinaadistiks\\
+		$X_c$, $Y_c$ & kpc & kpc & komponendi koordinaadid, mis viidud juba kaugele\\
+		$d$ & kpc & kpc & komponendi kaugus meist\\
+		$Rz$ & kpc & kpc & profiili koordinaadid \\
+		$\theta$ & deg & rad & nurk silindrilistest koordinaatides\\
+	\end{tabular}
+	% section yhikud (end)
+	
+	
+	
+	
+	\section{Kokkulepped} % (fold)
+	\label{sec:kokkulepped}
+	\begin{enumerate}
+		\item Profiili yks parameetritest on alati $M$, mis korreleerub 1:1 heledusega... selle abil skaleerin komponendi piltide omavahelist kokkupanekut
+		\item Model-image on moeldud ainult yhe komponendi pildina... ehk siis model-image-id on kokku piltide arv * komponentide arv
+		\item piksli koordinaat on piksli keskkoha koordinaat
+		\item kui voetakse teise komp oma, siis tuleb otse viidata, mitte kolmandate kaudu (ehk $1->2$ mitte $1->3$ $3->2$)
+		\item Kui maski v22rtus $>0.5$, siis kasutatakse fittimisel
+		\item esialgu on koik sisend uniform prior
+		\item tab t2ht on keelatud sisendi faili panemisel enne/p2rast vordusm2rke
+		\item eeldab, et koik vead on juba sigampildis... sky noise (ehk kui t2pselt mudelpilte arvutatakse), votab minimaalse sigmapildi v22rtuse. Kui ongi sisendis, siis kirjutatakse yle
+		\item pildi pealt on nurgad alates x teljest ning p2rip2eva
+		\item kui on palju komponente tolmuga pildil, siis ei saa neid fittida korraga.
+		\item tolmu fittides $\tau$ on face-on peale korrigeeritud... et priorid oleks inimlikumad ja suurus vorreldavam
+	\end{enumerate}
+	\begin{equation}
+		L\left[ 10^{10}L_\odot \right] = N\cdot10^{\left[ 0.4(\mathrm{ZP}-M_\odot) -6 + 2\log(d[\mathrm{kpc}]) \right]}
+	\end{equation}
+	% section kokkulepped (end)
+	
+	\section{Varia} % (fold)
+	\label{sec:varia}
+	
+	SSP andmed said voetud \href{http://www.bruzual.org/bc03/Updated_version_2016/}{Bruzual-Charlot} omad.
+	
+	N2idisgalaktika on TKRS 5661, mille punanihe 0.528501 lum dist 2936Mpc
+	
+	Kui massipildid olemas, siis sisemiselt arvutab massi kordajad (ehk 1 lisa fittimise aste) miinimimi liikumisega. Kuna 1. ja 2. tuletis lihtne defineerida, siis veidi peenem roomaja (Newtoni meetod). Et hoida massid positiivsena, siis (inequality) Lagrange multiplier puhul log barrier term, kus lambda kordaja (testitud, et leiab sama miinimumi pea soltumata algtingimustest). Kui kasutatakse, siis ignoreeritakse massile pandud piiranguid. 
+	
+	
+	\begin{equation}
+		N = L\left[ 10^{10}L_\odot \right] \cdot 10^{\left[ 0.4(\mathrm{ZP}-M_\odot) +6 - 2\log(d[\mathrm{kpc}]) \right]},
+	\end{equation}
+	kus $d$ on heleduskaugus
+	
+	T2isnurkse vordkylgse kolmnurga integraal (kasutatakse rekrusiivselt piksli t2itmisel):
+	\begin{equation}
+		F = \frac{\Delta x^2}{6}(f_0+f_x+f_y),
+	\end{equation}
+	kus $f_0$ on t2isnurga nurga v22rtus, ylej22nud $f$ on teravnurkade v22rtus
+	
+	
+	
+	
+	
+	\section{TODO} % (fold)
+	\label{sec:todo}
+	\begin{enumerate}
+		\item Kui mitme kompnendi vahelist seost vaja ning komponendid nihkes yksteiseset, siis tuleb koik info sisse anda phys koordinaatides ning teisendada igal komponendil eraldi.... aeganoudev
+		\item PSF
+		\item loglike juurde eraldi masside fittimine, mis eraldab masside fittimise multinesti fittimisest.
+		\item yhikute kordaja igal komponendil erinev
+	\end{enumerate}
+	
+	\section{Varia}
+	\begin{enumerate}
+		\item Kui on kasutuses 2D profiilid (nt varva jaoks), siis nende korral ei kasuta adaptiivset pilti
+		\item Kui lisada profiile, siis tuleb profiil ise teha profiles kausta, lisada profile-collector-isse ningn 2ra tundmiseks ka all-comp faili.
+		\item psf fourier kaudu ja toore jouga on mikro erinevused (0.5\% keskmiselt, aga kuni moni protsent). Toores joud peaks olema t2psem (silma j2rgi psf kast oli paremini tuvastatav ja mittesilutud). Kiiruse osas kui pilt on 100*100, siis kiirused eri meetoditel on vordsed kui psf suurus on 37*37 - muidu toores joud kiirem.
+	\end{enumerate}
+	% section todo (end)
+\end{document}

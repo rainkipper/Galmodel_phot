@@ -30,3 +30,8 @@ Prof/pgopti.dpi.lock
 tmp.txt
 Logi/papers.eml
 *.eml
+notes.aux
+.notes.lb
+notes.log
+notes.out
+notes.synctex.gz

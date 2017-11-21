@@ -65,7 +65,8 @@ module adaptive_image_real_module
 			!variant 4 muutujad
 			real(rk) :: wikia(3), wikib(3), wikic(3), wikid(3), lin_a, lin_b, lin_c
 			logical :: prk1, prk2
-			if(abs(Xc) > adaptive_image_x1_default .or. abs(Yc)>adaptive_image_x1_default) then
+			if(abs(Xc) > adaptive_image_x1_default .or. abs(Yc)>adaptive_image_y1_default) then
+				!ehk kui piirkonnast v2ljas, siis interpoleerib
 				res = 0.0
 				return
 			end if
