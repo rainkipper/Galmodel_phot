@@ -105,6 +105,7 @@ contains
 ! 		print*, "tau = ", tau, tau0
 		ML_tolmuta = 1.0/(dustlesslum/sollum) !mass on 1
 		ML_tolmuga = 1.0/(dustylum/sollum)
+! 		print*, "ML_tolmu(g/t)a", ML_tolmuga, ML_tolmuta
 		!
 		! pildi peale rakendamine
 		!

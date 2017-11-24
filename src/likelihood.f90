@@ -384,7 +384,8 @@ contains
 			! ======== loglike ise ========
 			!
 			if(present(output_images)) output_images(i,:,:) = pilt
-			res = res + sum((pilt-images(i)%obs)**2/images(i)%sigma**2, images(i)%mask) 
+			pilt = (pilt-images(i)%obs)/images(i)%sigma; pilt = pilt * pilt  !kiirem meetod kui ruutu kasutada
+			res = res + sum(pilt, images(i)%mask) 
 		end do
 		res = res * -0.5
 	contains
@@ -568,7 +569,6 @@ contains
 							else
 								to_massfit(i)%M(:,:,j) = mudelid(j)%mx; 
 							end if
-							
 						end do
 					end if
 				end if

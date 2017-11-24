@@ -35,6 +35,10 @@ contains
 		end function los
 	end function integreerimine_los
 	
+	
+	
+	
+	
 	function integreerimine_los_dustplane(ruum_ptr, comp, Xc, Yc, lopmatus, kas_enne_tasandit) result(res)
 		implicit none
 		interface

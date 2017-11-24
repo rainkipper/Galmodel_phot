@@ -57,7 +57,7 @@ contains
 
 		via_ci = via_adaptive_im
 		via_ci = via_ci .and. all_comp%comp(comp_nr)%prof_den%kas_3D !ehk kui on 2D prof, siis ei kasuta kunagi adaptiivset pilti.
-		kas_Einasto_approx = via_ci .and. (mis_fittimise_tyyp == 1 .or. mis_fittimise_tyyp == 2) !ehk tolmu ei kasuta
+		kas_Einasto_approx = via_ci .and. trim(all_comp%comp(comp_nr)%comp_prof_name)=="Einasto" !ehk tolmu ei kasuta
 	
 		!valitakse, milline funktsioon arvutamiseks
 		ruum_ptr => tihedus 
@@ -89,8 +89,8 @@ contains
 		end if
 
 	
-		call fill_corners_exact(mdl, f_ptr_otse, f_ptr); ! print*, "Exact"
-	! 	call fill_corners(mdl, f_ptr_otse, f_ptr); !print*, "optimaalne"!
+		call fill_corners(mdl, f_ptr_otse, f_ptr); ! print*, "Exact"
+! 		call fill_corners(mdl, f_ptr_otse, f_ptr); !print*, "optimaalne"!
 	
 	
 		!
@@ -161,6 +161,8 @@ contains
 		integer :: comp_nr !millist komponenti arvutatakse
 		type(comp_image_real_type), intent(inout) :: mdl
 		logical :: kas_enne_tasandit
+		logical :: kas_Einasto_approx
+		real(rk) :: Einasto_q_par
 
 	! 	real(rk) :: test1, test2
 		interface
@@ -200,11 +202,14 @@ contains
 		!
 		! ============= valib, kas kasutab kiirendamiseks adaptive_im arvutust ====================
 		!
-
 		via_ci = via_adaptive_im
 		via_ci = via_ci .and. all_comp%comp(comp_nr)%prof_den%kas_3D !ehk kui on 2D prof, siis ei kasuta kunagi adaptiivset pilti.
-
-	
+		kas_Einasto_approx = via_ci .and. trim(all_comp%comp(comp_nr)%comp_prof_name)=="Einasto"
+		if(kas_Einasto_approx) then
+			call fill_comp_image(all_comp, comp_nr, mdl) !ehk sisuliselt t2idetakse kogu vaatejoon 2ra ning lahutatakse p2rast pool vaatejoont
+			mdl%M_p2rast_tasandit = mdl%mx !kohat2itja, et hiljem saaks ymber kasutada muid asju... tyytu erand
+		end if
+		
 		!valitakse, milline funktsioon arvutamiseks
 		ruum_ptr => tihedus 
 	
@@ -219,53 +224,62 @@ contains
 			f_ptr => surface
 			f_ptr_otse => surface !valib ikkai teise otse, et siseosad oleks t2psemad
 		end if
-	
 		!  lisamehanismid kui on soov arvutada adaptive_im kaudu
 		if(via_ci) then
+			if(.not.kas_Einasto_approx) then
+				kas_enne_tasandit = .false.
+				call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_im_p2rast_tasandit, all_comp%comp(comp_nr)%mass_abs_tol)
+				call get_pointer_to_adaptive_image_number_X(adaptive_im_p2rast, all_comp%comp(comp_nr)%adaptive_im_p2rast_tasandit)
+			end if
 			kas_enne_tasandit = .true.
 			call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_im_enne_tasandit, all_comp%comp(comp_nr)%mass_abs_tol)
-			kas_enne_tasandit = .false.
-			call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_im_p2rast_tasandit, all_comp%comp(comp_nr)%mass_abs_tol)
 			call get_pointer_to_adaptive_image_number_X(adaptive_im_enne, all_comp%comp(comp_nr)%adaptive_im_enne_tasandit)
-			call get_pointer_to_adaptive_image_number_X(adaptive_im_p2rast, all_comp%comp(comp_nr)%adaptive_im_p2rast_tasandit)
 			f_ptr => vota_adaptive_im_pilt
 		end if
-
 	
 		!
 		! ======== siin t2idetakse mudelpildi enne ja p2rast tasandit eraldi... tauga korrutamine ning kokku panemine on hiljem.
 		!
+		
 		kas_enne_tasandit = .true.;
-		call fill_corners(mdl, f_ptr_otse, f_ptr);
+		call fill_corners(mdl, f_ptr_otse, f_ptr);  !ehk kui Einasto l2hend, siis juba nurgad t2idetud 
 		do j= 1,size(mdl%mx, 2)
 		do i= 1,size(mdl%mx, 1)
 			if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then
-				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
+				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol) !otse enne massiivi ei saa t2ita, sest nurgad t2idetud adaptive image vale asjaga
 			else
 				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr_otse, all_comp%comp(comp_nr)%mass_abs_tol)
 			end if
 		end do
 		end do
-		mdl%M_enne_tasandit = mdl%mx
-		kas_enne_tasandit = .false.; 
-		call fill_corners(mdl, f_ptr_otse, f_ptr); 
-		do j= 1,size(mdl%mx, 2)
-		do i= 1,size(mdl%mx, 1)
-			if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then
-				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
-			else
-				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr_otse, all_comp%comp(comp_nr)%mass_abs_tol)
-			end if
-		end do
-		end do
-		mdl%M_p2rast_tasandit = mdl%mx
-
+		mdl%M_enne_tasandit = mdl%mx 
+		mdl%mx = mdl%M_p2rast_tasandit
+		!vastavalt sellele, kas on Einasto l2hend saab arvutada p2rast tasandit v22rtused lihtsalt voi keeruliselt
+		if(.not.kas_Einasto_approx) then
+			kas_enne_tasandit = .false.;
+			call fill_corners(mdl, f_ptr_otse, f_ptr);
+			do j= 1,size(mdl%mx, 2)
+			do i= 1,size(mdl%mx, 1)
+				if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then
+					mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
+				else
+					mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr_otse, all_comp%comp(comp_nr)%mass_abs_tol)
+				end if
+			end do
+			end do
+			mdl%M_p2rast_tasandit = mdl%mx
+		else
+			mdl%M_p2rast_tasandit = mdl%mx - mdl%M_enne_tasandit !ehk integreerimise rajadega m2ngides saab kiiremini
+! 			print*, sum(mdl%mx), sum(mdl%M_p2rast_tasandit), sum(mdl%M_enne_tasandit)
+		end if
+		
+		!m2lu korrastamine igaks juhuks
 		if(associated(f_ptr)) nullify(f_ptr)
 		if(associated(f_ptr_enne)) nullify(f_ptr_enne)
 		if(associated(f_ptr_p2rast)) nullify(f_ptr_p2rast)
 		if(associated(ruum_ptr)) nullify(ruum_ptr)
 	contains
-	
+		
 		function vota_adaptive_im_pilt(Xc, Yc) result(res)
 			implicit none
 			real(rk), intent(in) :: Xc, Yc

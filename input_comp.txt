@@ -77,7 +77,7 @@ pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
 cnt_x = 0, F, -9.0, 9.0, bulge_B4
 cnt_y = 0, F, -9.0, 9.0, bulge_B4
 theta0 = 45, F, -90.0, 90.0 bulge_B4
-tau0 = 0.1, T, -5.0, 5.0 tolm
+tau0 = 10.0, T, -5.0, 5.0 tolm
 M =  1.0 , F, 0.00, 0.5, tolm
 
 
@@ -93,7 +93,7 @@ population = Blanton_3
 theta0 = 45, F, -90.0, 90.0 bulge_B4
 a0 = 5.63, T, 2.0, 20.0, disc_B3
 N =  2.7 , T, 0.5, 2.5, disc_B3
-q =  0.1, T, 0.01, 0.3, disc_B3
+q =  0.2, T, 0.01, 0.3, disc_B3
 M =  1.0 , F, 0.00, 1.5, disc_B3
 
 [disc_B1]
@@ -108,7 +108,7 @@ population = Blanton_1
 theta0 = 45, F, -90.0, 90.0 bulge_B4
 a0 = 5.63, T, 2.0, 20.0, disc_B3
 N =  2.7 , T, 0.5, 2.5, disc_B3
-q =  0.1, T, 0.01, 0.3, disc_B3
+q =  0.2, T, 0.01, 0.3, disc_B3
 M =  1.0 , F, 0.00, 1.5, disc_B1
 
 [disc_B5]
@@ -123,7 +123,7 @@ population = Blanton_5
 theta0 = 45, F, -90.0, 90.0 bulge_B4
 a0 = 5.63, T, 2.0, 20.0, disc_B3
 N =  2.7 , T, 0.5, 2.5, disc_B3
-q =  0.1, T, 0.01, 0.3, disc_B3
+q =  0.2, T, 0.01, 0.3, disc_B3
 M =  1.0 , F, 0.00, 1.5, disc_B5
 
 
@@ -155,5 +155,5 @@ population = Blanton_4
 theta0 = 45, F, -90.0, 90.0 bulge_B4
 a0 = 5.63, T, 2.0, 20.0, disc_B4
 N =  2.7 , T, 0.5, 2.5, disc_B4
-q =  0.1, T, 0.01, 0.3, disc_B4
+q =  0.2, T, 0.01, 0.3, disc_B4
 M =  1.0 , F, 0.00, 1.5, disc_B4

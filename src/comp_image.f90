@@ -34,8 +34,8 @@ contains
 		Nx = size(im%obs, 1); Ny = size(im%obs, 2)
 		if(.not.allocated(mdl%pix)) allocate(mdl%pix(1:Nx, 1:Ny))
 		if(.not.allocated(mdl%mx)) allocate(mdl%mx(1:Nx, 1:Ny))
-		if(.not.allocated(mdl%mx)) allocate(mdl%M_enne_tasandit(1:Nx, 1:Ny))
-		if(.not.allocated(mdl%mx)) allocate(mdl%M_p2rast_tasandit(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%M_enne_tasandit)) allocate(mdl%M_enne_tasandit(1:Nx, 1:Ny))
+		if(.not.allocated(mdl%M_p2rast_tasandit)) allocate(mdl%M_p2rast_tasandit(1:Nx, 1:Ny))
 		mdl%recalc_image = .true. !ehk see koige algsem ning midagi pole veel arvutatud
 		mdl%recalc_XcYc_coords = .true.
 		mdl%corresponding_adaptive_im = -1 !ehk pole
@@ -95,14 +95,14 @@ contains
 		!servad k2sitsi yle teha
 		do i=1,Nx
 			do nurk = 1, 4
-				mdl%pix(i, 1)%val_nurgad(nurk) = func_approx(mdl%pix(i, 1)%Xc_nurgad(nurk), mdl%pix(i, 1)%Xc_nurgad(nurk))
-				mdl%pix(i, Ny)%val_nurgad(nurk) = func_approx(mdl%pix(i, Ny)%Xc_nurgad(nurk), mdl%pix(i, Ny)%Xc_nurgad(nurk))
+				mdl%pix(i, 1)%val_nurgad(nurk) = func_approx(mdl%pix(i, 1)%Xc_nurgad(nurk), mdl%pix(i, 1)%Yc_nurgad(nurk))
+				mdl%pix(i, Ny)%val_nurgad(nurk) = func_approx(mdl%pix(i, Ny)%Xc_nurgad(nurk), mdl%pix(i, Ny)%Yc_nurgad(nurk))
 			end do
 		end do
 		do j=1,Ny
 			do nurk = 1,4
-				mdl%pix(1, j)%val_nurgad(nurk) = func_approx(mdl%pix(1, j)%Xc_nurgad(nurk), mdl%pix(1, j)%Xc_nurgad(nurk))
-				mdl%pix(Nx, j)%val_nurgad(nurk) = func_approx(mdl%pix(Nx, j)%Xc_nurgad(nurk), mdl%pix(Nx, j)%Xc_nurgad(nurk))
+				mdl%pix(1, j)%val_nurgad(nurk) = func_approx(mdl%pix(1, j)%Xc_nurgad(nurk), mdl%pix(1, j)%Yc_nurgad(nurk))
+				mdl%pix(Nx, j)%val_nurgad(nurk) = func_approx(mdl%pix(Nx, j)%Xc_nurgad(nurk), mdl%pix(Nx, j)%Yc_nurgad(nurk))
 			end do
 		end do
 	end subroutine fill_corners
