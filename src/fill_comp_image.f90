@@ -4,7 +4,9 @@ module fill_comp_image_module
 	use all_comp_module
 	use adaptive_image_real_module
 	use los_real_integration_module
+	use approx_Einasto_module
 	integer, save :: countersees=0, counterv2ljas=0
+
 contains
 
 	subroutine fill_comp_image(all_comp, comp_nr, mdl)
@@ -13,7 +15,8 @@ contains
 		type(all_comp_type), intent(inout) :: all_comp !out osa ainult adaptive_im numbri jaoks
 		integer :: comp_nr !millist komponenti arvutatakse
 		type(comp_image_real_type), intent(inout) :: mdl
-
+		logical :: kas_Einasto_approx
+		real(rk) :: Einasto_q_par
 	! 	real(rk) :: test1, test2
 		interface
 			function pind(Xc, Yc) result(res)
@@ -54,7 +57,7 @@ contains
 
 		via_ci = via_adaptive_im
 		via_ci = via_ci .and. all_comp%comp(comp_nr)%prof_den%kas_3D !ehk kui on 2D prof, siis ei kasuta kunagi adaptiivset pilti.
-
+		kas_Einasto_approx = via_ci .and. (mis_fittimise_tyyp == 1 .or. mis_fittimise_tyyp == 2) !ehk tolmu ei kasuta
 	
 		!valitakse, milline funktsioon arvutamiseks
 		ruum_ptr => tihedus 
@@ -73,9 +76,16 @@ contains
 	
 		!  lisamehanismid kui on soov arvutada adaptive_im kaudu
 		if(via_ci) then
-			call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_image_number, all_comp%comp(comp_nr)%mass_abs_tol)
-			call get_pointer_to_adaptive_image_number_X(adaptive_im, all_comp%comp(comp_nr)%adaptive_image_number)
-			f_ptr => vota_adaptive_im_pilt
+			if(kas_Einasto_approx) then
+				call all_comp%comp(comp_nr)%prof_den%get_val("q", Einasto_q_par)
+				call fill_approx_Einasto(f_ptr, all_comp%comp(comp_nr)%incl, Einasto_q_par)
+				f_ptr => approx_1D_Einasto
+			else
+				call fill_adaptive_image_real(f_ptr, all_comp%comp(comp_nr)%adaptive_image_number, all_comp%comp(comp_nr)%mass_abs_tol)
+				call get_pointer_to_adaptive_image_number_X(adaptive_im, all_comp%comp(comp_nr)%adaptive_image_number)
+				f_ptr => vota_adaptive_im_pilt
+			end if
+
 		end if
 
 	
@@ -88,8 +98,6 @@ contains
 		!
 		do j= 1,size(mdl%mx, 2)
 		do i= 1,size(mdl%mx, 1)
-	! 	do j= 150,150
-	! 	do i= 150,150
 			if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then
 				mdl%mx(i,j) = mdl%pix(i,j)%get_val(f_ptr, all_comp%comp(comp_nr)%mass_abs_tol)
 			else
@@ -97,15 +105,19 @@ contains
 			end if
 		end do
 		end do
-	! print*, mdl%mx(150,150), "oige on 0.0619"
-	! stop
-	! 	print*, "sees", countersees
-	! 	print*, "v2ljas", counterv2ljas
-	! 	print*, "fill_comp_image", all_comp%comp(1)%sec_incl,all_comp%comp(1)%incl, sum(mdl%mx)
+
 		if(associated(f_ptr)) nullify(f_ptr)
 		if(associated(ruum_ptr)) nullify(ruum_ptr)
+		if(kas_Einasto_approx) call delete_approx_Einasto() !m2lu nullimiseks
 	contains
-	
+		function approx_1D_Einasto(Xc, Yc) result(res)
+			implicit none
+			real(rk), intent(in) :: Xc, Yc
+			real(rk) :: res
+			real(rk) :: A
+			res = otsi_approx_Einasto(Xc, Yc)
+		end function approx_1D_Einasto
+		
 		function vota_adaptive_im_pilt(Xc, Yc) result(res)
 			implicit none
 			real(rk), intent(in) :: Xc, Yc

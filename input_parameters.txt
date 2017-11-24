@@ -2,7 +2,7 @@
 # ============ parameetrid, mis iseloomustavad, mida t2pselt programm teeb
 #
 mis_fittimise_algoritm                  = 0 #0=output, 1=multinest, 2=amoeba, 3=multinest+amoeba, 4=amoeba mineviku MN-st, 5=omalooming
-mis_fittimise_tyyp                      = 1 #1=populatsioonid ja massid, 2 = komponendid ja M/L, 3 = populatsioonid ja massid tolmuga
+mis_fittimise_tyyp                      = 2 #1=populatsioonid ja massid, 2 = komponendid ja M/L, 3 = populatsioonid ja massid tolmuga
 # kas_los                                 = .true.
 kas_rakendab_psf                        = .true. 
 kas_vaikselt                            = .false.

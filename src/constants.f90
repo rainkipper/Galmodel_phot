@@ -125,12 +125,11 @@ contains
 			case("adaptive_image_minlevel"); read(subrida, fmt=*) adaptive_image_minlevel                 
 			case("adaptive_image_edasijagamise_threshold"); read(subrida, fmt=*) adaptive_image_edasijagamise_threshold  
 			case("adaptive_image_min_spatial_resolution"); read(subrida, fmt=*) adaptive_image_min_spatial_resolution   
-			case(" mis_fittimise_algoritm"); read(subrida, fmt=*)  mis_fittimise_algoritm
+			case("mis_fittimise_algoritm"); read(subrida, fmt=*)  mis_fittimise_algoritm
 			case("massi_fiti_lambda"); read(subrida, fmt=*) massi_fiti_lambda
 			case("massi_fittimise_hyppe_kordaja"); read(subrida, fmt=*) massi_fittimise_hyppe_kordaja
 			case("amoeba_fractional_tolerance"); read(subrida, fmt=*) amoeba_fractional_tolerance
 			case("mis_fittimise_tyyp"); read(subrida, fmt=*) mis_fittimise_tyyp
-			case("mis_fittimise_algoritm"); read(subrida, fmt=*) mis_fittimise_algoritm
 			case("default_los_kauguse_piir"); read(subrida, fmt=*) default_los_kauguse_piir
 			case("abs_tol_kordaja"); read(subrida, fmt=*) abs_tol_kordaja
 			case("adaptive_image_dist_piirang"); read(subrida, fmt=*) adaptive_image_dist_piirang
