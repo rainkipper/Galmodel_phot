@@ -10,9 +10,9 @@ _OBJ = program.o fitting.o fitting_omalooming.o fitting_amoeba.o fitting_multine
 OBJ = $(_OBJ)
 
 # -module $(OBJ_DIR)
-FLAGS = -O2 -lcfitsio -lnest3 -llapack
+# FLAGS = -O2 -lcfitsio -lnest3 -llapack
 # FLAGS = -lcfitsio -lnest3 -llapack -g -O0 -error-limit 10 -warn all
-# FLAGS = -O2 -lcfitsio -lnest3 -llapack -prof-use -profile-loops=all -profile-loops-report=2 -prof-dir Prof
+FLAGS = -O2 -lcfitsio -lnest3 -llapack -prof-use -profile-loops=all -profile-loops-report=2 -prof-dir Prof
 # FLAGS = -O2 -lcfitsio -lnest3 -llapack -prof-gen -profile-loops-report=2 -prof-dir Prof
 
 

@@ -12,6 +12,9 @@ module prof_Einasto_module
 		real(rk) :: k
 		real(rk) :: h
 		real(rk) :: inv_N
+		real(rk) :: inv_q2
+		real(rk) :: inv_2N
+		real(rk) :: x0
 	contains
 		procedure :: init_profile 	=> init_prof_Einasto
 		procedure :: fun_den 		=> fun_den_Einasto
@@ -68,10 +71,13 @@ contains
 		real(rk), intent(in) 				:: R,z
 		real(rk), intent(in), optional		:: theta
 		real(rk) 							:: res
-		real(rk)							:: a
+		real(rk)							:: a, x
 		if(present(theta) .or. .not.present(theta)) then
-			a = sqrt(R**2 + (z/prof%q)**2)
-			res =  prof%rho0 * exp(-1.0*(a/(prof%k*prof%a0))**(1/prof%N))
+! 			a = sqrt(R**2 + (z/prof%q)**2)
+! 			res =  prof%rho0 * exp(-1.0*(-a*prof%inv_ka0)**prof%inv_2N)
+			x = (R*R + z*z*prof%inv_q2)**prof%inv_2N
+			res = prof%rho0 * exp(x * prof%x0)
+ 
 		end if
 	end function fun_den_Einasto
 	subroutine init_prof_Einasto(prof)
@@ -91,6 +97,9 @@ contains
 		prof%h = gamma(3*prof%N)**2 / (prof%N * gamma(2*prof%N)**3)
 		prof%k = gamma(2*prof%N)/gamma(3*prof%N)
 		prof%rho0 = prof%h * prof%M / (4*pi*prof%q * prof%a0**3)
+		prof%inv_q2 = 1.0/(prof%q**2)
+		prof%inv_2N = 0.5/prof%N
+		prof%x0 = -1.0*(1.0/(prof%k * prof%a0))**(1.0/prof%N)
 ! 		prof%dN = 0.0/0.0
 ! 		prof%M = 1.0_rk
 ! 		print*, "TODO: edasi t2ita prof"

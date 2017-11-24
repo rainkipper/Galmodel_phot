@@ -15,7 +15,7 @@ module all_comp_module
 	
 ! 	private type(all_comp_type) :: all_comp
 	
-contains
+contains 
 	!function fun_all_potential
 	!function fun_all_den
 	!function fun_dpot_dR

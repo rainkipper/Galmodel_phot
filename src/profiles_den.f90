@@ -1,6 +1,6 @@
 module profiles_den
 	use constants_module
-	
+	 
 	
 	type :: prof_den_base_type !this will be extended to more suitable profile ... e.g. Einasto
 		logical :: kas_3D = .false. !ehk kas tuleb yle vaatejoone integreerida
