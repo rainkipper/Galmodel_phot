@@ -62,7 +62,7 @@ contains
 				if(.not.allocated(to_massfit(i)%w)) allocate(to_massfit(i)%w(1:all_comp%N_comp))
 				if(.not.allocated(to_massfit(i)%I)) allocate(to_massfit(i)%I(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				if(.not.allocated(to_massfit(i)%mask)) allocate(to_massfit(i)%mask(1:size(images(i)%obs,1), size(images(i)%obs,2)))
-				if(.not.allocated(to_massfit(i)%M)) allocate(to_massfit(i)%M(1:all_comp%N_comp, 1:size(images(i)%obs,1), size(images(i)%obs,2)))
+				if(.not.allocated(to_massfit(i)%M)) allocate(to_massfit(i)%M(1:size(images(i)%obs,1), size(images(i)%obs,2), 1:all_comp%N_comp))
 				if(.not.allocated(to_massfit(i)%inv_sigma2)) allocate(to_massfit(i)%inv_sigma2(1:size(images(i)%obs,1), size(images(i)%obs,2)))
 				to_massfit(i)%I = images(i)%obs
 				to_massfit(i)%mask = images(i)%mask
@@ -136,9 +136,9 @@ contains
 				do i=1,size(images,1)
 					if(kas_rakendab_psf) then
 						call rakenda_psf(mudelid(j)%mx, images(i)%psf, mudelpilt)
-						to_massfit(i)%M(j,:,:) = mudelpilt
+						to_massfit(i)%M(:,:,j) = mudelpilt
 					else
-						to_massfit(i)%M(j,:,:) = mudelid(j)%mx
+						to_massfit(i)%M(:,:,j) = mudelid(j)%mx
 					end if
 				end do
 			end do
@@ -183,10 +183,10 @@ contains
 		from_mass_to_lum = from_mass_to_lum / ML_kordajad
 		do i=1,size(images); 
 			if(allocated(mudelpilt)) deallocate(mudelpilt)
-			allocate(mudelpilt(1:size(to_massfit(i)%M, 2), 1:size(to_massfit(i)%M, 3))) !saab v2ltida kui eeldada, et koik pildid samast vaatlusest
+			allocate(mudelpilt(1:size(to_massfit(i)%M, 1), 1:size(to_massfit(i)%M, 2))) !saab v2ltida kui eeldada, et koik pildid samast vaatlusest
 			mudelpilt = 0.0
 			do j=1,all_comp%N_comp
-				mudelpilt = mudelpilt + from_mass_to_lum(i,j)*to_massfit(i)%M(j,:,:)
+				mudelpilt = mudelpilt + from_mass_to_lum(i,j)*to_massfit(i)%M(:,:,j)
 			end do; 
 			if(present(output_images) .and. kas_koik_pildid_samast_vaatlusest) output_images(i,:,:) = mudelpilt !ainult viimase v2ljundi jaoks
 			res = res - sum( to_massfit(i)%inv_sigma2*(to_massfit(i)%I - mudelpilt)**2 , to_massfit(i)%mask)
@@ -217,11 +217,11 @@ contains
 			real(rk), dimension(:,:), allocatable :: mudelpilt
 			integer :: j
 			real(rk), dimension(:), allocatable :: tmp
-			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
+			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 1), 1:size(to_massfit(mis_pilt)%M(:,:,:), 2)))
 			mudelpilt = 0.0
 			allocate(tmp(1:size(x))); tmp = x; do j=1,size(x); if(x(j)<1.0e-7) tmp(j) = 1.0e-7 ;end do
 			do j=1,size(images)
-				mudelpilt = mudelpilt + abs(tmp(j))*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) !abs on amoeba lolluste vastu
+				mudelpilt = mudelpilt + abs(tmp(j))*to_massfit(mis_pilt)%M(:,:,j)*from_mass_to_lum(mis_pilt, j) !abs on amoeba lolluste vastu
 			end do
 			res = -1.0*sum( (to_massfit(mis_pilt)%I - mudelpilt)**2 * to_massfit(mis_pilt)%inv_sigma2, to_massfit(mis_pilt)%mask) + massi_fiti_lambda*sum(log(abs(tmp)))
 			!defineeritud vale m2rgiga, et saaks amoeba abil minimeerida
@@ -233,15 +233,15 @@ contains
 			real(rk), dimension(:), allocatable :: res
 			real(rk), dimension(:,:), allocatable :: mudelpilt
 			integer :: j
-			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 2), 1:size(to_massfit(mis_pilt)%M(:,:,:), 3)))
+			allocate(mudelpilt(1:size(to_massfit(mis_pilt)%M(:,:,:), 1), 1:size(to_massfit(mis_pilt)%M(:,:,:), 2)))
 			mudelpilt = 0.0
 			do j=1,size(x)
-				mudelpilt = mudelpilt + x(j)*to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j)
+				mudelpilt = mudelpilt + x(j)*to_massfit(mis_pilt)%M(:,:,j)*from_mass_to_lum(mis_pilt, j)
 			end do
 			if(allocated(res)) deallocate(res); allocate(res(1:size(x)))
 			do j=1,size(x)
 				res(j) = sum( to_massfit(mis_pilt)%inv_sigma2 * &
-							to_massfit(mis_pilt)%M(j,:,:)*from_mass_to_lum(mis_pilt, j) * &
+							to_massfit(mis_pilt)%M(:,:,j)*from_mass_to_lum(mis_pilt, j) * &
 							(to_massfit(mis_pilt)%I - mudelpilt), to_massfit(mis_pilt)%mask) + massi_fiti_lambda/x(j)
 			end do
 		end function leia_gradient_ML_jaoks
@@ -255,8 +255,8 @@ contains
 			allocate(res(1:size(x,1), 1:size(x,1))); res = 0.0 
 			do m=1,size(x)
 				do n=m,size(x)
-					res(m,n) = sum( -1.0*to_massfit(mis_pilt)%M(m,:,:)*from_mass_to_lum(mis_pilt, m)*&
-										 to_massfit(mis_pilt)%M(n,:,:)*from_mass_to_lum(mis_pilt, n)*&
+					res(m,n) = sum( -1.0*to_massfit(mis_pilt)%M(:,:,m)*from_mass_to_lum(mis_pilt, m)*&
+										 to_massfit(mis_pilt)%M(:,:,n)*from_mass_to_lum(mis_pilt, n)*&
 										 to_massfit(mis_pilt)%inv_sigma2 , to_massfit(mis_pilt)%mask)
 					res(n,m) = res(m,n) !symmeetrilise maatriksi lihtsustus
 				end do
@@ -307,9 +307,9 @@ contains
 						do j=1,size(images); 
 							if(kas_rakendab_psf) then
 								call rakenda_psf(mudelid(i)%mx, images(j)%psf, pilt_psf)
-								to_massfit(j)%M(i,:,:) = pilt_psf
+								to_massfit(j)%M(:,:,i) = pilt_psf
 							else
-								to_massfit(j)%M(i,:,:) = mudelid(i)%mx; 
+								to_massfit(j)%M(:,:,i) = mudelid(i)%mx; 
 							end if
 							
 						end do
@@ -460,10 +460,10 @@ contains
 						allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
 						!selle iteratsiooni heleduse pilt
 						do j=1,N_k
-							tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(j,:,:)
+							tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(:,:,j)
 						end do
 						!likelihoodi gradienti lisamine 
-						L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
+						L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(:,:,k)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
 					end do
 					L_k(k) = L0_k(k)
 					if(kas_barrier) L_k(k) = L_k(k) - massi_fiti_lambda / res(k) !kui piirab masse seestpoolt
@@ -472,7 +472,7 @@ contains
 					!
 					do m=k,N_k
 						do i=1,N_i
-							L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
+							L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(:,:,k)*to_massfit(i)%w(m)*to_massfit(i)%M(:,:,m) ,to_massfit(i)%mask)
 						end do
 						L_km(k,m) = L0_km(k,m)
 						L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
@@ -564,9 +564,9 @@ contains
 							mudelid(j)%mx = make_lum_image(mudelid(j), images(i)%filter, pop, all_comp%dust_comp(1), all_comp%comp(j)%dist, all_comp%comp(j)%comp_name)
 							if(kas_rakendab_psf) then
 								call rakenda_psf(mudelid(j)%mx, images(i)%psf, pilt_psf)
-								to_massfit(i)%M(j,:,:) = pilt_psf
+								to_massfit(i)%M(:,:,j) = pilt_psf
 							else
-								to_massfit(i)%M(j,:,:) = mudelid(j)%mx; 
+								to_massfit(i)%M(:,:,j) = mudelid(j)%mx; 
 							end if
 							
 						end do
@@ -771,10 +771,10 @@ contains
 						allocate(tmp_pilt(1:size(to_massfit(i)%I, 1), 1:size(to_massfit(i)%I, 2))); tmp_pilt = 0.0
 						!selle iteratsiooni heleduse pilt
 						do j=1,N_k
-							tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(j,:,:)
+							tmp_pilt = tmp_pilt + res(j)*to_massfit(i)%w(j)*to_massfit(i)%M(:,:,j)
 						end do
 						!likelihoodi gradienti lisamine 
-						L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
+						L0_k(k) = L0_k(k) + sum(2.0*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(:,:,k)*(tmp_pilt - to_massfit(i)%I), to_massfit(i)%mask)
 					end do
 					L_k(k) = L0_k(k)
 					if(kas_barrier) L_k(k) = L_k(k) - massi_fiti_lambda / res(k) !kui piirab masse seestpoolt
@@ -783,7 +783,7 @@ contains
 					!
 					do m=k,N_k
 						do i=1,N_i
-							L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(k,:,:)*to_massfit(i)%w(m)*to_massfit(i)%M(m,:,:) ,to_massfit(i)%mask)
+							L0_km(k,m) = L0_km(k,m) + sum(2*to_massfit(i)%inv_sigma2 * to_massfit(i)%w(k)*to_massfit(i)%M(:,:,k)*to_massfit(i)%w(m)*to_massfit(i)%M(:,:,m) ,to_massfit(i)%mask)
 						end do
 						L_km(k,m) = L0_km(k,m)
 						L_km(m,k) = L_km(k,m) !symmeetrilise maatriksi t2itmine
