@@ -2,7 +2,7 @@
 # ============ parameetrid, mis iseloomustavad, mida t2pselt programm teeb
 #
 mis_fittimise_algoritm                  = 0 #0=output, 1=multinest, 2=amoeba, 3=multinest+amoeba, 4=amoeba mineviku MN-st, 5=omalooming
-mis_fittimise_tyyp                      = 1 #1=populatsioonid ja massid, 2 = komponendid ja M/L, 3 = populatsioonid ja massid tolmuga
+mis_fittimise_tyyp                      = 3 #1=populatsioonid ja massid, 2 = komponendid ja M/L, 3 = populatsioonid ja massid tolmuga
 # kas_los                                 = .true.
 kas_rakendab_psf                        = .true. 
 kas_vaikselt                            = .false.
@@ -23,13 +23,13 @@ kas_psf_crop                            = .false.
 psf_sisse_peab_j22ma                    = 0.99 
                                         
 kas_fitib_massid_eraldi                 = .true. 
-massif_fiti_rel_t2psus                  = 0.003
+massif_fiti_rel_t2psus                  = 0.01
 kas_barrier                             = .true. 
 massi_fiti_lambda                       = 0.005
 massi_fittimise_hyppe_kordaja           = 0.95
 amoeba_fractional_tolerance             = 0.001
 
-integration_max_iter                    = 11
+integration_max_iter                    = 13
 integration_min_iter                    = 2 #kui los on 30, siis 12 on integreerimise lahutus 7pc
 
 adaptive_image_dist_piirang             = 0.4 #ehk niisuguse piiri sees kasutatakse alati piksli arvutamisel otsest mudelit

@@ -317,8 +317,12 @@ module adaptive_image_real_module
 				res_scale = (abs(x(3)-x(1)) > adaptive_image_min_spatial_resolution) .and. (abs(y(3)-y(1)) > adaptive_image_min_spatial_resolution) !1 pc miinimum gridi tihedus
 				res_rel = val0 > (adaptive_image_edasijagamise_threshold * val(5)%point)
 				res_abs =  val0 > adaptive_image_edasijagamise_maksimaalne_abs_t2psus !absoluutne tiheduse piir, et v2ltida liiga pisisust
-				res_l2hedus_tsentrile = maxval(abs(x),1)< adaptive_image_dist_piirang  !ehk v2ga l2hedal tsentrile tuleb alati pilt arvutada t2pselt, ehk l2hendit pole vaja
-				res_l2hedus_tsentrile = res_l2hedus_tsentrile .and. maxval(abs(y),1) < adaptive_image_dist_piirang 
+				
+! 				res_l2hedus_tsentrile = maxval(abs(x),1)< adaptive_image_dist_piirang  !ehk v2ga l2hedal tsentrile tuleb alati pilt arvutada t2pselt, ehk l2hendit pole vaja
+! 				res_l2hedus_tsentrile = res_l2hedus_tsentrile .and. maxval(abs(y),1) < adaptive_image_dist_piirang
+				
+				res_l2hedus_tsentrile = all(abs(x)<adaptive_image_dist_piirang .and. abs(y)<adaptive_image_dist_piirang) !ehk molemas koordinaadis korraga l2hedal
+				
 				res = res_scale .and. (res_rel .or. res_abs) .and. .not. res_l2hedus_tsentrile
 			end function kas_jagada_edasi
 			subroutine kas_varem_arvutatud0(x,y,kas_varem, id_varem)	!(kohutavalt) aeglane ja lihtne testversioon

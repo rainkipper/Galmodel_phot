@@ -118,9 +118,9 @@ contains
 		if(count(isnan(res))>0) then
 			print "(A,A,A,A)", "Tekkisid mingid NA-d (filt, pop):", trim(filter%name), " ", trim(pop%name)
 		end if
-		if(present(comp_nimi)) then
-			call write_matrix_to_fits(res, "Output/comp_im_"//trim(comp_nimi)//"_"//trim(filter%name)//".fits")
-		end if
+! 		if(present(comp_nimi)) then
+! 			call write_matrix_to_fits(res, "Output/comp_im_"//trim(comp_nimi)//"_"//trim(filter%name)//".fits")
+! 		end if
 		
 ! 		print*, "ML", ML_tolmuta, ML_tolmuga
 ! 		print*, "CP inf"

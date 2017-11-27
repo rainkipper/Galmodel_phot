@@ -24,7 +24,7 @@ contains
 		type(square_pixel_type), intent(in) :: pix
 		logical :: res
 		!vaatab kasti kujuliselt
-		res = any( (abs(pix%Xc_nurgad)>adaptive_image_dist_piirang) .or. (abs(pix%Yc_nurgad)>adaptive_image_dist_piirang))
+		res = .not. any( (abs(pix%Xc_nurgad)<adaptive_image_dist_piirang) .and. (abs(pix%Yc_nurgad)<adaptive_image_dist_piirang))
 	end function kas_kasutab_l2hendit_piksli_v22rtuse_jaoks
 
 	function get_val_sq_v2ga_j2me(pix, func, abs_tol) result(res)

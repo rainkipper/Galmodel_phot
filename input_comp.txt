@@ -86,11 +86,11 @@ prof = Einasto
 type = stellar
 incl = 75.2, F, 55.0, 85.0, bulge_B4
 dist = 10000.0, F, 0.0, 1e7, bulge_B4
-pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B4
+pos_wrt_phys_coord = 0.01, F, -90.0, 90.0, bulge_B3
 cnt_x = 0, F, -9.0, 9.0, bulge_B4
-cnt_y = 0, F, -9.0, 9.0, bulge_B4
+cnt_y = 0, F, -9.0, 9.0, bulge_B3
 population = Blanton_3
-theta0 = 45, F, -90.0, 90.0 bulge_B4
+theta0 = 45, F, -90.0, 90.0 bulge_B3
 a0 = 5.63, T, 2.0, 20.0, disc_B3
 N =  2.7 , T, 0.5, 2.5, disc_B3
 q =  0.2, T, 0.01, 0.3, disc_B3
@@ -106,9 +106,9 @@ cnt_x = 0, F, -9.0, 9.0, bulge_B4
 cnt_y = 0, F, -9.0, 9.0, bulge_B4
 population = Blanton_1
 theta0 = 45, F, -90.0, 90.0 bulge_B4
-a0 = 5.63, T, 2.0, 20.0, disc_B3
-N =  2.7 , T, 0.5, 2.5, disc_B3
-q =  0.2, T, 0.01, 0.3, disc_B3
+a0 = 5.63, F, 2.0, 20.0, disc_B3
+N =  2.7 , F, 0.5, 2.5, disc_B3
+q =  0.2, F, 0.01, 0.3, disc_B3	
 M =  1.0 , F, 0.00, 1.5, disc_B1
 
 [disc_B5]
@@ -121,9 +121,9 @@ cnt_x = 0, F, -9.0, 9.0, bulge_B4
 cnt_y = 0, F, -9.0, 9.0, bulge_B4
 population = Blanton_5
 theta0 = 45, F, -90.0, 90.0 bulge_B4
-a0 = 5.63, T, 2.0, 20.0, disc_B3
-N =  2.7 , T, 0.5, 2.5, disc_B3
-q =  0.2, T, 0.01, 0.3, disc_B3
+a0 = 5.63, F, 2.0, 20.0, disc_B3
+N =  2.7 , F, 0.5, 2.5, disc_B3
+q =  0.2, F, 0.01, 0.3, disc_B3
 M =  1.0 , F, 0.00, 1.5, disc_B5
 
 

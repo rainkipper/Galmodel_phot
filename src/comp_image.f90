@@ -81,10 +81,10 @@ contains
 		!keskosa t2itmine
 		do i = 2,Nx
 		do j = 2,Ny
-			if(mdl%pix(i,j)%Xc_nurgad(1)**2 + mdl%pix(i,j)%Yc_nurgad(1) **2 < adaptive_image_dist_piirang**2) then
-				v22rtus = func( mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1) )
-			else
+			if(kas_kasutab_l2hendit_piksli_v22rtuse_jaoks(mdl%pix(i,j))) then !yhest kohast votta viisakam
 				v22rtus = func_approx( mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1) )
+			else
+				v22rtus = func( mdl%pix(i,j)%Xc_nurgad(1), mdl%pix(i,j)%Yc_nurgad(1) )
 			end if
 			mdl%pix(i, j)%val_nurgad(1) = v22rtus
 			mdl%pix(i-1, j-1)%val_nurgad(3) = v22rtus
