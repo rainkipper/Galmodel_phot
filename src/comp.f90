@@ -133,5 +133,29 @@ module comp_module
 		theta = sin_incl*Xc/R + theta0 !TODO vaja KONTROLLIDA!
 	end subroutine XcYcl_to_Rztheta
 	
-	
+	subroutine tryki_koik_comp_parameetrid(comp)
+		implicit none
+		class(comp_type), intent(in) :: comp
+		real(rk) :: tmp
+		
+		call printpar(comp%incl*180.0/pi, "incl")
+		call printpar(comp%pos*180.0/pi, "pos")
+		call printpar(comp%cnt_x, "cnt_x")
+		call printpar(comp%cnt_y, "cnt_y")
+		call printpar(comp%cnt_x, "cnt_x")
+		call printpar(comp%dist, "dist")
+		if(trim(comp%comp_prof_name)=="Einasto") then
+			call comp%prof_den%get_val("a0", tmp); call printpar(tmp, "a0")
+			call comp%prof_den%get_val("N", tmp); call printpar(tmp, "N")
+			call comp%prof_den%get_val("q", tmp); call printpar(tmp, "q")
+			call comp%prof_den%get_val("M", tmp); call printpar(tmp, "M")
+		end if
+	contains
+		subroutine printpar(x, name)
+			implicit none
+			real(rk), intent(in) :: x
+			character(len=*), intent(in) :: name
+			print "(4A,F15.8)", trim(comp%comp_name),": ", trim(name), " = ", x
+		end subroutine printpar
+	end subroutine tryki_koik_comp_parameetrid
 end module comp_module

@@ -108,7 +108,7 @@ contains
 		implicit none
 		class(prof_Einasto_type), intent(in) :: prof		
 		if(prof%M<0) stop("Sanity check for density not passed: Einasto: M<0")
-		if(prof%N<0.5) stop("Sanity check for density not passed: Einasto: N<0.5")
+		if(prof%N<0.2) stop("Sanity check for density not passed: Einasto: N<0.5")
 		if(prof%a0<0) stop("Sanity check for density not passed: Einasto: a0<0")
 		if(prof%q<0) stop("Sanity check for density not passed: Einasto: q<0")
 		if(prof%q>1) stop("Sanity check for density not passed: Einasto: q>1")

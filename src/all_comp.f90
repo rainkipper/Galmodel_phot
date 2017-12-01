@@ -95,6 +95,8 @@ contains
 			kuhu_viited_pannakse%pos     = comp_point%pos
 			call point_to_right_component(input_comps(i)%theta0%ref, comp_point, input_comps, all_comp)
 			kuhu_viited_pannakse%theta0     = comp_point%theta0
+			call point_to_right_component(input_comps(i)%dist%ref, comp_point, input_comps, all_comp)
+			kuhu_viited_pannakse%dist     = comp_point%dist
 
 			par_list=>input_comps(i)%prof_pars
 			do while(par_list%filled)
