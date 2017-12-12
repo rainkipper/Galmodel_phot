@@ -3,6 +3,7 @@ module approx_Einasto_module
 	type :: approx_Einasto_type
 		real(rk) :: logx0, logx1, logx2
 		real(rk) :: f0,f1,f2
+		real(rk) :: ruutvorrand_a, ruutvorrand_b, ruutvorrand_c
 		real(rk) :: Q_obs2, q !inverse n2iv**2 ja tegelik lapikus... t2idetakse ainult pealmisel kihil
 		integer :: level
 		logical :: last_level
@@ -44,7 +45,7 @@ contains
 		recursive subroutine fill_single(cell, logx0, logx2, f0, f2, level)
 			implicit none
 			type(approx_Einasto_type), intent(inout) :: cell
-			real(rk) :: l2hend
+			real(rk) :: l2hend, dx
 			real(rk), intent(in) :: logx0, logx2, f0, f2
 			integer, intent(in) :: level
 ! 			mitu_E = mitu_E + 1
@@ -58,6 +59,14 @@ contains
 			cell%f1 = los_val_func(cell%logx1, 0.0_rk)
 ! 			l2hend = (cell%f2 - cell%f0)/(cell%logx2-cell%logx0) * (cell%logx1 - cell%logx0) + cell%f0
 			l2hend = 0.5*(cell%f2 + cell%f0)
+			
+			!abimuutjad kui tahta ruutvorrandi l2hendiga arvutada pildi parameetreid
+			dx = cell%logx1 - cell%logx0
+			cell%ruutvorrand_a = 0.5*(cell%f0 - 2*cell%f1 + cell%f2)/(dx*dx)
+			cell%ruutvorrand_b = -0.5*(dx*(cell%f0 - cell%f2) + 2*cell%logx1*(cell%f0-2*cell%f1 + cell%f2))/(dx*dx)
+			cell%ruutvorrand_c = 0.5*(2*dx*dx*cell%f1 + (cell%f0 - 2*cell%f1 + cell%f2)*cell%logx1*cell%logx1 + dx*cell%logx1*(cell%f0 - cell%f2) )/(dx*dx)
+			
+			
 			!test kas piisavalt arvutatud
 			cell%last_level = abs(l2hend - cell%f1)/min(abs(l2hend), abs(cell%f1)) < adaptive_image_edasijagamise_threshold
 			if(level < adaptive_image_minlevel) cell%last_level = .false.
@@ -122,14 +131,15 @@ contains
 	! 				res = 0.0
 	! 				res = res + (logA - )
 				!v2 = linear interpolation kahest osast
-				if(logA<cell%logx1) then
-					res = (cell%f1 - cell%f0)/(cell%logx1 - cell%logx0)*(logA - cell%logx0) + cell%f0
-				else
-					res = (cell%f2 - cell%f1)/(cell%logx2 - cell%logx1)*(logA - cell%logx1) + cell%f1
-				end if
+! 				if(logA<cell%logx1) then
+! 					res = (cell%f1 - cell%f0)/(cell%logx1 - cell%logx0)*(logA - cell%logx0) + cell%f0
+! 				else
+! 					res = (cell%f2 - cell%f1)/(cell%logx2 - cell%logx1)*(logA - cell%logx1) + cell%f1
+! 				end if
 				!v3  = lineaarne j2medal vorel
 ! 				res = (cell%f2 - cell%f0)/(cell%logx2 - cell%logx0) * (logA-cell%logx0) + cell%f0
-				
+				!v4 = ruutvorrandi l2hend
+				res = cell%ruutvorrand_a * logA*logA + cell%ruutvorrand_b*logA + cell%ruutvorrand_c
 			end if
 		end function otsi_yks
 	end function otsi_approx_Einasto

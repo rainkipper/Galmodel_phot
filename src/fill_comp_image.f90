@@ -77,6 +77,7 @@ contains
 		!  lisamehanismid kui on soov arvutada adaptive_im kaudu
 		if(via_ci) then
 			if(kas_Einasto_approx) then
+! 				print*, "kas Einasto approx", kas_Einasto_approx
 				call all_comp%comp(comp_nr)%prof_den%get_val("q", Einasto_q_par)
 				call fill_approx_Einasto(f_ptr, all_comp%comp(comp_nr)%incl, Einasto_q_par)
 				f_ptr => approx_1D_Einasto
@@ -207,7 +208,7 @@ contains
 		kas_Einasto_approx = via_ci .and. trim(all_comp%comp(comp_nr)%comp_prof_name)=="Einasto"
 		if(kas_Einasto_approx) then
 			call fill_comp_image(all_comp, comp_nr, mdl) !ehk sisuliselt t2idetakse kogu vaatejoon 2ra ning lahutatakse p2rast pool vaatejoont
-			mdl%M_p2rast_tasandit = mdl%mx !kohat2itja, et hiljem saaks ymber kasutada muid asju... tyytu erand
+			mdl%M_p2rast_tasandit = mdl%mx !kohat2itja, et hiljem saaks ymber kasutada muid asju... 
 		end if
 		
 		!valitakse, milline funktsioon arvutamiseks

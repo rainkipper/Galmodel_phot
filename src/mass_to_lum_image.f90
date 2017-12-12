@@ -80,32 +80,15 @@ contains
 		end do
 		call dust%prof_den%get_val("tau0", tau0) !kordaja
 		tau = tau0 / dust%cos_incl !kaldenurga parand
-! 		print*, "CP0"
-! 		print*, "min ja max"
-! 		print*, minval(sol_spec%x, 1), minval(pop%spec%x, 1), minval(filter%spec%x, 1)
-! 		print*, maxval(sol_spec%x, 1), maxval(pop%spec%x, 1), maxval(filter%spec%x, 1)
 		sollum = lainepikkuse_dl * sum(interpolate_1D(sol_spec, lainepikkus) * interpolate_1D(filter%spec, lainepikkus)) !tavaline Riemanni integraal
 		dustlesslum = lainepikkuse_dl * sum(interpolate_1D(pop%spec, lainepikkus) * interpolate_1D(filter%spec, lainepikkus))
 		!kui tahta mingit muud tolmu varianti panna (sh 2mikroni feature-ga), siis see tuleks panna j2rgneva rea peale exp alla.
 		dustylum = lainepikkuse_dl * sum((interpolate_1D(pop%spec, lainepikkus)) * interpolate_1D(filter%spec, lainepikkus) * exp(-abs(tau)*dust_kappa(lainepikkus))) 
-! 		print*, "sol spec", sol_spec%x(20), sol_spec%f(20)
-! 		print*, "sol na", count(isnan(interpolate_1D(sol_spec, lainepikkus))), sum((interpolate_1D(sol_spec, lainepikkus)))
-! 		print*, "tau na", count(isnan(exp(-abs(tau0)*dust_kappa(lainepikkus)))), sum(exp(-abs(tau0)*dust_kappa(lainepikkus)))
-! 		print*, "filt na", count(isnan(interpolate_1D(filter%spec, lainepikkus))), sum((interpolate_1D(filter%spec, lainepikkus)))
-! 		print*, "pop na", count(isnan(interpolate_1D(pop%spec, lainepikkus))), sum((interpolate_1D(pop%spec, lainepikkus)))
-! 		print*, "lambda", sum(lainepikkus)
-! 		print*, "lainepikkuse_dl",lainepikkuse_dl, Nlambda
-! 		print*, "sol spec piirid", minval(sol_spec%x, 1), maxval(sol_spec%x, 1)
-! 		print*, "rajad", minraja, maxraja
-! 		print "(A,A,A,2F10.5, E15.8)", trim(filter%name), " ", trim(pop%name), sollum/dustlesslum, sollum/dustylum, sollum
 		!
 		! ML arvutamine
 		!
-
-! 		print*, "tau = ", tau, tau0
 		ML_tolmuta = 1.0/(dustlesslum/sollum) !mass on 1
 		ML_tolmuga = 1.0/(dustylum/sollum)
-! 		print*, "ML_tolmu(g/t)a", ML_tolmuga, ML_tolmuta
 		!
 		! pildi peale rakendamine
 		!
@@ -118,12 +101,7 @@ contains
 		if(count(isnan(res))>0) then
 			print "(A,A,A,A)", "Tekkisid mingid NA-d (filt, pop):", trim(filter%name), " ", trim(pop%name)
 		end if
-! 		if(present(comp_nimi)) then
-! 			call write_matrix_to_fits(res, "Output/comp_im_"//trim(comp_nimi)//"_"//trim(filter%name)//".fits")
-! 		end if
-		
-! 		print*, "ML", ML_tolmuta, ML_tolmuga
-! 		print*, "CP inf"
+
 	end function population_dust_image
 	
 	

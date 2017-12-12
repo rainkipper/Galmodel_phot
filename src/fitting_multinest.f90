@@ -60,7 +60,7 @@ contains
 		outfile = .true.
 		initMPI = .false.
 		logZero = -1.0d10 !ei ole kindel selles
-		maxiter = 2000 !et saada ainult esialgne l2hend
+		maxiter = 200000 !et saada ainult esialgne l2hend
 		context = 0 !mittevajalik
 		
 		
