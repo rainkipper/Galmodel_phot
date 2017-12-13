@@ -31,6 +31,7 @@ module constants_module
 	logical  :: kas_koik_pildid_samast_vaatlusest = .true. 
 	logical  :: via_adaptive_im = .true.
 	logical  :: kas_los = .false. !kas profiili integreeritakse vaatejoont pidi... muidu votab ainult tasandis oleva v22rtuse 
+	real(rk) :: max_calculation_time = 21600.0 !max arvutusaeg (s)... default on 6h
 	logical  :: kas_rakendab_psf = .false. !
 	logical  :: kas_psf_crop = .true. !kas kahandab psf suurust, et arvutused kiiremini oleks. 
 	real(rk) :: psf_sisse_peab_j22ma = 0.99 !kui psf servasid natuke k2rbib, siis saab arvutamise kiiremaks
@@ -146,7 +147,7 @@ contains
 			case("sol_file"); read(subrida, fmt = "(a)") sol_file_name
 			case("populations_file"); read(subrida, fmt = "(a)") populations_file_name
 			case("filters_file"); read(subrida, fmt = "(a)") filters_file_name
-		
+			case("max_calculation_time"); read(subrida, fmt = *) max_calculation_time
 		
 		
 		

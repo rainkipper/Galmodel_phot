@@ -50,3 +50,5 @@ output_fit_file                         = Output/out_parameters.txt
 sol_file                                = Populations/solar_standard_spectrum.txt
 populations_file                        = Populations/blanton_spec_raw.txt
 filters_file                            = Populations/
+
+max_calculation_time                    = 21600.0

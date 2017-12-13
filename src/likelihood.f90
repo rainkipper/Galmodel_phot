@@ -100,6 +100,17 @@ contains
 		if(.not.kas_vaikselt) print*, LL_counter, "LL = ", res, "dt = ",(dt-alguse_aeg)/LL_counter
 		if(isnan(res)) stop "err: LL ei tohi olla nan"
 	end function calc_log_likelihood
+	subroutine exeeds_max_time_limit() 
+		implicit none
+		logical :: res
+		real(rk) :: t
+		call cpu_time(t)
+		res = abs(alguse_aeg-t)>max_calculation_time
+		if(res) then
+			print*, "Max time of calculations reached!"
+			stop
+		end if
+	end subroutine exeeds_max_time_limit
 	function calc_log_likelihood_components(all_comp, images, output_images) result(res)
 		implicit none
 		type(all_comp_type), intent(inout) :: all_comp
@@ -112,6 +123,7 @@ contains
 		real(rk), dimension(:,:,:), allocatable, optional  :: output_images
 		real(rk), dimension(:,:), allocatable :: tmp_hess
 		integer :: i, j,mis_pilt, iter, ii
+		call exeeds_max_time_limit()
 		!
 		! ========== t2psuse leidmine, mida on vaja mudelpildi arvutamiseks=========
 		!
@@ -287,7 +299,7 @@ contains
 		real(rk), dimension(:,:,:), allocatable, intent(out), optional :: output_images !optional output
 		
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
-
+		call exeeds_max_time_limit()
 		mida_arvutatakse = "Not in use"
 		
 		!
@@ -541,7 +553,7 @@ contains
 		real(rk) :: tau
 		type(population_type), pointer :: pop
 		!need peaks tulema mujalt seadetest, mitte k2sitsi
-
+		call exeeds_max_time_limit()
 		mida_arvutatakse = "Not in use"
 		
 		!
