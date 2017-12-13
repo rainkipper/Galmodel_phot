@@ -2,7 +2,7 @@ module prof_Einasto_module
 	use profiles_den
 	type, extends(prof_den_base_type):: prof_Einasto_type
 		!sisendparameetrid	
-		real(rk) :: M
+		real(rk) :: M, logM
 		real(rk) :: a0
 		real(rk) :: N
 		real(rk) :: q 
@@ -41,6 +41,7 @@ contains
 		real(rk), intent(in) 			:: val
 		select case(par)
 		case("M"); prof%M = val
+		case("logM"); prof%logM = val; prof%M = 10**prof%logM
 		case("a0"); prof%a0 = val; 
 		case("N"); prof%N = val
 		case("q"); prof%q = val
@@ -56,6 +57,7 @@ contains
 		real(rk), intent(out) 			:: val
 		select case(par)
 		case("M") ;	val = prof%M 
+		case("logM") ;	val = prof%logM 
 		case("a0");	val = prof%a0
 		case("N") ;	val = prof%N 
 		case("q") ;	val = prof%q 

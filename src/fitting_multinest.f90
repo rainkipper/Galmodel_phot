@@ -41,7 +41,7 @@ contains
 ! 		logical, dimension(:), allocatable :: recalc_comp
 		
 		IS = .true.
-		mmodal = .false. 
+		mmodal = .true. 
 		ceff = .true.
 		tol = 0.5
 		efr = multinest_efr
