@@ -96,8 +96,7 @@ function calc_counts_mass_ratio(filter, dist, population_name) result(res)
 		pop_ML = 1.0
 	end if
 	!pildi enda yhikute arvestamine (counts eeldusel)
-! 	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
-	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 4.0 - 2.0*log10( dist ) ) / pop_ML
+	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
 end function  calc_counts_mass_ratio
 
 
