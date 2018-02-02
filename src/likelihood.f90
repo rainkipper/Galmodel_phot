@@ -130,14 +130,12 @@ contains
 		
 		
 		do i=1,all_comp%N_comp
-! call tryki_koik_comp_parameetrid(all_comp%comp(i))
 			all_comp%comp(i)%mass_abs_tol = leia_massi_abs_tol(all_comp%comp(i), images) * abs_tol_kordaja  !ehk eeldab, et teatud protsent teatud min ML korral
 			all_comp%comp(i)%massi_abs_tol_los = all_comp%comp(i)%mass_abs_tol / leia_pix_pindala(images(1), all_comp%comp(1)) 
 		end do
 		!
 		! =========== mudelpiltide arvutamine ==========
 		!
-! 		if(mudelid(i)%recalc_image) then
 		if(kas_koik_pildid_samast_vaatlusest) then
 			if(present(output_images)) then !ainult v2ljundi tegemiseks lopus
 				allocate(output_images(1:size(images,1), 1:size(images(1)%obs,1), 1:size(images(1)%obs,2)))
@@ -187,14 +185,14 @@ contains
 				end if
 			end do
 		if(present(output_images)) ML_vead = 0.5*ML_vead/ML_kordajad**2 !TODO poordv22rtus pole vist p2ris korrektne... 0.5 sellest et LL defineeritakse 2 korda suuremana
-		ML_kordajad = 1.0/ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
+		ML_kordajad = ML_kordajad !poordv22rtus reaalsete mass-heledus suhete jaoks
 		if(.not.allocated(last_ML)) allocate(last_ML(1:size(ML_kordajad, 1), 1:size(ML_kordajad, 2)))
 		last_ML = ML_kordajad !salvestab lopptulemuse jaoks
 		!
 		! ========== p2ris likelihoodi arvutamine
 		!
 		res = 0.0
-		from_mass_to_lum = from_mass_to_lum / ML_kordajad
+		from_mass_to_lum = from_mass_to_lum * ML_kordajad
 		do i=1,size(images); 
 			if(allocated(mudelpilt)) deallocate(mudelpilt)
 			allocate(mudelpilt(1:size(images(i)%obs, 1), 1:size(images(i)%obs, 2))) !saab v2ltida kui eeldada, et koik pildid samast vaatlusest
@@ -439,7 +437,7 @@ contains
 	! 		integer :: testi
 
 		
-			max_iter = 50
+			max_iter = 500
 			!initsialiseerimised
 			N_k = size(to_massfit(1)%w, 1) !komponentide arv
 			N_i = size(to_massfit, 1) !piltide arv
@@ -512,12 +510,14 @@ contains
 					end do
 					nihe(k) = nihe(k) * massi_fittimise_hyppe_kordaja
 				end do
+! print*, iter, max_iter, maxval(abs(nihe),1)
 				if(any(res - nihe < 0)) then
 					!kui ekstrapoolib liiga kaugele
-					res = res - nihe * minval(abs(0.9*res/nihe)) !minval, et l2hima nullile parameetri j2rgi voetaks
+					res = res - nihe * minval(abs((1.0-1.0e-6)*res/nihe)) !minval, et l2hima nullile parameetri j2rgi voetaks
 				else
 					res = res - nihe
 				end if
+! 				print*, "t2psus, iter:", minval(abs(res-massi_kordajad_eelmine)/res), iter
 				if(maxval(abs(res-massi_kordajad_eelmine)/res)<massif_fiti_rel_t2psus) then
 	! 				print*, "t2psus, iter:", minval(abs(res-massi_kordajad_eelmine)/res), iter
 					exit

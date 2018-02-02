@@ -96,7 +96,8 @@ function calc_counts_mass_ratio(filter, dist, population_name) result(res)
 		pop_ML = 1.0
 	end if
 	!pildi enda yhikute arvestamine (counts eeldusel)
-	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
+! 	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 6.0 - 2.0*log10( dist ) ) / pop_ML
+	res = 10**(0.4*(filter%ZP-filter%Mag_sun) + 4.0 - 2.0*log10( dist ) ) / pop_ML
 end function  calc_counts_mass_ratio
 
 
@@ -245,8 +246,9 @@ end function  calc_counts_mass_ratio
 		filters(5)%Mag_sun = 4.52_rk
 		filters(5)%mass_to_obs_unit => calc_counts_mass_ratio
 ! 		filters(5)%get_tau_kordaja=>get_tau_kordaja
-
-		path = "/Users/rain/Suured_tegemised/Califa_SDSS/Populations/"
+		
+path = repeat(" ", default_character_length)
+		path = filters_file_name !"/Users/rain/Suured_tegemised/Califa_SDSS/Populations/"
 		do i=1,N
 			file = repeat(" ", default_character_length); file = trim(path)//trim(filenames(i))
 			if(allocated(mx)) deallocate(mx); mx = read_tabel(file, 5)
